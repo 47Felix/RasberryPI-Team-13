@@ -35,5 +35,6 @@ Falls ein neuer Chat committet und die Schlüssel nicht mehr im Sandbox-Environm
 
 ## Verwandte Notizen
 - [[Zugangsdaten - Hinweis]]
+- [[Branch-Strategie]] – wann/wie gebrancht wird, bevor überhaupt committet wird
 
 #projekt #git #workflow
