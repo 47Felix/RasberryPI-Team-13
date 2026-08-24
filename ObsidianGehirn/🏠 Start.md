@@ -14,6 +14,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Roter Faden - Ice Truck]]
 - [[Leistungsnachweise]]
 - [[Skills Setup]]
+- [[Git Workflow]]
 
 ## 🍓 Pi Setup (Team13-1)
 - [[Pi Zugriff]]
