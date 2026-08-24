@@ -27,6 +27,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Challenge II - Ice Truck Extension]]
 - [[Challenge III - Ice Truck in Cloud]]
 - [[Infotheke]]
+- [[WS-Präsentationen]]
 
 ## 🗺️ Fahrplan & To-Do
 - [[Technischer Fahrplan]]

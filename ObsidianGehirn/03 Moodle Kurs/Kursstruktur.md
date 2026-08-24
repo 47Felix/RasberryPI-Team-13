@@ -23,4 +23,7 @@ Siehe [[Roter Faden - Ice Truck]] für den Gesamtzusammenhang.
 ## Materialsammlung
 Siehe [[Infotheke]] für alle Unterkurse.
 
+## Workshop-Präsentationen (PDFs)
+Siehe [[WS-Präsentationen]] für die Arduino- und Raspberry-Pi-Workshop-PDFs (u.a. das 4-Layer-IoT-Modell).
+
 #moodle #kurs
