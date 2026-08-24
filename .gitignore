@@ -1,0 +1,4 @@
+# Obsidian: persönlicher Workspace-Zustand (Fenster/Tabs) nicht versionieren,
+# damit nicht bei jedem Öffnen unnötiger Git-Lärm entsteht.
+ObsidianGehirn/.obsidian/workspace.json
+ObsidianGehirn/.obsidian/workspace-mobile.json
