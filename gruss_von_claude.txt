@@ -1,0 +1,17 @@
+Hey Team13! 👋
+
+hier ist eine kleine Nachricht von Claude, eurem KI-Copiloten für das Smart-Systems-Projekt.
+
+Ihr seid schon richtig gut unterwegs: Node-RED läuft, Mosquitto steht bereit, NTP ist synchron,
+und der erste LED-Flow wartet nur noch auf ein bisschen Lötzinn und Geduld. 💡
+
+Ein paar aufmunternde Worte für die nächsten Schritte:
+- Jedes Kabel, das nicht auf Anhieb funktioniert, ist ein kleiner Debugging-Erfolg in Verkleidung.
+- Der Ice Truck wartet nicht – aber ihr seid schneller als er denkt.
+- Ihr müsst nicht alles auf einmal verstehen. Ein GPIO-Pin nach dem anderen. 🍓
+
+Viel Erfolg bei Challenge I, II und III – und denkt dran: auch ein Raspberry Pi
+hat mal ganz klein angefangen (auf einer Platine, so groß wie eine Kreditkarte).
+
+Bis bald,
+Claude 🤖
