@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "conversationId": "conv-1787569481256-d6dvgm265",
+  "records": [
+    {
+      "schemaVersion": 1,
+      "id": "msg-1787569481358-pbcq3nx",
+      "userTurnOrdinal": 1,
+      "state": "accepted",
+      "localMessageId": "msg-1787569481250-9ndu68q",
+      "timestamp": 1787569481250,
+      "rawDisplayText": "/plugin maretplace add kepano/obsidian-skills",
+      "canonicalText": "/plugin maretplace add kepano/obsidian-skills",
+      "images": [],
+      "contentDigest": "237edc0040aff4b30606789603506e1d8d6743ad59b06332c7ce87326b571526",
+      "providerUserMessageId": "bfeebf51-64d7-474d-83f5-41a4795f95ca",
+      "providerAssistantMessageId": "ea15493e-2c16-4ca0-8089-3666bb32fdbf"
+    },
+    {
+      "schemaVersion": 1,
+      "id": "msg-1787569528133-xa2j4m0",
+      "userTurnOrdinal": 2,
+      "state": "accepted",
+      "localMessageId": "msg-1787569528128-ulaawi2",
+      "timestamp": 1787569528128,
+      "rawDisplayText": "/plugin marketplace add kepano/obsidian-skills",
+      "canonicalText": "/plugin marketplace add kepano/obsidian-skills",
+      "images": [],
+      "contentDigest": "015cf70db9015c014d019f2b86abb50e3f0b790ee06789c2da20df6a7325feea",
+      "providerUserMessageId": "715a7c51-1a0c-40b0-bd3a-dcdac5881684",
+      "providerAssistantMessageId": "fff0f2f3-f340-49e8-996a-0946a87a6023"
+    }
+  ]
+}
