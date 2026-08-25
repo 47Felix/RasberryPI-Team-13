@@ -15,5 +15,6 @@ tags: [todo, projekt]
 ## Erledigt ✅
 - ttyd-Web-Terminal läuft jetzt als systemd-Service, startet automatisch bei Boot/Absturz
 - Claude-Skills fürs Projekt geprüft, siehe [[Skills Setup]]
+- Neuer Bereich "Tagesplan" im Vault angelegt (Claude erstellt morgens beim Tagesstart eine kurze Standortbestimmung) → [[📅 Tagesplan - Übersicht]]
 
 #todo #projekt

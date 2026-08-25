@@ -34,6 +34,10 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Technischer Fahrplan]]
 - [[Offene Punkte]]
 
+## 📅 Tagesplan
+- [[📅 Tagesplan - Übersicht]]
+- [[Vorlage - Tagesplan]]
+
 ## 🧠 Brain Dump
 - [[🧠 Brain Dump - Übersicht]]
 
