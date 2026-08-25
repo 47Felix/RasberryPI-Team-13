@@ -18,8 +18,8 @@ Inhalt u.a.:
 - Aktoren & Sichtweise LED-Diagnostik
 - Erstes Wink-Programm
 
-> [!info] Ablage
-> Liegt bereits im Projektordner (`skibidiraspi/260821_Arduino_PräseX.pdf`).
+> [!warning] Ablage noch offen
+> Laut früherer Notiz sollte die Datei bereits unter `skibidiraspi/260821_Arduino_PräseX.pdf` im Projektordner liegen – dieser Pfad existiert aber nicht im Repository (Stand 25.08.2026, geprüft). Tatsächlicher Ablageort unklar, ggf. wie das Raspberry-Pi-PDF noch bei Anton lokal. → siehe [[Offene Punkte]]
 
 ## 2. "Raspberry Pi WS Präse"
 Dateiname: `Raspberry_Pi_WS.pdf`, 9 Seiten

@@ -34,7 +34,7 @@ Für `Agrimm123` analog mit dessen E-Mail und Key-ID.
 Falls ein neuer Chat committet und die Schlüssel nicht mehr im Sandbox-Environment vorhanden sind (Environment wird zurückgesetzt), müssen die GPG-Keys neu erzeugt werden – der **öffentliche** Teil ist dann aber neu und muss erneut bei GitHub hinterlegt werden (alter Public Key kann bei GitHub gelöscht werden). Die Key-IDs oben sind dann nicht mehr gültig.
 
 ## Verwandte Notizen
-- [[Zugangsdaten - Hinweis]]
+- [[⚠️ Zugangsdaten - Hinweis]]
 - [[Branch-Strategie]] – wann/wie gebrancht wird, bevor überhaupt committet wird
 
 #projekt #git #workflow
