@@ -12,16 +12,16 @@ Für beide bisherigen Commit-Autoren wurde ein GPG-Signing-Key erzeugt und im je
 
 | Account | E-Mail (muss exakt passen) | Key-ID |
 |---|---|---|
-| `47Felix` | `47Felix@users.noreply.github.com` | `9EFC3BC5E08A2481` |
-| `Agrimm123` | `Agrimm123@users.noreply.github.com` | `4245DD5E87E0692C` |
+| `47Felix` | `47Felix@users.noreply.github.com` | `9EFC3BC5E08A2481` (alt, evtl. nicht mehr im aktuellen Sandbox-Environment vorhanden) |
+| `agrimm123` | `agrimm123@users.noreply.github.com` (Kleinschreibung! GitHub-Konto heißt `agrimm123`, nicht `Agrimm123`) | `9DBC1242E0BA3244` (neu erzeugt am 25.08.2026, bei GitHub hinterlegt) |
 
-Commit-Befehl (Beispiel für 47Felix):
+Commit-Befehl (aktuell für agrimm123, Stand 25.08.2026):
 ```bash
-git -c user.name="47Felix" -c user.email="47Felix@users.noreply.github.com" \
-    -c user.signingkey="9EFC3BC5E08A2481" -c gpg.program=gpg \
+git -c user.name="Agrimm123" -c user.email="agrimm123@users.noreply.github.com" \
+    -c user.signingkey="9DBC1242E0BA3244" -c gpg.program=gpg \
     commit -S -m "Commit-Nachricht"
 ```
-Für `Agrimm123` analog mit dessen E-Mail und Key-ID.
+Für `47Felix` analog, sobald dessen Key in einem aktiven Environment neu erzeugt und bei GitHub hinterlegt wurde (siehe Abschnitt "Für künftige Chats" unten – der alte Key `9EFC3BC5E08A2481` ist vermutlich nicht mehr nutzbar, da Sandbox-Environments zurückgesetzt werden).
 
 > [!note] Voraussetzung
 > Autor-Name, Autor-E-Mail **und** die im Schlüssel hinterlegte E-Mail müssen exakt übereinstimmen, sonst zeigt GitHub trotz gültiger Signatur "Unverified" statt "Verified".
