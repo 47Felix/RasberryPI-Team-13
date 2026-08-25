@@ -6,19 +6,16 @@ tags: [moc, projekt]
 
 Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Diese Seite ist der Einstiegspunkt – von hier aus kommst du überall hin.
 
-> [!info] Primäre Wissensquelle
-> Seit 25.08.2026 ist **dieses Vault die primäre Quelle** für das Projekt – Claude liest hier zuerst nach (Einstieg: diese Seite) und trägt neue Erkenntnisse direkt in die passenden Notizen ein, **ohne vorher nachzufragen** (siehe [[Doku-Regeln]]). Ausnahme: Zugangsdaten stehen bewusst nicht hier, sondern nur in den Claude-Projekt-Anweisungen (siehe [[⚠️ Zugangsdaten - Hinweis]]). Stand hier: 25.08.2026.
+> [!info] Verhältnis zur zentralen Projekt-Datei
+> Die Datei `claude/smart-systems-lernfeld-uebersicht.md` (im Claude-Projekt hinterlegt) bleibt die **primäre, laufend von Claude gepflegte Quelle** – dort trägt Claude neue Erkenntnisse direkt ein. Dieses Vault ist die **Team-lesbare, verlinkte Aufbereitung** davon für Obsidian. Stand hier: 24.08.2026.
 
 ## 📌 Projekt
-- [[Willkommen Dogan Brk]]
 - [[Projektüberblick]]
 - [[Roter Faden - Ice Truck]]
 - [[Leistungsnachweise]]
 - [[Skills Setup]]
 - [[Branch-Strategie]]
 - [[Git Workflow]]
-- [[GitHub Labels]]
-- [[Doku-Regeln]]
 
 ## 🍓 Pi Setup (Team13-1)
 - [[Pi Zugriff]]
@@ -45,7 +42,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[🧠 Brain Dump - Übersicht]]
 
 ## 🔐 Sonstiges
-- [[⚠️ Zugangsdaten - Hinweis]]
+- [[Zugangsdaten - Hinweis]]
 
 ---
 #projekt #moc
