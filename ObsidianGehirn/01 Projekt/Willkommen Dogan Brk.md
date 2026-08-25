@@ -18,4 +18,7 @@ Wir arbeiten gemeinsam an unserem Pi-Projekt rund um den "Ice Truck"-Anwendungsf
 
 Bei Fragen einfach im Team melden – wir freuen uns auf die Zusammenarbeit! 🚀
 
+> [!note] Von Agrimm123
+> Freut mich, dass du dabei bist! Wenn du magst, schau einfach kurz bei [[Offene Punkte]] vorbei – da findest du direkt Aufgaben, bei denen du mit einsteigen kannst.
+
 #projekt #team
