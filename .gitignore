@@ -2,6 +2,10 @@
 # damit nicht bei jedem Öffnen unnötiger Git-Lärm entsteht.
 ObsidianGehirn/.obsidian/workspace.json
 ObsidianGehirn/.obsidian/workspace-mobile.json
+ObsidianGehirn/.obsidian/graph.json
+
+# Claudian: lokale Chat-/Conversation-Dateien - ändern sich staendig, nicht relevant fuers Repo
+ObsidianGehirn/.claudian/sessions/
 
 # Lokale Signing-Keys fuer signierte/verifizierte Commits (Claude) - NIEMALS committen!
 .claude-secrets/
