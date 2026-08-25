@@ -13,6 +13,7 @@ tags: [todo, projekt]
 - [ ] Raspberry-Pi-Workshop-PDF ("Raspberry_Pi_WS.pdf") aus dem Downloads-Ordner in den Projektordner verschieben → [[WS-Präsentationen]]
 - [ ] Arduino-Workshop-PDF ("260821_Arduino_PräseX.pdf") ist entgegen alter Notiz **nicht** im Repository auffindbar – tatsächlichen Ablageort klären und ins Repo legen → [[WS-Präsentationen]]
 - [ ] Bereich "Einen Pitch planen und durchführen" (4.9) in Moodle noch ohne Inhalte – später erneut prüfen
+- [ ] **Sicherheit (dringend):** Obsidian "Local REST API"-Plugin-Key war öffentlich im Repo committet – Anton muss den API-Key in Obsidian neu generieren (Plugin-Settings → Regenerate) → [[⚠️ Zugangsdaten - Hinweis]]
 
 ## Erledigt ✅
 - **Node-RED mit MQTT verknüpft (25.08.2026):** LED-Flow um Topic `team13-1/led/set` erweitert (mqtt-broker localhost:1883, Function-Node wandelt Payload in Boolean um), softwareseitig getestet via `mosquitto_pub` → [[Node-RED Flow - LED Test]], GitHub-Issue: [#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2) (closed)

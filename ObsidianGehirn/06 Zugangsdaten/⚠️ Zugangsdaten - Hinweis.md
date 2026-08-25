@@ -23,6 +23,9 @@ Ausschließlich in den **Projekt-Anweisungen des Claude-Projekts** (nicht in ein
 > [!tip] Empfehlung
 > Falls ihr die Zugangsdaten auch offline/lokal griffbereit haben wollt, nutzt einen Passwort-Manager oder eine lokale Datei außerhalb des Repos – **nicht** eine Datei, die versehentlich mitcommittet werden könnte.
 
+> [!danger] Vorfall (25.08.2026): Obsidian-Plugin-Konfiguration versehentlich committet
+> Die Datei `ObsidianGehirn/.obsidian/plugins/obsidian-local-rest-api/data.json` (API-Key + privater TLS-Schlüssel des "Local REST API"-Plugins) war im Repo eingecheckt. Da das Repo inzwischen öffentlich ist, war der Key damit einsehbar. Fix: Datei aus dem Git-Tracking entfernt und `ObsidianGehirn/.obsidian/plugins/*/data.json` generell in die `.gitignore` aufgenommen (steht weiterhin lokal, Plugin funktioniert unverändert weiter – nur nicht mehr versioniert). **Offen:** Anton sollte den API-Key in Obsidian neu generieren (Local REST API Plugin → Settings → Regenerate), siehe [[Offene Punkte]]. Lehre daraus: Plugin-Ordner unter `.obsidian/plugins/*/data.json` können generell Secrets enthalten – vor dem Committen von `.obsidian/`-Änderungen kurz gegenchecken.
+
 ## Verwandte Notizen
 - [[Pi Zugriff]]
 

@@ -9,3 +9,7 @@ ObsidianGehirn/.claudian/sessions/
 
 # Lokale Signing-Keys fuer signierte/verifizierte Commits (Claude) - NIEMALS committen!
 .claude-secrets/
+
+# Obsidian-Plugin-Konfigurationen koennen API-Keys/Zertifikate/private Schluessel
+# enthalten (z.B. obsidian-local-rest-api: apiKey + TLS privateKey) - NIEMALS committen!
+ObsidianGehirn/.obsidian/plugins/*/data.json
