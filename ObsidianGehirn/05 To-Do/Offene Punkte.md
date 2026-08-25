@@ -4,10 +4,10 @@ tags: [todo, projekt]
 
 # Offene Punkte / To-Do
 
-- [ ] **Hardware:** LED + Vorwiderstand (330–470 Ω) auf Breadboard bauen und an GPIO4/Pin7 + Ground anschließen, dann den bereits deployten Node-RED-Flow testen → [[Node-RED Flow - LED Test]]
+- [ ] **Hardware:** LED + Vorwiderstand (330–470 Ω) auf Breadboard bauen und an GPIO4/Pin7 + Ground anschließen, dann den bereits deployten Node-RED-Flow testen → [[Node-RED Flow - LED Test]], GitHub-Issue: [#1](https://github.com/47Felix/RasberryPI-Team-13/issues/1)
 - [ ] Git-Repository auf dem Pi klonen (`git clone https://github.com/47Felix/RasberryPI-Team-13.git`) → [[Technischer Fahrplan]] Punkt 5
-- [ ] **Node-RED mit MQTT verknüpfen (Kapitel D, heute Felix):** LED-Flow um MQTT-Topic erweitern → [[Kurs - Node-RED]], [[Kurs - MQTT]], siehe [[2026-08-25]] (Tagesplan)
-- [ ] **Arduino + Elegoo-Kit: Temperatur-/Feuchtigkeitssensor testen (heute Dogan):** Sensor aus dem Elegoo-Starterkit am Arduino aufbauen, über Arduino-IDE auslesen, Ergebnis in [[Dogan - Brain Dump]] festhalten, siehe [[2026-08-25]] (Tagesplan)
+- [ ] **Node-RED mit MQTT verknüpfen (Kapitel D, heute Felix):** LED-Flow um MQTT-Topic erweitern → [[Kurs - Node-RED]], [[Kurs - MQTT]], siehe [[2026-08-25]] (Tagesplan), GitHub-Issue: [#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2)
+- [ ] **Arduino + Elegoo-Kit: Temperatur-/Feuchtigkeitssensor testen (heute Dogan):** Sensor aus dem Elegoo-Starterkit am Arduino aufbauen, über Arduino-IDE auslesen, Ergebnis in [[Dogan - Brain Dump]] festhalten, siehe [[2026-08-25]] (Tagesplan), GitHub-Issue: [#3](https://github.com/47Felix/RasberryPI-Team-13/issues/3)
 - [ ] Später prüfen: Arduino-Sensordaten mit Pi/Node-RED zusammenführen (seriell oder MQTT)
 - [ ] Einschreibekennwort für "Signale und Bussysteme" (Kurs-ID 1574) bei der Lehrkraft erfragen (allgemeiner "#Abrakadabra!"-Schlüssel hat nicht funktioniert) → [[Challenge I - Ice Truck Problem]]
 - [ ] Einschreibekennwort für "Datenbankanbindung und ORM" (Kurs-ID 564) bei Bedarf erfragen → [[Challenge III - Ice Truck in Cloud]]
