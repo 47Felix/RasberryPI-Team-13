@@ -6,7 +6,6 @@ tags: [todo, projekt]
 
 - [ ] **Hardware:** LED + Vorwiderstand (330–470 Ω) auf Breadboard bauen und an GPIO4/Pin7 + Ground anschließen, dann den bereits deployten Node-RED-Flow testen → [[Node-RED Flow - LED Test]], GitHub-Issue: [#1](https://github.com/47Felix/RasberryPI-Team-13/issues/1)
 - [ ] Git-Repository auf dem Pi klonen (`git clone https://github.com/47Felix/RasberryPI-Team-13.git`) → [[Technischer Fahrplan]] Punkt 5
-- [ ] **Node-RED mit MQTT verknüpfen (Kapitel D, heute Felix):** LED-Flow um MQTT-Topic erweitern → [[Kurs - Node-RED]], [[Kurs - MQTT]], siehe [[2026-08-25]] (Tagesplan), GitHub-Issue: [#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2)
 - [ ] **Arduino + Elegoo-Kit: Temperatur-/Feuchtigkeitssensor testen (heute Dogan):** Sensor aus dem Elegoo-Starterkit am Arduino aufbauen, über Arduino-IDE auslesen, Ergebnis in [[Dogan - Brain Dump]] festhalten, siehe [[2026-08-25]] (Tagesplan), GitHub-Issue: [#3](https://github.com/47Felix/RasberryPI-Team-13/issues/3)
 - [ ] Später prüfen: Arduino-Sensordaten mit Pi/Node-RED zusammenführen (seriell oder MQTT)
 - [ ] Einschreibekennwort für "Signale und Bussysteme" (Kurs-ID 1574) bei der Lehrkraft erfragen (allgemeiner "#Abrakadabra!"-Schlüssel hat nicht funktioniert) → [[Challenge I - Ice Truck Problem]]
@@ -15,6 +14,7 @@ tags: [todo, projekt]
 - [ ] Bereich "Einen Pitch planen und durchführen" (4.9) in Moodle noch ohne Inhalte – später erneut prüfen
 
 ## Erledigt ✅
+- **Node-RED mit MQTT verknüpft (25.08.2026):** LED-Flow um Topic `team13-1/led/set` erweitert (mqtt-broker localhost:1883, Function-Node wandelt Payload in Boolean um), softwareseitig getestet via `mosquitto_pub` → [[Node-RED Flow - LED Test]], GitHub-Issue: [#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2) (closed)
 - ttyd-Web-Terminal läuft jetzt als systemd-Service, startet automatisch bei Boot/Absturz
 - Claude-Skills fürs Projekt geprüft, siehe [[Skills Setup]]
 - Neuer Bereich "Tagesplan" im Vault angelegt (Claude erstellt morgens beim Tagesstart eine kurze Standortbestimmung) → [[📅 Tagesplan - Übersicht]]
