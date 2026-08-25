@@ -10,6 +10,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 > Seit 25.08.2026 ist **dieses Vault die primäre Quelle** für das Projekt – Claude liest hier zuerst nach (Einstieg: diese Seite) und trägt neue Erkenntnisse direkt in die passenden Notizen ein, **ohne vorher nachzufragen** (siehe [[Doku-Regeln]]). Ausnahme: Zugangsdaten stehen bewusst nicht hier, sondern nur in den Claude-Projekt-Anweisungen (siehe [[⚠️ Zugangsdaten - Hinweis]]). Stand hier: 25.08.2026.
 
 ## 📌 Projekt
+- [[Willkommen Dogan Brk]]
 - [[Projektüberblick]]
 - [[Roter Faden - Ice Truck]]
 - [[Leistungsnachweise]]
