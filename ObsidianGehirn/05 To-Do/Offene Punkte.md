@@ -6,7 +6,9 @@ tags: [todo, projekt]
 
 - [ ] **Hardware:** LED + Vorwiderstand (330–470 Ω) auf Breadboard bauen und an GPIO4/Pin7 + Ground anschließen, dann den bereits deployten Node-RED-Flow testen → [[Node-RED Flow - LED Test]]
 - [ ] Git-Repository auf dem Pi klonen (`git clone https://github.com/47Felix/RasberryPI-Team-13.git`) → [[Technischer Fahrplan]] Punkt 5
-- [ ] Node-RED mit MQTT verknüpfen (Kapitel D) → [[Kurs - Node-RED]], [[Kurs - MQTT]]
+- [ ] **Node-RED mit MQTT verknüpfen (Kapitel D, heute Felix):** LED-Flow um MQTT-Topic erweitern → [[Kurs - Node-RED]], [[Kurs - MQTT]], siehe [[2026-08-25]] (Tagesplan)
+- [ ] **Arduino + Elegoo-Kit: Temperatur-/Feuchtigkeitssensor testen (heute Dogan):** Sensor aus dem Elegoo-Starterkit am Arduino aufbauen, über Arduino-IDE auslesen, Ergebnis in [[Dogan - Brain Dump]] festhalten, siehe [[2026-08-25]] (Tagesplan)
+- [ ] Später prüfen: Arduino-Sensordaten mit Pi/Node-RED zusammenführen (seriell oder MQTT)
 - [ ] Einschreibekennwort für "Signale und Bussysteme" (Kurs-ID 1574) bei der Lehrkraft erfragen (allgemeiner "#Abrakadabra!"-Schlüssel hat nicht funktioniert) → [[Challenge I - Ice Truck Problem]]
 - [ ] Einschreibekennwort für "Datenbankanbindung und ORM" (Kurs-ID 564) bei Bedarf erfragen → [[Challenge III - Ice Truck in Cloud]]
 - [ ] Raspberry-Pi-Workshop-PDF ("Raspberry_Pi_WS.pdf") aus dem Downloads-Ordner in den Projektordner verschieben → [[WS-Präsentationen]]
