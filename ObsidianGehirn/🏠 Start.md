@@ -7,7 +7,7 @@ tags: [moc, projekt]
 Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Diese Seite ist der Einstiegspunkt – von hier aus kommst du überall hin.
 
 > [!info] Primäre Wissensquelle
-> Seit 25.08.2026 ist **dieses Vault die primäre Quelle** für das Projekt – Claude liest hier zuerst nach (Einstieg: diese Seite) und trägt neue Erkenntnisse direkt in die passenden Notizen ein. Ausnahme: Zugangsdaten stehen bewusst nicht hier, sondern nur in den Claude-Projekt-Anweisungen (siehe [[⚠️ Zugangsdaten - Hinweis]]). Stand hier: 25.08.2026.
+> Seit 25.08.2026 ist **dieses Vault die primäre Quelle** für das Projekt – Claude liest hier zuerst nach (Einstieg: diese Seite) und trägt neue Erkenntnisse direkt in die passenden Notizen ein, **ohne vorher nachzufragen** (siehe [[Doku-Regeln]]). Ausnahme: Zugangsdaten stehen bewusst nicht hier, sondern nur in den Claude-Projekt-Anweisungen (siehe [[⚠️ Zugangsdaten - Hinweis]]). Stand hier: 25.08.2026.
 
 ## 📌 Projekt
 - [[Projektüberblick]]
@@ -16,6 +16,8 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Skills Setup]]
 - [[Branch-Strategie]]
 - [[Git Workflow]]
+- [[GitHub Labels]]
+- [[Doku-Regeln]]
 
 ## 🍓 Pi Setup (Team13-1)
 - [[Pi Zugriff]]
