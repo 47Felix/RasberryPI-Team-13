@@ -12,6 +12,7 @@ tags: [todo, projekt]
 - [ ] Einschreibekennwort für "Signale und Bussysteme" (Kurs-ID 1574) bei der Lehrkraft erfragen (allgemeiner "#Abrakadabra!"-Schlüssel hat nicht funktioniert) → [[Challenge I - Ice Truck Problem]]
 - [ ] Einschreibekennwort für "Datenbankanbindung und ORM" (Kurs-ID 564) bei Bedarf erfragen → [[Challenge III - Ice Truck in Cloud]]
 - [ ] Raspberry-Pi-Workshop-PDF ("Raspberry_Pi_WS.pdf") aus dem Downloads-Ordner in den Projektordner verschieben → [[WS-Präsentationen]]
+- [ ] Arduino-Workshop-PDF ("260821_Arduino_PräseX.pdf") ist entgegen alter Notiz **nicht** im Repository auffindbar – tatsächlichen Ablageort klären und ins Repo legen → [[WS-Präsentationen]]
 - [ ] Bereich "Einen Pitch planen und durchführen" (4.9) in Moodle noch ohne Inhalte – später erneut prüfen
 
 ## Erledigt ✅

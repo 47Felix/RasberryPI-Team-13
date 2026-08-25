@@ -33,7 +33,7 @@ Sollte `active` / `enabled` zeigen.
 > Wenn ein Chat den ttyd-Service neu konfiguriert/neu startet (`systemctl restart ttyd` o.ä.), reißt kurzzeitig die eigene Verbindung ab (chicken-and-egg-Problem – man sägt sich selbst den Ast ab). Meist kein Problem: Service kommt sofort wieder hoch, kurz warten, neuen Tab öffnen und `http://team13-1.local:7681` neu laden. Falls nicht: Anton kann per SSH fixen (`sudo systemctl restart ttyd`, ggf. `journalctl -u ttyd -n 30`).
 
 ## Zugangsdaten
-Siehe [[Zugangsdaten - Hinweis]] – aus Sicherheitsgründen nicht hier im Vault hinterlegt.
+Siehe [[⚠️ Zugangsdaten - Hinweis]] – aus Sicherheitsgründen nicht hier im Vault hinterlegt.
 
 ## Verwandte Notizen
 - [[Installierte Services]]
