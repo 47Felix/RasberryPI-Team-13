@@ -9,6 +9,8 @@ tags: [projekt, git, workflow]
 
 > [!important] Verbindliche Regel (seit 25.08.2026): Merge in `main` nur manuell durch Anton/Felix
 > **Claude darf auf Nebenbranches alles machen** – branchen, committen, pushen, Branches auch mehrfach überschreiben/force-pushen. Das **Mergen eines Branches nach `main` ist aber ausschließlich Anton/Felix vorbehalten** und wird stets manuell gemacht (per Pull-Request-Merge-Button auf GitHub oder manuell lokal). Claude merged **niemals** selbst nach `main` – auch nicht bei kleinen/"trivialen" Änderungen, auch nicht per `git merge --no-ff` lokal, auch nicht wenn explizit nach einem schnellen Merge gefragt wird, ohne dass Anton/Felix das aktiv bestätigt haben. Push auf `main` (egal ob direkt oder als Ergebnis eines Merges) macht Claude nicht.
+>
+> **Ausnahme:** Nur wenn Anton oder Felix in der jeweiligen Chat-Nachricht **ausdrücklich und schriftlich** anordnet, direkt auf `main` zu pushen (z.B. "push das jetzt direkt auf main", "diesmal ausnahmsweise direkt auf main"), darf Claude das tun. Ein vages "ist schon ok" oder gar keine Aussage dazu reicht **nicht** – ohne diese ausdrückliche schriftliche Anweisung gilt immer der normale Branch+PR-Weg.
 
 ## Warum überhaupt Branches, bei nur 2 Leuten + Claude?
 - **Saubere Historie:** Man sieht auf einen Blick, ob ein Commit eine Wissens-Änderung (Vault) oder eine Code-Änderung (Pi/Node-RED/Skripte) war – ohne jeden Commit einzeln lesen zu müssen.
@@ -64,6 +66,7 @@ git push origin --delete gehirn/thema-hier
 - **Immer Branch:** neue Notizen, inhaltliche Änderungen am Vault, jeglicher Code (Node-RED-Exports, Skripte), Änderungen an mehreren Dateien gleichzeitig.
 - **Auf Branches darf Claude frei arbeiten:** committen, pushen, Branch überschreiben/force-pushen, mehrere Commits – alles erlaubt, solange es nicht `main` betrifft.
 - **Merge nach `main` macht Claude nie selbst** – weder lokal (`git merge`, `git checkout main && git merge ...`) noch über GitHub (z.B. `gh pr merge`). Claude öffnet höchstens den PR und weist darauf hin, dass er noch gemerged werden muss.
+- **Ausnahme (direkt auf `main` pushen):** nur auf ausdrückliche, schriftliche Anweisung von Anton oder Felix in der aktuellen Nachricht (siehe Kasten oben). Ohne diese explizite Anweisung nie direkt auf `main`.
 - Branch-Namen wie oben wählen – passt die Änderung zu keinem der vier Typen, lieber kurz nachdenken statt einen fünften Typ zu erfinden (Konsistenz > Vollständigkeit).
 
 ## Verwandte Notizen
