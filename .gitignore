@@ -2,3 +2,6 @@
 # damit nicht bei jedem Öffnen unnötiger Git-Lärm entsteht.
 ObsidianGehirn/.obsidian/workspace.json
 ObsidianGehirn/.obsidian/workspace-mobile.json
+
+# Lokale Signing-Keys fuer signierte/verifizierte Commits (Claude) - NIEMALS committen!
+.claude-secrets/
