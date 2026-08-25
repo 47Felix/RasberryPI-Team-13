@@ -10,6 +10,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 > Die Datei `claude/smart-systems-lernfeld-uebersicht.md` (im Claude-Projekt hinterlegt) bleibt die **primäre, laufend von Claude gepflegte Quelle** – dort trägt Claude neue Erkenntnisse direkt ein. Dieses Vault ist die **Team-lesbare, verlinkte Aufbereitung** davon für Obsidian. Stand hier: 24.08.2026.
 
 ## 📌 Projekt
+- [[Willkommen Dogan Brk]]
 - [[Projektüberblick]]
 - [[Roter Faden - Ice Truck]]
 - [[Leistungsnachweise]]
