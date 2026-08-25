@@ -52,6 +52,8 @@ git push -u origin gehirn/thema-hier
 #    Das eigentliche Mergen nach main macht danach Anton/Felix manuell auf GitHub.
 
 # 5. Erst NACHDEM Anton/Felix gemerged haben, lokal aufräumen:
+#    Der Branch wird standardmaessig automatisch geloescht (lokal + remote),
+#    ausser es wurde ausdruecklich gefordert, ihn zu behalten.
 git checkout main
 git pull
 git branch -d gehirn/thema-hier
@@ -67,6 +69,7 @@ git push origin --delete gehirn/thema-hier
 - **Auf Branches darf Claude frei arbeiten:** committen, pushen, Branch überschreiben/force-pushen, mehrere Commits – alles erlaubt, solange es nicht `main` betrifft.
 - **Merge nach `main` macht Claude nie selbst** – weder lokal (`git merge`, `git checkout main && git merge ...`) noch über GitHub (z.B. `gh pr merge`). Claude öffnet höchstens den PR und weist darauf hin, dass er noch gemerged werden muss.
 - **Ausnahme (direkt auf `main` pushen):** nur auf ausdrückliche, schriftliche Anweisung von Anton oder Felix in der aktuellen Nachricht (siehe Kasten oben). Ohne diese explizite Anweisung nie direkt auf `main`.
+- **Nach dem Merge:** Sobald Anton/Felix den PR gemerged haben, löscht Claude den Branch standardmäßig automatisch (lokal `git branch -d` + remote `git push origin --delete`) – ohne extra nachzufragen. Nur wenn ausdrücklich gewünscht wird, den Branch zu behalten, bleibt er stehen.
 - Branch-Namen wie oben wählen – passt die Änderung zu keinem der vier Typen, lieber kurz nachdenken statt einen fünften Typ zu erfinden (Konsistenz > Vollständigkeit).
 
 ## Verwandte Notizen
