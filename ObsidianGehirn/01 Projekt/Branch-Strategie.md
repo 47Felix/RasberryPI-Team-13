@@ -7,6 +7,9 @@ tags: [projekt, git, workflow]
 > [!important] Verbindliche Regel (seit 24.08.2026)
 > **`main` bleibt immer stabil.** Änderungen laufen über kurzlebige Branches mit einheitlichem Namensschema, nicht direkt auf `main` (Ausnahme: winzige Tippfehler-Fixes in einer bestehenden Notiz).
 
+> [!important] Verbindliche Regel (seit 25.08.2026): Merge in `main` nur manuell durch Anton/Felix
+> **Claude darf auf Nebenbranches alles machen** – branchen, committen, pushen, Branches auch mehrfach überschreiben/force-pushen. Das **Mergen eines Branches nach `main` ist aber ausschließlich Anton/Felix vorbehalten** und wird stets manuell gemacht (per Pull-Request-Merge-Button auf GitHub oder manuell lokal). Claude merged **niemals** selbst nach `main` – auch nicht bei kleinen/"trivialen" Änderungen, auch nicht per `git merge --no-ff` lokal, auch nicht wenn explizit nach einem schnellen Merge gefragt wird, ohne dass Anton/Felix das aktiv bestätigt haben. Push auf `main` (egal ob direkt oder als Ergebnis eines Merges) macht Claude nicht.
+
 ## Warum überhaupt Branches, bei nur 2 Leuten + Claude?
 - **Saubere Historie:** Man sieht auf einen Blick, ob ein Commit eine Wissens-Änderung (Vault) oder eine Code-Änderung (Pi/Node-RED/Skripte) war – ohne jeden Commit einzeln lesen zu müssen.
 - **main bleibt immer funktionsfähig:** Falls mal ein Node-RED-Export kaputt ist oder eine Notiz halbfertig, landet das nicht sofort auf `main`.
@@ -42,8 +45,11 @@ git commit -S -m "Kurze, klare Commit-Nachricht"
 # 3. Branch pushen
 git push -u origin gehirn/thema-hier
 
-# 4. Auf GitHub in main mergen (Pull Request erstellen & mergen)
-#    Danach lokal aufräumen:
+# 4. Claude erstellt hier höchstens den Pull Request (z.B. via `gh pr create`)
+#    und meldet: "Branch gehirn/thema-hier ist gepusht/PR ist offen, bitte mergen."
+#    Das eigentliche Mergen nach main macht danach Anton/Felix manuell auf GitHub.
+
+# 5. Erst NACHDEM Anton/Felix gemerged haben, lokal aufräumen:
 git checkout main
 git pull
 git branch -d gehirn/thema-hier
@@ -51,11 +57,13 @@ git push origin --delete gehirn/thema-hier
 ```
 
 > [!note] Merge-Weg
-> Mergen am liebsten über einen **Pull Request auf GitHub** (Web-UI) statt lokal – so bleibt für Anton/Felix sichtbar, was reinkommt, auch ohne dass sie die Sandbox-Historie von Claude sehen. Bei ganz kleinen, unkritischen Vault-Änderungen reicht auch ein lokaler `git merge --no-ff` direkt auf `main`.
+> Mergen ausschließlich über einen **Pull Request auf GitHub** (Web-UI), den Anton oder Felix selbst mit dem Merge-Button bestätigen. So bleibt für sie sichtbar, was reinkommt, auch ohne die Sandbox-Historie von Claude zu sehen. Es gibt **keine Ausnahme mehr** für kleine/unkritische Änderungen – auch die landen erst nach manueller Freigabe auf `main`.
 
 ## Für Claude: wann direkt auf main, wann Branch?
-- **Direkt auf `main`:** nur bei trivialen Korrekturen (Tippfehler, kaputter Link) in einer bereits bestehenden Notiz.
+- **Nie direkt auf `main` committen oder pushen** – auch nicht bei Tippfehlern oder kaputten Links. Selbst triviale Korrekturen laufen über einen `fix/`-Branch + PR.
 - **Immer Branch:** neue Notizen, inhaltliche Änderungen am Vault, jeglicher Code (Node-RED-Exports, Skripte), Änderungen an mehreren Dateien gleichzeitig.
+- **Auf Branches darf Claude frei arbeiten:** committen, pushen, Branch überschreiben/force-pushen, mehrere Commits – alles erlaubt, solange es nicht `main` betrifft.
+- **Merge nach `main` macht Claude nie selbst** – weder lokal (`git merge`, `git checkout main && git merge ...`) noch über GitHub (z.B. `gh pr merge`). Claude öffnet höchstens den PR und weist darauf hin, dass er noch gemerged werden muss.
 - Branch-Namen wie oben wählen – passt die Änderung zu keinem der vier Typen, lieber kurz nachdenken statt einen fünften Typ zu erfinden (Konsistenz > Vollständigkeit).
 
 ## Verwandte Notizen
