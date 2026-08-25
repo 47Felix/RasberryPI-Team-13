@@ -12,7 +12,7 @@ Node-RED = grafisches Entwicklungstool, um Kommunikationsschnittstellen (WLAN, M
 - **A** – Was ist Node-RED? (Einstieg)
 - **B** – Installation auf dem Raspberry Pi ✅ erledigt, siehe [[Installierte Services]]
 - **C** – Erste Schritte, Inject/Debug-Knoten
-- **D** – Node-RED und MQTT ⏳ offen, siehe [[Kurs - MQTT]] und [[Offene Punkte]]
+- **D** – Node-RED und MQTT ✅ praktisch umgesetzt im LED-Flow (25.08.2026), siehe [[Kurs - MQTT]] und [[Node-RED Flow - LED Test]]
 - **E** – Raspi GPIOs ✅ genutzt für [[Node-RED Flow - LED Test]]
 - **F** – HTTP Request
 - **G** – Datenformat JSON (laut Kurs "in Arbeit")

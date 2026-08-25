@@ -12,7 +12,7 @@ Die tatsächlichen Zugangsdaten (GitHub Access Token, Pi-Login, WLAN-Passwort, M
 - Falls das Repo jemals von privat auf öffentlich umgestellt oder mit Dritten geteilt wird, wären sonst alle Zugangsdaten sofort exponiert.
 
 ## Wo stehen die echten Zugangsdaten?
-In der zentralen Projekt-Datei im Claude-Projekt (`claude/smart-systems-lernfeld-uebersicht.md` bzw. den Projekt-Anweisungen) – dort pflegt Claude sie direkt, außerhalb der Versionskontrolle.
+Ausschließlich in den **Projekt-Anweisungen des Claude-Projekts** (nicht in einer eigenen Datei) – dort pflegt Claude sie direkt, außerhalb der Versionskontrolle. Dieses Vault selbst ist zwar die primäre Wissensquelle fürs Projekt (siehe [[🏠 Start]]), aber bewusst ohne Zugangsdaten.
 
 ## Betroffen sind u.a.
 - GitHub Access Token (Repo: RasberryPI-Team-13)
