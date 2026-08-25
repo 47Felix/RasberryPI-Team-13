@@ -4,8 +4,17 @@ tags: [projekt, git, workflow]
 
 # Git Workflow – Regeln für Commits
 
-> [!important] Verbindliche Regel (seit 24.08.2026)
-> **Alle Commits sollen signiert sein und bei GitHub als "Verified" angezeigt werden.** Das gilt für jeden Chat/jede Session, die Änderungen ins Repository committet.
+> [!important] Verbindliche Regel (aktualisiert 25.08.2026, nach einem Vorfall)
+> **Signieren ist "nice to have", aber NIEMALS auf Verdacht.** Ein Commit wird nur mit `-S` signiert, wenn VORHER zweifelsfrei geprüft wurde, dass der passende, bei GitHub hinterlegte Key im aktuellen Environment importiert ist (siehe Checkliste unten). Ist das nicht der Fall: **ganz normal unsigniert committen, ohne `-S`.** Ein unsignierter Commit zeigt bei GitHub gar kein Badge (unauffällig) – ein signierter Commit mit falschem/unbekanntem Key zeigt dagegen ein rotes **"Unverified"**-Badge, was schlimmer aussieht als kein Badge. Anton hat das ausdrücklich so gewünscht: "lieber nichts als Unverified".
+>
+> **Vorfall (25.08.2026):** Ein Chat hat mit `-S` committet, aber mit falscher Identität (`antongrimm@outlook.de` statt `agrimm123@users.noreply.github.com`, bzw. ohne den passenden Key importiert zu haben) → Commit `26fafac` zeigt bei GitHub "Unverified" (`reason: unknown_key`). Das war der Auslöser für diese Regeländerung.
+
+## ⚠️ Checkliste VOR jedem `-S`-Commit
+1. Ist ein Mac-Ordner mit `.claude-secrets/` verbunden/erreichbar? Wenn nein → **unsigniert committen, fertig.**
+2. `gpg --batch --import "<Repo-Ordner>/.claude-secrets/<name>-signing-key-private.asc"` ausführen.
+3. `gpg --list-secret-keys --keyid-format LONG <exakte-email>@users.noreply.github.com` ausführen und **die Key-ID mit der Tabelle unten exakt vergleichen**. Passt sie nicht → unsigniert committen.
+4. Erst wenn Key-ID UND E-Mail exakt passen: mit `-S` und genau dieser Key-ID + E-Mail committen.
+5. Nach dem Push zur Sicherheit kurz per GitHub-API prüfen (`.commit.verification.verified`), ob's wirklich "Verified" ist – nicht blind vertrauen.
 
 ## Wie das umgesetzt wird
 Für beide bisherigen Commit-Autoren wurde ein GPG-Signing-Key erzeugt und im jeweiligen GitHub-Account unter **Settings → SSH and GPG keys** als *Signing Key* hinterlegt:
