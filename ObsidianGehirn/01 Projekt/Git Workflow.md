@@ -30,8 +30,26 @@ Für `47Felix` analog, sobald dessen Key in einem aktiven Environment neu erzeug
 - Nachvollziehbarkeit: sichtbar, dass ein Commit tatsächlich von einem autorisierten Teammitglied (bzw. in dessen Auftrag) stammt.
 - Best Practice bei Team-Repos, besonders wenn Claude im Auftrag von Teammitgliedern committet.
 
-## Für künftige Chats
-Falls ein neuer Chat committet und die Schlüssel nicht mehr im Sandbox-Environment vorhanden sind (Environment wird zurückgesetzt), müssen die GPG-Keys neu erzeugt werden – der **öffentliche** Teil ist dann aber neu und muss erneut bei GitHub hinterlegt werden (alter Public Key kann bei GitHub gelöscht werden). Die Key-IDs oben sind dann nicht mehr gültig.
+## Für künftige Chats (seit 25.08.2026: Key ist jetzt persistent!)
+Der private Signing-Key für `agrimm123` liegt **nicht mehr nur in der Sandbox**, sondern zusätzlich dauerhaft auf Antons Mac, direkt neben dem Repo-Ordner (also außerhalb des Git-Repos, per `.gitignore`-Eintrag `.claude-secrets/` ausgeschlossen – wird NIEMALS committet):
+
+```
+<Repo-Ordner>/.claude-secrets/agrimm123-signing-key-private.asc
+<Repo-Ordner>/.claude-secrets/agrimm123-signing-key-public.asc
+<Repo-Ordner>/.claude-secrets/README.md   ← Anleitung zum Importieren
+```
+
+Ein neuer Chat mit Zugriff auf diesen Mac-Ordner sollte also **zuerst dort nachsehen und den Key importieren**, statt einen neuen zu erzeugen:
+```bash
+export GNUPGHOME="$HOME/.gnupg"   # oder eigenes Verzeichnis in der aktuellen Sandbox
+gpg --batch --import "<Repo-Ordner>/.claude-secrets/agrimm123-signing-key-private.asc"
+```
+Danach direkt mit Key-ID `9DBC1242E0BA3244` wie oben committen – kein erneutes Hinterlegen bei GitHub nötig, das ist schon erledigt.
+
+Nur falls dieser Mac-Ordner nicht erreichbar ist (Session ohne Device-Bridge, oder Anton hat den Ordner nicht verbunden) oder der Key bei GitHub entfernt wurde, muss ein neuer Key erzeugt und der öffentliche Teil erneut unter github.com/settings/gpg/new eingetragen werden (das Formular kann Claude selbst nicht ausfüllen – Sicherheitsregel, kein Bug – das muss Anton/Felix manuell im Browser machen, Claude liefert nur Titel + Key-Text zum Reinkopieren).
+
+> [!warning] Sicherheitshinweis
+> Der private Schlüssel liegt unverschlüsselt (kein Passwort) auf der Festplatte. Das ist ein bewusster Kompromiss für ein privates Schulprojekt-Repo – wer Zugriff auf diesen Mac-Ordner hat, könnte damit Commits signieren, die als "verifiziert von agrimm123" erscheinen. Zum tatsächlichen Pushen ins Repo braucht man zusätzlich weiterhin das GitHub-Token (siehe Projekt-Anweisungen), der Signing-Key allein reicht dafür nicht.
 
 ## Verwandte Notizen
 - [[⚠️ Zugangsdaten - Hinweis]]
