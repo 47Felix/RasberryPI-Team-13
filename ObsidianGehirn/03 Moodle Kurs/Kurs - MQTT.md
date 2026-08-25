@@ -15,6 +15,6 @@ IoT wird immer populärer, viele Geräte kommunizieren miteinander (Sensordaten 
 - Eigene IoT-Projekte planen/durchführen
 
 ## Bezug zum eigenen Projekt
-Mosquitto-Broker läuft bereits auf dem Pi (siehe [[Installierte Services]]), Verknüpfung mit Node-RED (Kapitel D, siehe [[Kurs - Node-RED]]) noch offen – relevant vor allem für [[Challenge II - Ice Truck Extension]] und [[Challenge III - Ice Truck in Cloud]].
+Mosquitto-Broker läuft bereits auf dem Pi (siehe [[Installierte Services]]) und ist seit 25.08.2026 mit Node-RED verknüpft (Kapitel D, siehe [[Kurs - Node-RED]] und [[Node-RED Flow - LED Test]]) – Topic `team13-1/led/set` steuert die LED. Relevant vor allem für [[Challenge II - Ice Truck Extension]] und [[Challenge III - Ice Truck in Cloud]].
 
 #moodle #mqtt
