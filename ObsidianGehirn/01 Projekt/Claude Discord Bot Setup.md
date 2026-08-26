@@ -5,7 +5,7 @@ tags: [projekt, discord, claude-code, infrastruktur]
 # Claude Discord Bot Setup
 
 > [!info] Stand
-> 26.08.2026 – Grundgerüst gebaut und getestet (Nachrichten werden beantwortet, Test-Branch/Commit über den Bot verifiziert). Server-Design per Discord-API vorbereitet (Referenzdatei + Setup-Schritte), aber noch nicht selbst getestet. Noch nicht alle Teammitglieder registriert, systemd-Dauerbetrieb ggf. noch zu bestätigen (siehe [[Offene Punkte]]).
+> 26.08.2026 – Grundgerüst gebaut und getestet (Nachrichten werden beantwortet, Test-Branch/Commit über den Bot verifiziert). Server-Design per Discord-API vorbereitet (Referenzdatei + Setup-Schritte), aber noch nicht selbst getestet. Direkter VM-Zugriff für Claude per SSH geprüft und verworfen (Netzwerk-Sandbox lässt kein SSH zu) – bleibt beim Copy-Paste-Workflow. Noch nicht alle Teammitglieder registriert, systemd-Dauerbetrieb ggf. noch zu bestätigen (siehe [[Offene Punkte]]).
 
 ## Ziel
 
@@ -90,6 +90,14 @@ Damit der Bot nicht bei jedem `Strg+C` oder Terminal-Schließen stirbt, läuft e
 - Der `CLAUDE_CONFIG_DIR`-Ordnername ist frei wählbar – muss **nicht** mit dem Discord-Usernamen oder Chatnamen übereinstimmen, nur exakt mit dem Argument bei `!register` matchen.
 - Discord-Threads haben eigene Channel-IDs, unabhängig vom übergeordneten Kanal – ohne den `parent_id`-Check reagiert der Bot dort nicht.
 - Der Bot-Prozess stirbt bei `Strg+C` oder geschlossenem Terminal → für Dauerbetrieb systemd nutzen.
+
+## Direkter VM-Zugriff für Claude (Cowork-Session) – geprüft, verworfen
+
+Versucht: Die Cowork-Session (diese Chat-Umgebung, getrennt von der Discord-Bot-VM) sollte sich direkt per SSH auf die Azure-VM verbinden können, um nicht mehr auf Copy-Paste zwischen Chat und Terminal angewiesen zu sein.
+
+**Ergebnis: nicht möglich.** Sowohl die Cloud-Sandbox der Session als auch die Geräte-Bridge zum verbundenen Mac laufen mit einem restriktiven Netzwerk-Allowlist (nur bestimmte Web-Domains erlaubt), das rohes SSH (Port 22) zu beliebigen Servern grundsätzlich blockiert – unabhängig von der Azure-Firewall/NSG-Konfiguration.
+
+Alternative geprüft: Web-Terminal (`ttyd` + `Caddy` + kostenlose nip.io-Domain für automatisches HTTPS-Zertifikat) auf der VM einrichten, das im Browser erreichbar wäre. **Bewusst nicht umgesetzt** – Team-Entscheidung (26.08.2026): Der Aufwand (öffentlich erreichbares Terminal mit Passwortschutz + Absicherung) lohnt sich für die Häufigkeit der VM-Zugriffe nicht. Es bleibt beim bestehenden Workflow: Befehle werden im Chat vorgeschlagen, ein Teammitglied führt sie per SSH auf der VM aus und gibt die Ausgabe zurück.
 
 ## Offene Punkte
 Siehe [[Offene Punkte]] – u.a. weitere Teammitglieder registrieren, Discord-Bot-Token rotieren, Entscheidung Session-pro-Thread vs. Session-pro-User, Server-Design-Feature erstmals testen.
