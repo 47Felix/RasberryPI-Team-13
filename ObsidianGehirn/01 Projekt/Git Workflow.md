@@ -4,6 +4,17 @@ tags: [projekt, git, workflow]
 
 # Git Workflow – Regeln für Commits
 
+> [!important] `main` ist seit 26.08.2026 geschützt – kein direkter Push mehr möglich
+> GitHub-Branch-Protection auf `main` ist aktiv: **Pull Request erforderlich** (auch für Admins/den Bot-Token, `enforce_admins: true`), kein Force-Push, kein Löschen des Branches. `required_approving_review_count` ist `0` (keine Freigabe durch eine zweite Person nötig, aber es muss trotzdem ein PR sein, der gemerged wird – kein `git push origin main` mehr direkt).
+>
+> **Neuer Ablauf statt direktem Push auf main:**
+> 1. Feature-/Fix-Branch erstellen (siehe [[Branch-Strategie]]), dort committen + pushen.
+> 2. PR gegen `main` erstellen (per `gh pr create`, falls verfügbar, sonst per GitHub-API `POST /repos/{owner}/{repo}/pulls`).
+> 3. PR mergen (per `gh pr merge` oder API `PUT /repos/{owner}/{repo}/pulls/{number}/merge`) – da keine Freigabe nötig ist, kann das im gleichen Zug passieren, kein Warten auf ein Teammitglied nötig.
+> 4. Branch danach löschen (aufräumen).
+>
+> Das gilt auch für die "ohne Rückfrage direkt pushen"-Regel unten – die bezieht sich jetzt auf *ob* dokumentiert wird, nicht mehr auf *direkten* Push auf main; der Weg ist ab jetzt immer Branch → PR → Merge.
+
 > [!important] Verbindliche Regel (aktualisiert 25.08.2026, nach einem Vorfall – bitte GENAU befolgen)
 > **Signieren ist "nice to have", aber NIEMALS auf Verdacht.** Ein Commit wird nur mit `-S` signiert, wenn VORHER zweifelsfrei geprüft wurde, dass der passende, bei GitHub hinterlegte Key im aktuellen Environment importiert ist (siehe Checkliste unten). Ist das nicht der Fall: **ganz normal unsigniert committen, ohne `-S`.** Ein unsignierter Commit zeigt bei GitHub gar kein Badge (unauffällig) – ein signierter Commit mit falschem/unbekanntem Key zeigt dagegen ein rotes **"Unverified"**-Badge, was schlimmer aussieht als kein Badge. Anton hat das ausdrücklich so gewünscht: "es soll alles bitte verified oder gar nicht verified sein" – niemals das rote "Unverified".
 >

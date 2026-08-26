@@ -29,13 +29,13 @@ tags: [projekt, discord, api]
 | ClaudeVM (Bot, managed) | `1542102453858861118` | Administrator (`8`) |
 
 ### Kategorien/Kanäle (bereits vorhanden)
-- Kategorie `🧪 ICE TRUCK PROJEKT` (id `1542105073344057346`) enthält bereits:
+- Kategorie `🧊 ICE TRUCK PROJEKT` (id `1542105073344057346`) enthält bereits:
   - `🔊 Allgemein` (Voice, id `1493313314984562873`)
   - `pi-projekt` (Text, id `1542105092596174878`)
 - Kategorie `📖 INFO` (id `1493313314984562870`), Kategorie `🤖 CLAUDE` (id `1542106258788847682`)
 
 > [!tip] Wenn jemand "erstelle Rollen X/Y/Z + Kategorie 'PROJEKT' mit Kanälen A/B" verlangt
-> Erst GET auf `/guilds/{id}/roles` und `/guilds/{id}/channels` – bei uns existiert das alles schon (nur die Kategorie heißt `🧪 ICE TRUCK PROJEKT`, nicht wörtlich `PROJEKT`). Nicht blind neu anlegen/duplizieren, sondern mit dem Team abgleichen, ob umbenennen statt neu erstellen gewollt ist.
+> Erst GET auf `/guilds/{id}/roles` und `/guilds/{id}/channels` – bei uns existiert das alles schon (nur die Kategorie heißt `🧊 ICE TRUCK PROJEKT`, nicht wörtlich `PROJEKT`). Nicht blind neu anlegen/duplizieren, sondern mit dem Team abgleichen, ob umbenennen statt neu erstellen gewollt ist.
 
 ## Server-Icon
 Am 26.08.2026 per Nutzeranfrage geändert (Bild von einer vom Nutzer angegebenen URL, per `curl -L` geladen, base64-kodiert, `PATCH /guilds/{id}` mit `{"icon": "data:image/jpeg;base64,..."}`). Base64-Payload **in eine Datei schreiben und mit `--data @datei` senden**, nicht als Inline-Argument – zu lange Strings sprengen `ARG_MAX` (`Argument list too long`).
