@@ -5,7 +5,7 @@ tags: [projekt, discord, claude-code, infrastruktur]
 # Claude Discord Bot Setup
 
 > [!info] Stand
-> 26.08.2026 – Grundgerüst gebaut und getestet (Nachrichten werden beantwortet, Test-Branch/Commit über den Bot verifiziert). Server-Design per Discord-API getestet (siehe [[Discord Verwaltung]]). Direkter VM-Zugriff für Claude per SSH geprüft und verworfen (Netzwerk-Sandbox lässt kein SSH zu) – bleibt beim Copy-Paste-Workflow. Zusätzlich läuft seit heute ein täglicher Vault-Sync-Cronjob (siehe Abschnitt unten). Noch nicht alle Teammitglieder registriert, systemd-Dauerbetrieb ggf. noch zu bestätigen (siehe [[Offene Punkte]]).
+> 26.08.2026 – Grundgerüst gebaut und getestet (Nachrichten werden beantwortet, Test-Branch/Commit über den Bot verifiziert). Server-Design per Discord-API getestet (siehe [[Discord Verwaltung]]). Direkter VM-Zugriff für Claude per SSH geprüft und verworfen (Netzwerk-Sandbox lässt kein SSH zu) – bleibt beim Copy-Paste-Workflow. Täglicher Vault-Sync-Cronjob läuft (siehe Abschnitt unten). Seit heute Abend: jede Session (User + Vault-Sync) arbeitet in einer eigenen Git-Worktree statt einem geteilten Verzeichnis (siehe "Git-Worktree-Isolation" unten – behebt eine live aufgetretene Race Condition). Noch nicht alle Teammitglieder registriert, siehe [[Offene Punkte]].
 
 ## Ziel
 
@@ -22,16 +22,33 @@ Discord-User C ──┘
    claude (User A)  claude (User B)  claude (User C)
    CLAUDE_CONFIG_DIR= CLAUDE_CONFIG_DIR= CLAUDE_CONFIG_DIR=
    ~/sessions/userA/  ~/sessions/userB/  ~/sessions/userC/
+   cwd: eigene Git-Worktree je Session, siehe "Git-Worktree-Isolation" unten
 ```
 
-Alle Prozesse arbeiten auf demselben geklonten Repo (`~/RasberryPI-Team-13` auf der VM), sehen also dieselbe Code-/Vault-Basis.
+Alle Worktrees teilen sich dieselbe Git-Objekt-Datenbank/Historie (ein Clone als Basis unter `~/RasberryPI-Team-13`), haben aber **unabhängige Arbeitsverzeichnisse und je eigenes HEAD** – siehe unten, warum das wichtig ist.
+
+## Git-Worktree-Isolation (seit 26.08.2026, Incident-Fix)
+
+> [!warning] Was passiert war
+> Ursprünglich liefen ALLE Sessions (jeder registrierte User + der Vault-Sync-Cronjob) im selben geklonten Repo-Verzeichnis `~/RasberryPI-Team-13`. Am 26.08.2026 live beobachtet: Eine Session hat mitten in der Arbeit einer anderen den Branch weggeschaltet (`git checkout` einer Session überschreibt den Checkout aller anderen, die dasselbe Verzeichnis nutzen), und uncommittete Dateien einer Session (u.a. ein Arduino-Sketch-Entwurf, der Tresor-Pin-Plan) tauchten in einer anderen Session als "fremde" untracked Files auf und wären beinahe versehentlich in einen automatischen Commit gerutscht.
+
+**Fix:** Jede Session bekommt jetzt eine eigene `git worktree` unter `~/repos/worktrees/<name>/` (Name = registrierter Bot-Username bzw. `vault-sync`):
+- `bot.py` legt bei `!register <name>` automatisch eine Worktree an (`ensure_worktree()`), per `git worktree add --detach <pfad> origin/main` ausgehend vom Haupt-Clone `~/RasberryPI-Team-13`.
+- `vault-sync.sh` nutzt dauerhaft die Worktree `~/repos/worktrees/vault-sync/`.
+- Alle Worktrees arbeiten mit **detached HEAD auf `origin/main`**, nicht mit dem lokalen `main`-Branch – Git verbietet es, denselben Branch in zwei Worktrees gleichzeitig auszuchecken ("already used by worktree"), und der Haupt-Clone hält `main` bereits dauerhaft.
+- `~/RasberryPI-Team-13` selbst bleibt als reine Referenz auf `main` stehen und wird von keiner Session mehr für Arbeit genutzt.
+- `bot.py`, `vault-sync.sh` und `requirements.txt` sind jetzt im Repo versioniert (`Code/discord-bot/`) statt nur live auf der VM zu liegen – Änderungen daran laufen ab jetzt über normalen Branch+PR.
+
+> [!note] Bekannte Einschränkung
+> Der Bot-Prozess läuft selbst *innerhalb* einer dieser Worktrees (cwd wird beim `claude -p`-Aufruf gesetzt) – ein `systemctl restart discord-claude-bot` killt dadurch ggf. auch gerade laufende `claude -p`-Subprozesse (passiert, wenn systemd `KillMode=control-group` nutzt). Sessions überleben das i.d.R. über `--resume <session-id>`, aber mitten in einem Tool-Aufruf kann das zu einem harten Abbruch führen. Vor einem Neustart also idealerweise keine Session mitten in einer laufenden Aktion haben.
 
 ## Infrastruktur
 
 - **VM:** Azure, Ubuntu Server 24.04 LTS (bewusst nicht "Pro" – keine Enterprise-Features nötig), Hostname `ClaudeDiscord`, Linux-User `team13`
 - **Software:** Node.js LTS (für die Claude-Code-CLI), Python 3.11+, Git
 - **Repo-Zugriff:** per HTTPS-Clone mit Fine-Grained-Token (Token liegt **nicht** hier im Vault, sondern nur in den Claude-Projekt-Anweisungen)
-- **Bot-Ordner auf der VM:** `~/discord-claude-bot/` mit `bot.py`, `requirements.txt`, `.env` (Bot-Token, Channel-ID, Guild-ID, Repo-Pfad – nie committen), `users.json` (Mapping Discord-User-ID → Config-Verzeichnis + Session-ID)
+- **Bot-Ordner auf der VM:** `~/discord-claude-bot/` mit `bot.py`, `requirements.txt`, `.env` (Bot-Token, Channel-ID, Guild-ID, Repo-Pfad – nie committen), `users.json` (Mapping Discord-User-ID → Config-Verzeichnis + Worktree-Pfad + Session-ID)
+- **Repo-Worktrees:** `~/RasberryPI-Team-13` (Haupt-Clone, bleibt auf `main`, wird für keine Session mehr direkt genutzt) + `~/repos/worktrees/<name>/` je Session (siehe "Git-Worktree-Isolation" unten)
 
 ## Pro-Nutzer-Login (Kernprinzip)
 
