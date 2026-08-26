@@ -18,17 +18,33 @@ tags: [moodle, workshop, kurzprojekt, praesentation]
 >
 > Diese Challenge ist benotungsfrei! Es geht nicht um Schulnoten, sondern um nichts geringeres als Ruhm, Ehre, Spaß an der Freude und ein kleines bisschen den Wettkampfgedanken.
 
-## To-Do bis Freitag
-Als GitHub-Milestone [Milestone #1 "WS-Kurzprojekt & Präsentation (Freitag)"](https://github.com/47Felix/RasberryPI-Team-13/milestone/1) angelegt, fällig 28.08.2026. Jeder Punkt unten ist ein eigenes GitHub-Issue:
+## Team & Projektidee ✅ entschieden
+- **Team:** 4 Personen (Team 13 komplett)
+- **Projekt: 🔐 Digitaler Tresor / Escape-Box** – Elegoo UNO R3 Starter Kit: 4x4-Keypad zur Code-Eingabe, Servo als Schließmechanismus, LCD1602 für Status-Anzeige, Buzzer + LEDs für akustisches/visuelles Feedback und Alarm bei Fehlversuchen. Live-Showmoment: Publikum darf den Code knacken.
 
-- [ ] Kleinteam (2-3 Personen) bilden – innerhalb Team 13 oder ggf. teamübergreifend → [#10](https://github.com/47Felix/RasberryPI-Team-13/issues/10)
-- [ ] Projektidee finden (RasPi/Arduino/Sensorik/Elegoo-Kit – was wir eh schon liegen haben, siehe [[Installierte Services]] und [[Dogan - Brain Dump]] für den Temperatursensor) → [#11](https://github.com/47Felix/RasberryPI-Team-13/issues/11)
-- [ ] Aufbau/Umsetzung (Hardware + Software) → [#12](https://github.com/47Felix/RasberryPI-Team-13/issues/12)
-- [ ] Kurzpräsentation vorbereiten (10 Minuten, spektakulär/kreativ) → [#13](https://github.com/47Felix/RasberryPI-Team-13/issues/13)
-- [ ] Präsentation Freitag halten (Uhrzeit TBA – sobald bekannt hier ergänzen) → [#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14)
+> [!tip] Warum so aufgeteilt?
+> Damit alle 4 gleichzeitig arbeiten können (oder wahlweise zu zweit pro Track), ist die Umsetzung in unabhängige Arduino-Teilmodule ("Tracks") zerlegt. Jeder Track hat sein eigenes Mini-Sketch und braucht nichts von den anderen – erst am Schluss (Track F) wird alles in einem gemeinsamen Sketch zusammengeführt.
 
-## Ideen (offen, gerne ergänzen)
-- *(noch nichts festgelegt – Platz für Brainstorming, siehe auch [[🧠 Brain Dump - Übersicht]])*
+## Arbeitspakete (Tracks A–F)
+Milestone: [Milestone #1 "WS-Kurzprojekt & Präsentation (Freitag)"](https://github.com/47Felix/RasberryPI-Team-13/milestone/1), fällig 28.08.2026.
+
+| Track | Was | Abhängigkeit | Issue |
+|---|---|---|---|
+| A | Keypad-Eingabe + Code-Prüf-Logik | keine – sofort startbar | [#15](https://github.com/47Felix/RasberryPI-Team-13/issues/15) |
+| B | Servo-Schließmechanismus | keine – sofort startbar (Absprache mit E wegen Mechanik) | [#16](https://github.com/47Felix/RasberryPI-Team-13/issues/16) |
+| C | LCD1602-Statusanzeige | keine – sofort startbar | [#17](https://github.com/47Felix/RasberryPI-Team-13/issues/17) |
+| D | Buzzer + LED Feedback/Alarm | keine – sofort startbar | [#18](https://github.com/47Felix/RasberryPI-Team-13/issues/18) |
+| E | Box/Gehäuse bauen | keine – reine Handarbeit, parallel zu allem | [#19](https://github.com/47Felix/RasberryPI-Team-13/issues/19) |
+| F | Gesamtintegration (alles zusammenführen) | **braucht A, B, C, D fertig** – guter gemeinsamer Sync-Punkt für alle 4 | [#20](https://github.com/47Felix/RasberryPI-Team-13/issues/20) |
+| – | Kurzpräsentation vorbereiten (10 Min., Story/Skript) | keine – kann parallel starten, z.B. sobald jemand mit seinem Track fertig ist | [#13](https://github.com/47Felix/RasberryPI-Team-13/issues/13) |
+| – | Präsentation Freitag halten (Uhrzeit TBA) | braucht F | [#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14) |
+
+**Vorschlag für 4 Personen:** je 1 Person auf Track A, B, C, D – dann gemeinsam Track E (nebenbei/wer zuerst fertig ist) und F (alle zusammen).
+**Vorschlag für 2 Zweierteams:** Team 1 = Track A+C (Software/Anzeige), Team 2 = Track B+D (Hardware/Feedback) – Track E kann jeder zwischendurch übernehmen, F gemeinsam am Schluss.
+
+### Erledigt ✅
+- [x] Kleinteam bilden → [#10](https://github.com/47Felix/RasberryPI-Team-13/issues/10) (closed)
+- [x] Projektidee finden → [#11](https://github.com/47Felix/RasberryPI-Team-13/issues/11) (closed)
 
 ## Verwandte Notizen
 - [[Kursstruktur]]
