@@ -23,6 +23,19 @@ Alles, was für spätere Chats oder Teammitglieder wissenswert ist, u. a.:
 3. Commit + Push unter Autor `47Felix` oder `Agrimm123` (nie "Claude" als Autor) – siehe [[Git Workflow]].
 4. Kurz im Chat erwähnen, was ins Vault übernommen wurde (ein Satz reicht, keine Rückfrage nötig).
 
+## Laufende Chat-Doku + Trigger-Wort "Gehirn updaten" (seit 26.08.2026)
+> [!important] Verbindliche Regel
+> Claude dokumentiert relevante Dinge **laufend während des Chats** (siehe Regel oben – nicht erst am Ende), merkt sich aber zusätzlich im Hinterkopf, welche Themen/Entscheidungen/Ergebnisse aus dem bisherigen Gesprächsverlauf noch **nicht** an einer passenden Stelle im Vault stehen (z. B. reine Diskussionen, Zwischenstände, mündlich getroffene Entscheidungen ohne eigenen Commit).
+>
+> Sobald im Chat **"Gehirn updaten"** (oder sinngemäß: "aktualisiere das Gehirn", "trag das ins Vault ein", "Vault updaten") geschrieben wird, geht Claude den gesamten bisherigen Chatverlauf durch und trägt alles noch Fehlende gesammelt an den passenden Stellen nach – nach demselben Ablauf wie oben (passende Notiz finden/anlegen, committen, pushen), dann kurze Zusammenfassung im Chat, was ergänzt wurde.
+
+### Geht das auch ganz ohne Trigger-Wort, vollautomatisch?
+Ehrlicher Stand (26.08.2026): **Nicht zuverlässig**, weil Claudian aktuell keinen "Chat endet"-Hook o.ä. anbietet, der von selbst einen Vault-Update auslösen könnte (geprüft: `.claudian/claudian-settings.json` hat kein Hook-Feld) – Claude wird nur aktiv, wenn im Chat etwas geschrieben wird. Die laufende Doku-Regel oben deckt das größtenteils ab (das meiste landet eh schon während des Chats im Vault), das Trigger-Wort ist der Rest-Fallback.
+
+Zwei echte Hebel, um näher an "vollautomatisch" zu kommen, falls gewünscht:
+1. **Claudian-Einstellung "Persistent/Pinned Context"** (`persistentExternalContextPaths` bzw. Pinned-Context-Feature in den Claudian-Einstellungen): Diese Notiz bzw. [[🏠 Start]] dort dauerhaft anheften, dann lädt Claude die Doku-Regeln garantiert bei **jedem** neuen Chat automatisch mit, statt sich darauf zu verlassen, dass zuerst Start.md gelesen wird. Muss von Anton/Felix in den Claudian-Einstellungen gesetzt werden (nicht per Git-Commit, ist lokale Plugin-Konfiguration) – bei Bedarf sag Bescheid, dann geh ich das mit euch durch.
+2. **Fortgeschritten/nicht gebaut:** Ein periodischer Scheduled-Job (z. B. per `/schedule`-Skill), der die Chat-Transkripte unter `ObsidianGehirn/.claudian/sessions/*.json` ausliest und automatisch Vault-Updates ableitet – technisch machbar, aber deutlich aufwändiger und fehleranfälliger (Transkript-Parsing, Gefahr von Doppel-Einträgen). Nur sinnvoll, falls das Trigger-Wort auf Dauer zu nervig ist.
+
 ## GitHub Issues (seit 26.08.2026)
 > [!important] Verbindliche Regel
 > **Sobald ein GitHub-Issue erledigt/geschlossen wird (egal ob Claude oder ein Teammitglied es schließt), trägt Claude einen kurzen Eintrag in [[Issues - Übersicht]] ein** – 2-4 Sätze, *was* konkret gemacht wurde, nicht nur "erledigt". Eintrag wandert von "🟢 Offen" nach "✅ Geschlossen", verlinkt auf das Issue und ggf. die Detail-Notiz (z. B. Brain Dump). Gilt auch rückwirkend für neu entdeckte geschlossene Issues.
