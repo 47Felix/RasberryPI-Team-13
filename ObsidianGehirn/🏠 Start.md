@@ -18,6 +18,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Branch-Strategie]]
 - [[Git Workflow]]
 - [[Claude Discord Bot Setup]]
+- [[Discord Verwaltung]]
 
 ## 🍓 Pi Setup (Team13-1)
 - [[Pi Zugriff]]
