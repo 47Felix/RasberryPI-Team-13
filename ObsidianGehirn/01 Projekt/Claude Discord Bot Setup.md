@@ -5,7 +5,7 @@ tags: [projekt, discord, claude-code, infrastruktur]
 # Claude Discord Bot Setup
 
 > [!info] Stand
-> 26.08.2026 – Grundgerüst gebaut und getestet (Nachrichten werden beantwortet, Test-Branch/Commit über den Bot verifiziert). Server-Design per Discord-API vorbereitet (Referenzdatei + Setup-Schritte), aber noch nicht selbst getestet. Direkter VM-Zugriff für Claude per SSH geprüft und verworfen (Netzwerk-Sandbox lässt kein SSH zu) – bleibt beim Copy-Paste-Workflow. Noch nicht alle Teammitglieder registriert, systemd-Dauerbetrieb ggf. noch zu bestätigen (siehe [[Offene Punkte]]).
+> 26.08.2026 – Grundgerüst gebaut und getestet (Nachrichten werden beantwortet, Test-Branch/Commit über den Bot verifiziert). Server-Design per Discord-API getestet (siehe [[Discord Verwaltung]]). Direkter VM-Zugriff für Claude per SSH geprüft und verworfen (Netzwerk-Sandbox lässt kein SSH zu) – bleibt beim Copy-Paste-Workflow. Zusätzlich läuft seit heute ein täglicher Vault-Sync-Cronjob (siehe Abschnitt unten). Noch nicht alle Teammitglieder registriert, systemd-Dauerbetrieb ggf. noch zu bestätigen (siehe [[Offene Punkte]]).
 
 ## Ziel
 
@@ -98,6 +98,18 @@ Versucht: Die Cowork-Session (diese Chat-Umgebung, getrennt von der Discord-Bot-
 **Ergebnis: nicht möglich.** Sowohl die Cloud-Sandbox der Session als auch die Geräte-Bridge zum verbundenen Mac laufen mit einem restriktiven Netzwerk-Allowlist (nur bestimmte Web-Domains erlaubt), das rohes SSH (Port 22) zu beliebigen Servern grundsätzlich blockiert – unabhängig von der Azure-Firewall/NSG-Konfiguration.
 
 Alternative geprüft: Web-Terminal (`ttyd` + `Caddy` + kostenlose nip.io-Domain für automatisches HTTPS-Zertifikat) auf der VM einrichten, das im Browser erreichbar wäre. **Bewusst nicht umgesetzt** – Team-Entscheidung (26.08.2026): Der Aufwand (öffentlich erreichbares Terminal mit Passwortschutz + Absicherung) lohnt sich für die Häufigkeit der VM-Zugriffe nicht. Es bleibt beim bestehenden Workflow: Befehle werden im Chat vorgeschlagen, ein Teammitglied führt sie per SSH auf der VM aus und gibt die Ausgabe zurück.
+
+## Täglicher Vault-Sync (Cronjob, seit 26.08.2026)
+
+Zusätzlich zum interaktiven Bot läuft auf derselben VM ein **täglicher Cronjob**, der das Vault automatisch aktuell hält, ohne dass jemand explizit danach fragen muss.
+
+- **Skript:** `~/discord-claude-bot/vault-sync.sh`, versioniert im Repo unter [`Code/discord-bot/vault-sync.sh`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Code/discord-bot/vault-sync.sh) (Kopie – Änderungen am Skript selbst also künftig per normalem Branch+PR wie jeder andere Code, **nicht** nur live auf der VM patchen, sonst laufen VM und Repo auseinander).
+- **Cron:** täglich `19:30 UTC` (≈ 21:30 CEST, abends fürs Team) – `crontab -l` auf der VM zeigt den aktiven Eintrag.
+- **Account/Config-Dir:** eigener, von den User-Sessions getrennter Ordner `~/sessions/vault-sync/` (Credentials von `amogus_911` übernommen, mit dessen Zustimmung – kein separates `claude login` nötig, da OAuth-Token einfach in den neuen Ordner kopiert wurde).
+- **Ablauf:** main aktualisieren → State-Datei (`~/discord-claude-bot/.vault-sync-last-sha`) mit letztem Sync-Stand vergleichen → bei Aenderungen Branch `gehirn/auto-vault-sync-<datum>` → nicht-interaktive `claude -p`-Session liest Commits/Issues seit letztem Sync UND prüft README.md-Statushaken auf Drift → aktualisiert `ObsidianGehirn/` (und ggf. README-Haken) → Skript committet unsigniert (kein `.claude-secrets/` auf der VM) → pusht → öffnet PR nach main über die GitHub-API. **Merged nie selbst**, das bleibt manuell bei Anton/Felix (siehe [[Branch-Strategie]]).
+- **Sicherheitsnetz:** Bricht komplett ohne Aenderung ab (nur Discord-Warnung im `pi-projekt`-Kanal), wenn das Arbeitsverzeichnis auf der VM beim Start schon nicht sauber ist – verhindert, dass unfertige/uncommittete Arbeit eines Teammitglieds versehentlich in den Auto-Commit gerät (ist am 26.08. genau so passiert und wurde gefixt, siehe Log).
+- **Bekannte Grenze:** Bleibt ein PR mehrere Tage ungemerged, bauen Folge-PRs **nicht** darauf auf (jeder Tag vergleicht nur zum eigenen Vortag) – bei mehreren offenen Sync-PRs also möglichst in Entstehungsreihenfolge mergen, sonst drohen Konflikte.
+- **Log:** `~/discord-claude-bot/vault-sync.log` auf der VM.
 
 ## Offene Punkte
 Siehe [[Offene Punkte]] – u.a. weitere Teammitglieder registrieren, Discord-Bot-Token rotieren, Entscheidung Session-pro-Thread vs. Session-pro-User, Server-Design-Feature erstmals testen.

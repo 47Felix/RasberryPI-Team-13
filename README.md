@@ -42,8 +42,8 @@ Weiteres Setup (NTP, SSH, Node.js/Node-RED-Installation) siehe Moodle-Kurs "Einf
 - [x] NTP-Zeitsynchronisation mit ITECH-Servern eingerichtet
 - [x] Node-RED + Mosquitto installiert und lauffähig
 - [x] LED-Flow in Node-RED gebaut (softwareseitig)
-- [ ] Hardware-Aufbau: LED + Vorwiderstand auf Breadboard verkabeln
-- [ ] Node-RED mit MQTT verknüpfen
+- [x] Hardware-Aufbau: LED + Vorwiderstand auf Breadboard verkabelt (Issue #1)
+- [x] Node-RED mit MQTT verknüpft (Issue #2)
 - [ ] Fernzugriff (DynDNS / Dashboard) für Challenge II
 
 ## Team
