@@ -20,6 +20,7 @@ tags: [todo, projekt]
 - [ ] **Sicherheit:** Discord-Bot-Token wurde versehentlich im Klartext in einem Chat geteilt – im Developer Portal unter "Bot" → "Reset Token" rotieren und `.env` auf der VM aktualisieren
 - [ ] **Discord-Bot:** Entscheiden, ob eine Claude-Session pro User+Thread statt nur pro User sinnvoller ist (aktuell teilen sich alle Threads eines Users dieselbe Konversation) → [[Claude Discord Bot Setup]]
 - [ ] **Discord-Bot:** Prüfen, ob `--dangerously-skip-permissions` durch eine feinere Tool-Allowlist ersetzt werden soll → [[Claude Discord Bot Setup]]
+- [ ] **Discord-Bot:** Server-Design-Feature (Rollen/Kanäle per Discord-API über `DISCORD_API.md`) erstmals testen, dabei Rollen-Hierarchie der Bot-Rolle prüfen → [[Claude Discord Bot Setup]]
 
 ## Erledigt ✅
 - **Node-RED mit MQTT verknüpft (25.08.2026):** LED-Flow um Topic `team13-1/led/set` erweitert (mqtt-broker localhost:1883, Function-Node wandelt Payload in Boolean um), softwareseitig getestet via `mosquitto_pub` → [[Node-RED Flow - LED Test]], GitHub-Issue: [#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2) (closed)
