@@ -15,11 +15,17 @@ tags: [todo, projekt]
 - [ ] Bereich "Einen Pitch planen und durchführen" (4.9) in Moodle noch ohne Inhalte – später erneut prüfen
 - [ ] **Sicherheit (dringend):** Obsidian "Local REST API"-Plugin-Key war öffentlich im Repo committet – Anton muss den API-Key in Obsidian neu generieren (Plugin-Settings → Regenerate) → [[⚠️ Zugangsdaten - Hinweis]]
 - [ ] **Kurzprojekt & Präsentation bis Freitag 28.08. (TBA Uhr):** Kleinteam (2-3 Personen) finden, kleines RasPi/Arduino/Sensorik-Projekt umsetzen, 10-Minuten-Präsentation vorbereiten – benotungsfrei → [[WS-Kurzprojekt Freitag]]
+- [ ] **Discord-Bot:** Restliche Teammitglieder registrieren (eigener `claude login` per SSH + `!register <name>` im Discord-Kanal) → [[Claude Discord Bot Setup]]
+- [ ] **Discord-Bot:** systemd-Service (`discord-claude-bot.service`) einrichten/prüfen, damit der Bot Neustarts und `Strg+C` übersteht → [[Claude Discord Bot Setup]]
+- [ ] **Sicherheit:** Discord-Bot-Token wurde versehentlich im Klartext in einem Chat geteilt – im Developer Portal unter "Bot" → "Reset Token" rotieren und `.env` auf der VM aktualisieren
+- [ ] **Discord-Bot:** Entscheiden, ob eine Claude-Session pro User+Thread statt nur pro User sinnvoller ist (aktuell teilen sich alle Threads eines Users dieselbe Konversation) → [[Claude Discord Bot Setup]]
+- [ ] **Discord-Bot:** Prüfen, ob `--dangerously-skip-permissions` durch eine feinere Tool-Allowlist ersetzt werden soll → [[Claude Discord Bot Setup]]
 
 ## Erledigt ✅
 - **Node-RED mit MQTT verknüpft (25.08.2026):** LED-Flow um Topic `team13-1/led/set` erweitert (mqtt-broker localhost:1883, Function-Node wandelt Payload in Boolean um), softwareseitig getestet via `mosquitto_pub` → [[Node-RED Flow - LED Test]], GitHub-Issue: [#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2) (closed)
 - ttyd-Web-Terminal läuft jetzt als systemd-Service, startet automatisch bei Boot/Absturz
 - Claude-Skills fürs Projekt geprüft, siehe [[Skills Setup]]
 - Neuer Bereich "Tagesplan" im Vault angelegt (Claude erstellt morgens beim Tagesstart eine kurze Standortbestimmung) → [[📅 Tagesplan - Übersicht]]
+- **Discord-Bot Grundgerüst gebaut (26.08.2026):** Python-Bot (discord.py) mit Pro-User-Login über `CLAUDE_CONFIG_DIR`, erste Nachricht erfolgreich beantwortet, Test-Branch/Commit über den Bot verifiziert → [[Claude Discord Bot Setup]]
 
 #todo #projekt
