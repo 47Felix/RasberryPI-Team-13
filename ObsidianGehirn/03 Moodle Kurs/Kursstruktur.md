@@ -10,7 +10,7 @@ Ziel: Grundwissen vor Start der Challenges.
 2. Grundlagen zum Arduino (1 Tag)
 3. Grundlagen zum RaspberryPi (1 Tag)
 4. Python in a nutshell | weitere Übungen mit Arduino & RaspberryPi (1 Tag)
-5. Freies Kurzprojekt und Präsentation (3 Tage)
+5. Freies Kurzprojekt und Präsentation (3 Tage) → [[WS-Kurzprojekt Freitag]]
 
 Optional: (I)IoT-Kurse der Cisco Networking Academy mit freiwilligem Teilnahmezertifikat (Rücksprache mit IT-Lehrkräften nötig für Zugang zur PL-Cloud).
 
