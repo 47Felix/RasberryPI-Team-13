@@ -42,6 +42,9 @@ Milestone: [Milestone #1 "WS-Kurzprojekt & Präsentation (Freitag)"](https://git
 **Vorschlag für 4 Personen:** je 1 Person auf Track A, B, C, D – dann gemeinsam Track E (nebenbei/wer zuerst fertig ist) und F (alle zusammen).
 **Vorschlag für 2 Zweierteams:** Team 1 = Track A+C (Software/Anzeige), Team 2 = Track B+D (Hardware/Feedback) – Track E kann jeder zwischendurch übernehmen, F gemeinsam am Schluss.
 
+### Fortschritt (26.08.2026)
+Kombinierter Arduino-Sketch für Track A (Keypad+Code-Prüf-Logik), B (Servo), C (LCD1602) und D (LEDs, **ohne** Buzzer) gemerged: [`Code/arduino-tresor/tresor_integration/tresor_integration.ino`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Code/arduino-tresor/tresor_integration/tresor_integration.ino) (PR [#30](https://github.com/47Felix/RasberryPI-Team-13/pull/30)). Buzzer-Teil von Track D folgt noch (Pin D11 im Sketch reserviert), ebenso Track E (Gehäuse) und F (finale Gesamtintegration). Issues [#15](https://github.com/47Felix/RasberryPI-Team-13/issues/15)-[#18](https://github.com/47Felix/RasberryPI-Team-13/issues/18) bleiben deshalb auf GitHub bewusst noch offen.
+
 ### Erledigt ✅
 - [x] Kleinteam bilden → [#10](https://github.com/47Felix/RasberryPI-Team-13/issues/10) (closed)
 - [x] Projektidee finden → [#11](https://github.com/47Felix/RasberryPI-Team-13/issues/11) (closed)
