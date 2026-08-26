@@ -23,6 +23,10 @@ Alles, was für spätere Chats oder Teammitglieder wissenswert ist, u. a.:
 3. Commit + Push unter Autor `47Felix` oder `Agrimm123` (nie "Claude" als Autor) – siehe [[Git Workflow]].
 4. Kurz im Chat erwähnen, was ins Vault übernommen wurde (ein Satz reicht, keine Rückfrage nötig).
 
+## GitHub Issues (seit 26.08.2026)
+> [!important] Verbindliche Regel
+> **Sobald ein GitHub-Issue erledigt/geschlossen wird (egal ob Claude oder ein Teammitglied es schließt), trägt Claude einen kurzen Eintrag in [[Issues - Übersicht]] ein** – 2-4 Sätze, *was* konkret gemacht wurde, nicht nur "erledigt". Eintrag wandert von "🟢 Offen" nach "✅ Geschlossen", verlinkt auf das Issue und ggf. die Detail-Notiz (z. B. Brain Dump). Gilt auch rückwirkend für neu entdeckte geschlossene Issues.
+
 ## Ausnahmen
 - **Zugangsdaten** (Tokens, Passwörter, WLAN, Moodle-Logins) kommen **nie** ins Vault, sondern bleiben ausschließlich in den Claude-Projekt-Anweisungen – siehe [[⚠️ Zugangsdaten - Hinweis]].
 - Rein spekulative/unfertige Ideen ohne Team-Konsens gehören eher in [[🧠 Brain Dump - Übersicht]] statt in die "offiziellen" Projektnotizen.

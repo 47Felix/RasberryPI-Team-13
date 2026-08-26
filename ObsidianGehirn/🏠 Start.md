@@ -34,6 +34,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 ## 🗺️ Fahrplan & To-Do
 - [[Technischer Fahrplan]]
 - [[Offene Punkte]]
+- [[Issues - Übersicht]] – GitHub-Issues (offen/geschlossen) mit Kurz-Zusammenfassung
 
 ## 📅 Tagesplan
 - [[📅 Tagesplan - Übersicht]]
