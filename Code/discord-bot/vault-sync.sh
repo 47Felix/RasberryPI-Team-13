@@ -5,7 +5,7 @@
 # Oeffnet bei Aenderungen einen PR nach main - merged NIE selbst (Branch-Strategie.md).
 set -euo pipefail
 
-REPO_PATH="$HOME/RasberryPI-Team-13"
+REPO_PATH="$HOME/repos/worktrees/vault-sync"
 CONFIG_DIR="$HOME/sessions/vault-sync"
 STATE_FILE="$HOME/discord-claude-bot/.vault-sync-last-sha"
 LOG_FILE="$HOME/discord-claude-bot/vault-sync.log"
@@ -24,16 +24,16 @@ GH_TOKEN="$(git remote get-url origin | sed -E 's#https://([^:@]+)@github.com.*#
 
 log "=== Vault-Sync Start ($DATE) ==="
 
-git checkout main >>"$LOG_FILE" 2>&1
-git pull origin main >>"$LOG_FILE" 2>&1
+git fetch origin main >>"$LOG_FILE" 2>&1
+git checkout --detach origin/main >>"$LOG_FILE" 2>&1
 
 LAST_SHA="$(cat "$STATE_FILE" 2>/dev/null || true)"
 if [ -z "$LAST_SHA" ] || ! git cat-file -e "$LAST_SHA" 2>/dev/null; then
   # Erster Lauf oder State verloren: letzte 24h als Fallback-Fenster nehmen
-  LAST_SHA="$(git log --since='24 hours ago' --format=%H main | tail -1)"
-  [ -z "$LAST_SHA" ] && LAST_SHA="$(git rev-parse main)"
+  LAST_SHA="$(git log --since='24 hours ago' --format=%H origin/main | tail -1)"
+  [ -z "$LAST_SHA" ] && LAST_SHA="$(git rev-parse origin/main)"
 fi
-CURRENT_SHA="$(git rev-parse main)"
+CURRENT_SHA="$(git rev-parse origin/main)"
 log "Vergleiche $LAST_SHA..$CURRENT_SHA"
 
 if [ "$LAST_SHA" = "$CURRENT_SHA" ]; then
@@ -58,6 +58,9 @@ if [ -n "$DIRTY" ]; then
   exit 0
 fi
 
+# Falls der Branch schon existiert (z.B. manueller Testlauf vorher am selben Tag),
+# lokal frisch von origin/main aus neu aufsetzen statt mit Fehler abzubrechen.
+git branch -D "$BRANCH" >>"$LOG_FILE" 2>&1 || true
 git checkout -b "$BRANCH" >>"$LOG_FILE" 2>&1
 
 PROMPT="Du bist der taegliche automatische Vault-Sync fuer dieses Repo (nicht-interaktiv, per Cron).
@@ -84,7 +87,7 @@ echo "$CLAUDE_OUTPUT" >> "$LOG_FILE"
 
 if [ -z "$(git status --porcelain -- ObsidianGehirn/ README.md)" ]; then
   log "Claude hat nichts Vault-relevantes gefunden - kein Commit, Branch wird verworfen."
-  git checkout main >>"$LOG_FILE" 2>&1
+  git checkout --detach origin/main >>"$LOG_FILE" 2>&1
   git branch -D "$BRANCH" >>"$LOG_FILE" 2>&1
   echo "$CURRENT_SHA" > "$STATE_FILE"
   exit 0
@@ -112,7 +115,7 @@ log "PR erstellt: $PR_URL"
 
 echo "$CURRENT_SHA" > "$STATE_FILE"
 
-git checkout main >>"$LOG_FILE" 2>&1
+git checkout --detach origin/main >>"$LOG_FILE" 2>&1
 
 if [ -n "$PR_URL" ]; then
   DISCORD_BOT_TOKEN="$(grep -oP '(?<=^DISCORD_BOT_TOKEN=).*' "$ENV_FILE")"
