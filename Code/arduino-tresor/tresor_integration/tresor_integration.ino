@@ -34,6 +34,14 @@ String enteredCode = "";
 int failedAttempts = 0;
 const int maxAttempts = 3;
 
+// --- Funktionsprototypen (Tinkercad generiert diese nicht automatisch) ---
+void showIdleScreen();
+void updateInputDisplay();
+void checkCode();
+void accessGranted();
+void accessDenied();
+void alarmMode();
+
 void setup() {
   lockServo.attach(servoPin);
   lockServo.write(lockedAngle);
