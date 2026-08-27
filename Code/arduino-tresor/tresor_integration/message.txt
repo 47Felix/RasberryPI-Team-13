@@ -43,6 +43,7 @@ void accessDenied();
 void alarmMode();
 
 void setup() {
+  Serial.begin(9600);
   lockServo.attach(servoPin);
   lockServo.write(lockedAngle);
 
@@ -55,6 +56,9 @@ void setup() {
 
 void loop() {
   char key = keypad.getKey();
+  if (key) {
+    Serial.println(key);
+  }
   if (!key) return;
 
   if (key == '#') {
@@ -140,4 +144,4 @@ void alarmMode() {
   }
 
   failedAttempts = 0;
-}
+} hab dencode und hab dir die pinbelegung gegebn in der serial kommt keine zahl wenn ich auf dem keypad drücke
