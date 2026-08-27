@@ -13,3 +13,9 @@ ObsidianGehirn/.claudian/sessions/
 # Obsidian-Plugin-Konfigurationen koennen API-Keys/Zertifikate/private Schluessel
 # enthalten (z.B. obsidian-local-rest-api: apiKey + TLS privateKey) - NIEMALS committen!
 ObsidianGehirn/.obsidian/plugins/*/data.json
+
+# Pi-Dashboard: Laufzeit-Artefakte (venv, SQLite-DB, .env mit Admin-Passwort/Discord-Token)
+# leben nur auf dem Pi, nie committen
+Code/pi-dashboard/venv/
+Code/pi-dashboard/tresor.db
+Code/pi-dashboard/.env

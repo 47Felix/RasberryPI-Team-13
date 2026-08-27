@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Tresor-Code aendern{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Tresor-Code aendern</h1>
+  <p class="muted">
+    Arduino:
+    {% if arduino_connected %}
+      <span class="badge badge-connected">verbunden</span>
+    {% else %}
+      <span class="badge badge-disconnected">nicht verbunden - Code kann gerade nicht gesendet werden</span>
+    {% endif %}
+  </p>
+  {% if message %}
+    <p class="msg-{{ message[0] }}">{{ message[1] }}</p>
+  {% endif %}
+  <form method="post">
+    <input type="text" name="new_code" placeholder="Neuer Code (4-8 Ziffern)" pattern="[0-9]{4,8}" required>
+    <button type="submit">Code setzen</button>
+  </form>
+  <p class="muted" style="margin-top:16px;">
+    <a href="{{ url_for('logout') }}">Ausloggen</a>
+  </p>
+</div>
+{% endblock %}
