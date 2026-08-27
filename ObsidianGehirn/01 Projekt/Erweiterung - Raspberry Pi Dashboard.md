@@ -5,7 +5,7 @@ tags: [projekt, pi-dashboard, arduino, kurzprojekt]
 # Erweiterung: Raspberry Pi Dashboard fuer den Digitalen Tresor
 
 > [!info] Stand
-> 27.08.2026 – Software-Seite (Tracks G-J + beide Stretch-Ziele) gebaut, deployed und per HTTP getestet. **Hardware-in-the-loop NICHT getestet** – aktuell ist kein Arduino per USB am Pi angeschlossen, daher konnte die echte Serial-Kommunikation mit dem physischen/Tinkercad-Sketch nicht verifiziert werden. Siehe Abschnitt "Was noch fehlt" unten.
+> 27.08.2026 – Software-Seite (Tracks G-J + beide Stretch-Ziele) gebaut, deployed und **end-to-end mit einem simulierten Arduino getestet** (virtueller Serial-Port via `socat`, da kein echtes Gerät angeschlossen ist und Tinkercad keine externe Serial-/Netzwerk-Schnittstelle anbietet – siehe [[Pi Zugriff]]/unten). Dabei einen echten Bug gefunden und gefixt (Discord-Alarm scheiterte an einem von Cloudflare geblockten User-Agent). **Test mit dem echten/Tinkercad-Arduino selbst steht noch aus**, siehe "Was noch fehlt".
 
 Setzt auf [[WS-Kurzprojekt Freitag]] auf: der Tresor-Arduino-Sketch (`Code/arduino-tresor/tresor_integration/tresor_integration.ino`) meldet seine Ereignisse jetzt per USB-Serial an den Pi, der sie loggt und über eine kleine Weboberfläche im WLAN anzeigt. Deckt GitHub-Issues #37-#42 ab (Tracks G-J + 2 Stretch-Ziele).
 
@@ -47,10 +47,23 @@ Pi: ~/tresor-dashboard/app.py (Flask, systemd-Service "tresor-dashboard")
 | Arduino → Pi | `EVENT:CODE_UPDATED` | Bestaetigt neuen Code uebernommen |
 | Pi → Arduino | `SETCODE:<code>` | Neuen Tresor-Code setzen (4-8 Ziffern) |
 
+## Software-Test mit simuliertem Arduino (27.08.2026)
+
+Da kein Arduino angeschlossen ist und Tinkercad keine Bridge nach aussen anbietet (geschlossene Browser-Sandbox, kein echter Serial-Port/keine Netzwerk-API), wurde stattdessen die **Pi-Software** komplett durchgetestet:
+
+1. Virtuelles Serial-Port-Paar per `socat` gebaut (`/tmp/ttyMOCK-arduino` ↔ `/tmp/ttyMOCK-pi`), simuliert einen echten USB-Seriell-Port.
+2. `app.py` per `DASHBOARD_MOCK_SERIAL_PORT`-Env-Var (neu, siehe Code) auf die Mock-Seite gezeigt.
+3. Alle Events (`READY`, `DENIED:1-3`, `ALARM`, `GRANTED`) simuliert reingeschrieben → korrekt in SQLite geloggt, Live-Status im Dashboard stimmte.
+4. `SETCODE` ueber das echte Web-Formular ausgeloest, auf der Mock-Arduino-Seite mitgelesen → korrekt angekommen.
+5. **Bug gefunden**: Discord-Alarm-Meldung scheiterte mit HTTP 403 – Python's `urllib`-Standard-User-Agent wird von Discord/Cloudflare geblockt (identischer curl-Request mit demselben Token/Channel funktionierte). Gefixt durch expliziten `User-Agent`-Header, danach end-to-end verifiziert (Alarm-Event → automatische Discord-Nachricht kam an).
+6. Alles wieder aufgeraeumt (Mock-Service gestoppt, Test-DB geleert, Test-Discord-Nachrichten geloescht, `.env` zurueckgesetzt) – Service laeuft wieder im Produktions-Zustand und wartet auf ein echtes Geraet.
+
+**Fazit**: Die komplette Pi-Software-Logik ist verifiziert korrekt. Was fehlt, ist ausschliesslich die Arduino-Seite selbst.
+
 ## Was noch fehlt (bewusst offen, braucht physischen Zugriff)
 
-- [ ] **Hardware-in-the-loop-Test**: Arduino per USB an den Pi anschliessen, pruefen ob `/dev/ttyACM0` (oder `ttyUSB0`) auftaucht, Dashboard beobachten ob Events ankommen. Ich (Claude, VM-Session) habe dafuer keinen physischen Zugriff.
-- [ ] Sketch muss auf dem echten/Tinkercad-Arduino neu geflasht werden (die Serial-Erweiterung ist nur im Repo, noch nicht auf einem Geraet).
+- [ ] **Echter Arduino-Test**: Sketch (mit der neuen Serial-Erweiterung) auf den echten/Tinkercad-Arduino flashen, per USB an den Pi anschliessen, pruefen ob `/dev/ttyACM0` (oder `ttyUSB0`) auftaucht und echte Events ankommen. Ich (Claude, VM-Session) habe dafuer keinen physischen Zugriff.
+- [ ] **Tinkercad manuell gegenchecken**: Wer Zugriff auf die Tinkercad-Simulation hat, kann den aktualisierten Sketch dort einspielen und im eingebauten Serial Monitor (9600 Baud) pruefen, ob beim Codeeingeben tatsaechlich `EVENT:GRANTED`/`EVENT:DENIED:n`/`EVENT:ALARM`-Zeilen erscheinen – das validiert zumindest die Sketch-Logik, auch ohne Verbindung zum Pi (Tinkercad selbst laesst sich nicht von aussen anbinden).
 - [ ] `SETCODE`-Timing pruefen: Wenn `checkSerialCommands()` mitten in einem `delay()` (z.B. waehrend `accessGranted()` 4 Sekunden wartet) aufgerufen werden soll, geht das mit dem aktuellen Sketch-Aufbau nicht (Arduino ist in dem Moment blockiert) – nur relevant, falls das im echten Betrieb stoert.
 - [ ] Track #42 (Stretch) ist nur als Text-Ampel umgesetzt (gross, farbig), keine physische LED-Ampel-Hardware am Pi.
 

@@ -27,6 +27,11 @@ DB_PATH = Path(os.environ.get("DASHBOARD_DB_PATH", BASE_DIR / "tresor.db"))
 ADMIN_PASSWORD = os.environ.get("DASHBOARD_ADMIN_PASSWORD")
 SECRET_KEY = os.environ.get("DASHBOARD_SECRET_KEY") or os.urandom(24).hex()
 SERIAL_CANDIDATES = ["/dev/ttyACM0", "/dev/ttyACM1", "/dev/ttyUSB0", "/dev/ttyUSB1"]
+# Fuer Tests ohne angeschlossenen Arduino: z.B. per socat einen virtuellen
+# Seriell-Port bauen (siehe Erweiterung - Raspberry Pi Dashboard.md) und hier reinreichen.
+_mock_port = os.environ.get("DASHBOARD_MOCK_SERIAL_PORT")
+if _mock_port:
+    SERIAL_CANDIDATES = [_mock_port] + SERIAL_CANDIDATES
 SERIAL_BAUD = 9600
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 DISCORD_ALARM_CHANNEL_ID = os.environ.get("DISCORD_ALARM_CHANNEL_ID")
@@ -74,6 +79,9 @@ def notify_discord(message):
             headers={
                 "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
                 "Content-Type": "application/json",
+                # Discord/Cloudflare blockt den generischen Python-urllib User-Agent (403) -
+                # eigener User-Agent laut Discord-API-Doku empfohlen.
+                "User-Agent": "TresorDashboardBot (https://github.com/47Felix/RasberryPI-Team-13, 1.0)",
             },
             method="POST",
         )
