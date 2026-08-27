@@ -5,6 +5,7 @@ tags: [todo, projekt]
 # Offene Punkte / To-Do
 
 - [ ] **Kurzprojekt & Präsentation bis Freitag 28.08. (TBA Uhr):** Kleinteam (2-3 Personen) finden, kleines RasPi/Arduino/Sensorik-Projekt umsetzen, 10-Minuten-Präsentation vorbereiten – benotungsfrei → [[WS-Kurzprojekt Freitag]]
+- [ ] **Vault-Sync-Cron auf Winterzeit umstellen:** Crontab läuft fest auf `45 4 * * *` (UTC), weil `CRON_TZ` auf dieser VM nicht funktioniert (siehe [[Claude Discord Bot Setup]]). Beim Wechsel auf CET (letzter Sonntag im Oktober 2026) manuell auf `45 5 * * *` ändern, sonst läuft der Sync ab dann eine Stunde zu früh (05:45 statt 06:45 Ortszeit).
 
 ## Erledigt ✅
 - **Arduino + Elegoo-Kit: Temperatur-/Feuchtigkeitssensor getestet (Dogan):** DHT11-Modul mit Elegoo-UNO-R3 verkabelt, Arduino-Sketch mit DHT-Library liefert Werte (Kalibrierung/Wackelkontakt war noch ein Thema) → [[Dogan - Brain Dump]], GitHub-Issue: [#3](https://github.com/47Felix/RasberryPI-Team-13/issues/3) (closed)
