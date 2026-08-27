@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Tresor-Dashboard{% endblock %}
+{% block content %}
+{% set colors = {"offen": "var(--green)", "verschlossen": "var(--yellow)", "alarm": "var(--red)", "unbekannt": "var(--muted)"} %}
+{% set labels = {"offen": "🟢 OFFEN", "verschlossen": "🟡 VERSCHLOSSEN", "alarm": "🔴 ALARM", "unbekannt": "⚪ UNBEKANNT"} %}
+<div class="card" style="text-align:center;">
+  <div class="muted">
+    Arduino:
+    {% if arduino_connected %}
+      <span class="badge badge-connected">verbunden</span>
+    {% else %}
+      <span class="badge badge-disconnected">nicht verbunden</span>
+    {% endif %}
+  </div>
+  <div style="font-size:2.2rem; font-weight:bold; margin:16px 0; color: {{ colors.get(status.state, 'var(--muted)') }};">
+    {{ labels.get(status.state, status.state) }}
+  </div>
+  <div class="muted">Fehlversuche seit letztem Erfolg: <strong>{{ status.failed_attempts }}</strong> / 3</div>
+  {% if status.last_event_at %}
+    <div class="muted">Letztes Ereignis: {{ status.last_event_at }}</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h1>Verlauf (letzte 50 Ereignisse)</h1>
+  {% if events %}
+  <table>
+    <tr><th>Zeit (UTC)</th><th>Ereignis</th><th>Detail</th></tr>
+    {% for e in events %}
+    <tr>
+      <td>{{ e['ts'] }}</td>
+      <td>{{ e['event'] }}</td>
+      <td>{{ e['detail'] or '' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Noch keine Ereignisse geloggt.</p>
+  {% endif %}
+</div>
+{% endblock %}

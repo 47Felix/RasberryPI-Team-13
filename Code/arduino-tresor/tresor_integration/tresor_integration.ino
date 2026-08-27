@@ -41,6 +41,7 @@ void checkCode();
 void accessGranted();
 void accessDenied();
 void alarmMode();
+void checkSerialCommands();
 
 void setup() {
   lockServo.attach(servoPin);
@@ -51,9 +52,14 @@ void setup() {
 
   lcd.begin(16, 2);
   showIdleScreen();
+
+  Serial.begin(9600);
+  Serial.println("EVENT:READY");
 }
 
 void loop() {
+  checkSerialCommands();
+
   char key = keypad.getKey();
   if (!key) return;
 
@@ -65,6 +71,22 @@ void loop() {
   } else {
     enteredCode += key;
     updateInputDisplay();
+  }
+}
+
+// Empfaengt "SETCODE:<neuerCode>\n" vom Pi-Dashboard (Track G/J) und
+// aktualisiert den hinterlegten Tresor-Code zur Laufzeit.
+void checkSerialCommands() {
+  if (!Serial.available()) return;
+  String line = Serial.readStringUntil('\n');
+  line.trim();
+  if (line.startsWith("SETCODE:")) {
+    String newCode = line.substring(8);
+    newCode.trim();
+    if (newCode.length() >= 4 && newCode.length() <= 8) {
+      correctCode = newCode;
+      Serial.println("EVENT:CODE_UPDATED");
+    }
   }
 }
 
@@ -104,6 +126,7 @@ void accessGranted() {
   digitalWrite(greenLED, LOW);
 
   failedAttempts = 0;
+  Serial.println("EVENT:GRANTED");
   delay(1000);
   showIdleScreen();
 }
@@ -121,6 +144,8 @@ void accessDenied() {
   delay(1000);
   digitalWrite(redLED, LOW);
 
+  Serial.println("EVENT:DENIED:" + String(failedAttempts));
+
   if (failedAttempts >= maxAttempts) alarmMode();
 
   delay(1000);
@@ -131,6 +156,8 @@ void alarmMode() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("!! ALARM !!");
+
+  Serial.println("EVENT:ALARM");
 
   for (int i = 0; i < 10; i++) {
     digitalWrite(redLED, HIGH);

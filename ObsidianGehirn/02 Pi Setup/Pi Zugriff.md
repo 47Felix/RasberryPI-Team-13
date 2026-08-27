@@ -16,9 +16,15 @@ Claude läuft in einer Cloud-Sandbox **ohne** Zugriff auf das Schul-WLAN. Direkt
 | Web-Terminal (ttyd) | `http://team13-1.local:7681` | Claude (via Chrome-Steuerung auf Antons Mac) |
 | Klassisches SSH | `ssh Team13@Team13-1.local` | Anton selbst, im Mac-Terminal |
 | Node-RED Editor | `http://team13-1.local:1880` | Alle (Browser) |
+| **Tailscale (seit 27.08.2026)** | `ssh team13@100.100.186.55` (Tailscale-IP, Hostname `team13-1-pi`) | Auch die Discord-Bot-VM (`claudediscord-vm`), da beide im selben Tailnet sind – direkter SSH-Zugriff ohne Chrome-Umweg |
 
 > [!warning] Voraussetzung für SSH
-> Klassischer SSH-Zugriff funktioniert nur, wenn der zugreifende Rechner im WLAN "CCiPhone" ist.
+> Klassischer SSH-Zugriff funktioniert nur, wenn der zugreifende Rechner im WLAN "CCiPhone" ist. Tailscale umgeht diese Einschränkung (funktioniert von überall, wo Tailscale erreichbar ist).
+
+> [!danger] Sicherheitsbefund (27.08.2026): ttyd ohne Authentifizierung + passwortloses sudo
+> Das ttyd-Web-Terminal (Port 7681) hat **keine eigene Login-Abfrage** – jeder mit Netzwerkzugriff auf den Port bekommt sofort eine `team13`-Shell. `team13` ist ausserdem passwortlos (`NOPASSWD`) in der `sudo`-Gruppe. War bisher durch die LAN-Reichweite (nur Schul-WLAN) einigermassen eingegrenzt, ist aber seit dem Tailscale-Setup fuer das ganze Tailnet erreichbar. **Offen, siehe [[Offene Punkte]]**: ttyd mit Basic-Auth absichern oder per Tailscale-ACL einschraenken.
+>
+> Das SSH-Passwort fuer `team13` wurde am 27.08.2026 zurueckgesetzt (war vergessen) – neuer Wert steht wie gehabt nicht hier im Vault, siehe [[⚠️ Zugangsdaten - Hinweis]].
 
 ## ttyd als systemd-Service
 `/etc/systemd/system/ttyd.service`, ExecStart `/home/team13/ttyd -p 7681 -W bash`, `Restart=on-failure`, `enabled`. Startet automatisch bei jedem Boot und bei Absturz automatisch neu.

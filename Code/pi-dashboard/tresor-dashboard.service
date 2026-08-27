@@ -1,0 +1,15 @@
+[Unit]
+Description=Tresor Pi-Dashboard (Flask + Arduino-Serial-Bridge)
+After=network.target
+
+[Service]
+Type=simple
+User=team13
+WorkingDirectory=/home/team13/tresor-dashboard
+EnvironmentFile=/home/team13/tresor-dashboard/.env
+ExecStart=/home/team13/tresor-dashboard/venv/bin/python /home/team13/tresor-dashboard/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

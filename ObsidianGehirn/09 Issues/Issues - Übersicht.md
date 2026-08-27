@@ -23,6 +23,16 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 Details/Aufteilung siehe [[WS-Kurzprojekt Freitag]].
 
+### Pi-Dashboard (Erweiterung, [[Erweiterung - Raspberry Pi Dashboard]])
+- [#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung — Software fertig (Serial-Protokoll + Sketch-Erweiterung), Hardware-Test steht noch aus
+- [#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi — SQLite-Logging fertig, per HTTP getestet
+- [#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend — Flask-Dashboard fertig, läuft als systemd-Service
+- [#40](https://github.com/47Felix/RasberryPI-Team-13/issues/40) Track J – Code/Passwort über Webinterface ändern — Formular fertig, eigenes Admin-Passwort
+- [#41](https://github.com/47Felix/RasberryPI-Team-13/issues/41) Stretch – Discord-Bot meldet Alarm automatisch — implementiert (direkter API-Call bei EVENT:ALARM)
+- [#42](https://github.com/47Felix/RasberryPI-Team-13/issues/42) Stretch – Live-Status-Anzeige + Versuchszähler — als Text-Ampel im Dashboard umgesetzt
+
+Alle sechs bewusst noch **offen gelassen** statt geschlossen: die Software ist fertig und per HTTP end-to-end getestet, aber ohne angeschlossenen Arduino nicht als Hardware-in-the-loop verifiziert – siehe [[Erweiterung - Raspberry Pi Dashboard]] Abschnitt "Was noch fehlt".
+
 ## ✅ Geschlossen (was wurde gemacht)
 
 - **[#1](https://github.com/47Felix/RasberryPI-Team-13/issues/1) LED-Hardware auf Breadboard aufbauen** – LED + Vorwiderstand an GPIO4/Pin7 + Ground verkabelt, bestehender Node-RED-Flow erfolgreich getestet. Siehe [[Node-RED Flow - LED Test]].
