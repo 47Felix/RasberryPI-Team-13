@@ -39,6 +39,14 @@ Elegoo-UNO-R3-Starter-Kit:
 
 ---
 
+## Der Aufbau
+
+![w:900](assets/schaltung-tinkercad.png)
+
+*Schaltplan aus unserer Tinkercad-Simulation – Arduino, Keypad, Servo, LCD, Buzzer und LEDs auf dem Breadboard.*
+
+---
+
 ## Architektur
 
 ```
