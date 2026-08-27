@@ -93,5 +93,3 @@ Erreichbar im WLAN unter `http://team13-1.local:5000`
 # Danke! 🎉
 
 Fragen?
-
-Repo: `github.com/47Felix/RasberryPI-Team-13`
