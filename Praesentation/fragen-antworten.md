@@ -25,8 +25,8 @@ Weil es das Kit war, das im Workshop zur Verfügung stand, und es alle nötigen 
 **Warum kein Buzzer im aktuellen Sketch, wenn er doch im Kit ist?**
 Pin D11 ist dafür bereits reserviert, die Integration war zeitlich die letzte Priorität – Fokus lag zuerst auf Keypad, Servo, LCD und der Pi-Anbindung.
 
-**Wie ist die Box/das Gehäuse entstanden?**
-[Hier je nach tatsächlichem Stand ergänzen – wurde das Gehäuse gebaut? Falls nicht fertig: ehrlich sagen, dass der Fokus auf der Funktion lag und das Gehäuse Nice-to-have war.]
+**Wo ist das Gehäuse?**
+Bewusst weggelassen – die Challenge ist benotungsfrei, wir haben die Zeit lieber in Funktion und die Pi-Dashboard-Erweiterung gesteckt statt in Optik.
 
 ---
 
