@@ -14,16 +14,6 @@ Freitag, 28.08.2026 · Smart Systems (BH4ab)
 
 ---
 
-## Die Aufgabe
-
-- Kleinteam finden, in einem Tag ein Projekt mit **RasPi, Arduino, Sensorik & Co.** bauen
-- 10-Minuten-Präsentation, benotungsfrei
-- Motto: Ruhm, Ehre, Spaß, ein bisschen Wettkampf
-
-**Unsere Antwort: eine Escape-Box, die man knacken muss.**
-
----
-
 ## Unsere Idee: 🔐 Digitaler Tresor / Escape-Box
 
 - 4×4-Keypad zur Code-Eingabe
@@ -63,23 +53,6 @@ Raspberry Pi – Dashboard (Flask)
 ```
 
 Nicht nur ein Tresor – ein **vernetztes System** mit Live-Monitoring.
-
----
-
-## Team & Aufteilung (Tracks)
-
-Unabhängige Arbeitspakete, damit alle 4 gleichzeitig arbeiten konnten:
-
-| Track | Was |
-|---|---|
-| A | Keypad-Eingabe + Code-Prüf-Logik |
-| B | Servo-Schließmechanismus |
-| C | LCD1602-Statusanzeige |
-| D | Buzzer + LED-Feedback / Alarm |
-| E | Box/Gehäuse |
-| F | Gesamtintegration |
-
-Erst am Schluss (Track F) alles in einem gemeinsamen Sketch zusammengeführt.
 
 ---
 
