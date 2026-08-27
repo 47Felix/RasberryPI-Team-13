@@ -1,0 +1,6 @@
+[Unit]
+Description=Restart tresor-dashboard after its .env changed
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl restart tresor-dashboard.service

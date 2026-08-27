@@ -35,6 +35,7 @@ Pi: ~/tresor-dashboard/app.py (Flask, systemd-Service "tresor-dashboard")
 - **`.env` auf dem Pi enthaelt**: `DASHBOARD_ADMIN_PASSWORD` (zufaellig generiert, steht nicht hier im Vault – siehe [[⚠️ Zugangsdaten - Hinweis]]), `DASHBOARD_SECRET_KEY` (Flask-Session), `DISCORD_BOT_TOKEN` (Kopie vom gleichen Bot-Token, das auch die Azure-VM nutzt), `DISCORD_ALARM_CHANNEL_ID` (aktuell `pi-projekt`-Kanal).
 - **Erreichbar unter**: `http://team13-1.local:5000` im Schul-WLAN, oder ueber Tailscale (`http://100.100.186.55:5000`) – siehe [[Pi Zugriff]] fuer den neuen Tailscale-Zugangsweg.
 - **Service verwalten**: `sudo systemctl status/restart tresor-dashboard`, Logs: `sudo journalctl -u tresor-dashboard -f`.
+- **`.env`-Änderungen wirken automatisch (seit 27.08.2026)**: `tresor-dashboard-env-reload.path` überwacht `~/tresor-dashboard/.env` und startet den Dashboard-Service automatisch neu, sobald die Datei geändert wird (systemd `EnvironmentFile` wird sonst nur beim Prozessstart gelesen – ohne diesen Watcher bräuchte jede `.env`-Änderung, z.B. ein neues Admin-Passwort, einen manuellen `systemctl restart`). Status prüfen: `systemctl status tresor-dashboard-env-reload.path`.
 
 ## Serial-Protokoll (selbst definiert, da vorher keins existierte)
 

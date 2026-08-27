@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch tresor-dashboard .env for changes and auto-restart the service
+
+[Path]
+PathModified=/home/team13/tresor-dashboard/.env
+Unit=tresor-dashboard-env-reload.service
+
+[Install]
+WantedBy=multi-user.target
