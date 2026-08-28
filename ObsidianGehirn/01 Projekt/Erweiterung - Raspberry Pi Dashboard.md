@@ -5,7 +5,7 @@ tags: [projekt, pi-dashboard, arduino, kurzprojekt]
 # Erweiterung: Raspberry Pi Dashboard fuer den Digitalen Tresor
 
 > [!info] Stand
-> 27.08.2026 – Software-Seite (Tracks G-J + beide Stretch-Ziele) gebaut, deployed und **end-to-end mit einem simulierten Arduino getestet** (virtueller Serial-Port via `socat`, da kein echtes Gerät angeschlossen ist und Tinkercad keine externe Serial-/Netzwerk-Schnittstelle anbietet – siehe [[Pi Zugriff]]/unten). Dabei einen echten Bug gefunden und gefixt (Discord-Alarm scheiterte an einem von Cloudflare geblockten User-Agent). **Test mit dem echten/Tinkercad-Arduino selbst steht noch aus**, siehe "Was noch fehlt".
+> 28.08.2026 – **Echter Hardware-Test mit angeschlossenem Arduino durchgeführt** (nicht mehr nur Mock-Serial). Dabei zwei Bugs gefunden und gefixt: (1) Arduino meldete nach dem automatischen Wiederverriegeln kein Ereignis, Dashboard zeigte "offen" dauerhaft weiter an → neues `EVENT:LOCKED` ergänzt; (2) Dashboard aktualisierte sich nur bei manuellem Neuladen → neuer `/api/status`-JSON-Endpunkt + JS-Polling alle 2s. Siehe "Hardware-Test" unten. Vorher (27.08.2026): Software-Seite komplett per simuliertem Arduino (`socat`) end-to-end getestet, dabei einen Discord-Alarm-Bug gefixt (Cloudflare blockte den User-Agent).
 
 Setzt auf [[WS-Kurzprojekt Freitag]] auf: der Tresor-Arduino-Sketch (`Code/arduino-tresor/tresor_integration/tresor_integration.ino`) meldet seine Ereignisse jetzt per USB-Serial an den Pi, der sie loggt und über eine kleine Weboberfläche im WLAN anzeigt. Deckt GitHub-Issues #37-#42 ab (Tracks G-J + 2 Stretch-Ziele).
 
@@ -45,6 +45,7 @@ Pi: ~/tresor-dashboard/app.py (Flask, systemd-Service "tresor-dashboard")
 | Arduino → Pi | `EVENT:GRANTED` | Korrekter Code, Tresor offen |
 | Arduino → Pi | `EVENT:DENIED:<n>` | Falscher Code, `<n>` = Versuchsnummer |
 | Arduino → Pi | `EVENT:ALARM` | Max. Versuche erreicht, Alarm |
+| Arduino → Pi | `EVENT:LOCKED` | Automatisch wieder verriegelt (4s nach `EVENT:GRANTED`) – seit 28.08.2026, siehe "Hardware-Test" |
 | Arduino → Pi | `EVENT:CODE_UPDATED` | Bestaetigt neuen Code uebernommen |
 | Pi → Arduino | `SETCODE:<code>` | Neuen Tresor-Code setzen (4-8 Ziffern) |
 
@@ -61,10 +62,17 @@ Da kein Arduino angeschlossen ist und Tinkercad keine Bridge nach aussen anbiete
 
 **Fazit**: Die komplette Pi-Software-Logik ist verifiziert korrekt. Was fehlt, ist ausschliesslich die Arduino-Seite selbst.
 
-## Was noch fehlt (bewusst offen, braucht physischen Zugriff)
+## Hardware-Test mit echtem Arduino (28.08.2026)
 
-- [ ] **Echter Arduino-Test**: Sketch (mit der neuen Serial-Erweiterung) auf den echten/Tinkercad-Arduino flashen, per USB an den Pi anschliessen, pruefen ob `/dev/ttyACM0` (oder `ttyUSB0`) auftaucht und echte Events ankommen. Ich (Claude, VM-Session) habe dafuer keinen physischen Zugriff.
-- [ ] **Tinkercad manuell gegenchecken**: Wer Zugriff auf die Tinkercad-Simulation hat, kann den aktualisierten Sketch dort einspielen und im eingebauten Serial Monitor (9600 Baud) pruefen, ob beim Codeeingeben tatsaechlich `EVENT:GRANTED`/`EVENT:DENIED:n`/`EVENT:ALARM`-Zeilen erscheinen – das validiert zumindest die Sketch-Logik, auch ohne Verbindung zum Pi (Tinkercad selbst laesst sich nicht von aussen anbinden).
+Erster Test mit tatsaechlich per USB angeschlossenem Arduino (nicht mehr Mock-Serial). Dabei zwei Bugs gefunden und noch am selben Tag gefixt:
+
+1. **Fehlendes Re-Lock-Event**: Der Arduino meldete nach dem automatischen Wiederverriegeln (4s nach `EVENT:GRANTED`) kein eigenes Ereignis – das Dashboard zeigte "offen" dauerhaft weiter an, auch nachdem der Tresor laengst wieder zu war. Fix: neues `EVENT:LOCKED` direkt nach dem Wiederverriegeln im Sketch ergaenzt.
+2. **Kein Live-Update im Dashboard**: `dashboard.html` aktualisierte Status/Verlauf nur bei manuellem Neuladen. Fix: neuer `/api/status`-JSON-Endpunkt in `app.py` + JS-Polling alle 2s, aktualisiert Status-Badge, Ampel, Fehlversuche und Ereignis-Tabelle ohne Reload.
+
+Siehe PR [#48](https://github.com/47Felix/RasberryPI-Team-13/pull/48).
+
+## Was noch fehlt
+
 - [ ] `SETCODE`-Timing pruefen: Wenn `checkSerialCommands()` mitten in einem `delay()` (z.B. waehrend `accessGranted()` 4 Sekunden wartet) aufgerufen werden soll, geht das mit dem aktuellen Sketch-Aufbau nicht (Arduino ist in dem Moment blockiert) – nur relevant, falls das im echten Betrieb stoert.
 - [ ] Track #42 (Stretch) ist nur als Text-Ampel umgesetzt (gross, farbig), keine physische LED-Ampel-Hardware am Pi.
 
@@ -76,7 +84,7 @@ Da kein Arduino angeschlossen ist und Tinkercad keine Bridge nach aussen anbiete
 ## Sonstiges
 
 - Die Pi-Systemuhr ging beim Deployment falsch (zeigte 24.08. statt 27.08.) – vermutlich fehlende RTC-Batterie + NTP-Sync noch nicht durchgelaufen. Betrifft die Zeitstempel im Event-Log! Siehe [[Offene Punkte]].
-- Ein Teammitglied hatte parallel schon eigene Debugging-Versuche mit `Serial.println(key)` unternommen (liegt als `tresor_integration_v2.ino` + Tinkercad-Screenshot im selben Ordner, Notiz: "in der Serial kommt keine Zahl wenn ich auf dem Keypad drücke") – nicht geloescht, als Referenz stehen gelassen. Mein Ansatz loggt strukturierte Ereignisse statt Rohtasten, sollte das Problem umgehen, sobald der neue Sketch geflasht ist.
+- Ein Teammitglied hatte parallel schon eigene Debugging-Versuche mit `Serial.println(key)` unternommen (Notiz: "in der Serial kommt keine Zahl wenn ich auf dem Keypad drücke") – nicht geloescht, als Referenz stehen gelassen, liegt seit dem Sketch-Ordner-Cleanup (28.08.2026, PR [#47](https://github.com/47Felix/RasberryPI-Team-13/pull/47)) unter `Code/arduino-tresor/tresor_integration/debug-referenz/` (`tresor_integration_v2.ino`, Screenshot, `message.txt`) statt direkt im Sketch-Ordner – Grund: Arduino/`arduino-cli` kompiliert sonst alle `.ino`-Dateien im selben Ordner zusammen, was mit der zweiten `setup()`/`loop()`-Kopie fehlgeschlagen waere. Mein Ansatz loggt strukturierte Ereignisse statt Rohtasten, sollte das Problem umgehen, sobald der neue Sketch geflasht ist.
 
 ## Verwandte Notizen
 - [[WS-Kurzprojekt Freitag]]
