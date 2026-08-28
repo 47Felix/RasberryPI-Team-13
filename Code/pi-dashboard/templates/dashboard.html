@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Tresor-Dashboard{% endblock %}
+{% block crumb %}Live Monitoring{% endblock %}
 {% block content %}
 {% set colors = {"offen": "var(--green)", "verschlossen": "var(--yellow)", "alarm": "var(--red)", "unbekannt": "var(--muted)"} %}
+{% set icons = {"offen": "🔓", "verschlossen": "🔒", "alarm": "🚨", "unbekannt": "❔"} %}
 {% set labels = {"offen": "OFFEN", "verschlossen": "VERSCHLOSSEN", "alarm": "ALARM", "unbekannt": "UNBEKANNT"} %}
 
-<div class="card" id="status-card" style="border-left: 3px solid {{ colors.get(status.state, 'var(--muted)') }};">
+<div class="card" id="status-card">
   <div class="panel-head">
     <span>Status</span>
     <span>
@@ -14,16 +16,24 @@
       </span>
     </span>
   </div>
-  <div class="panel-body" style="text-align:center;">
+  <div class="panel-body" id="status-tile" style="text-align:center; border-radius:10px; padding:28px 18px; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, {{ colors.get(status.state, 'var(--muted)') }} 18%, transparent), transparent 70%);">
     <img id="alarm-gif" src="{{ url_for('static', filename='alarm.gif') }}" alt="Alarm"
-         style="display:none; width:96px; height:96px; margin-bottom:10px; border-radius:6px;">
-    <div id="status-label" style="font-size:2.4rem; font-weight:800; letter-spacing:.04em; margin:6px 0 14px; color: {{ colors.get(status.state, 'var(--muted)') }};">
+         style="display:none; width:140px; height:140px; margin-bottom:14px; border-radius:12px; box-shadow:0 0 40px rgba(255,0,30,.6);">
+    <div id="status-icon" style="font-size:2.6rem; margin-bottom:6px;">{{ icons.get(status.state, '❔') }}</div>
+    <div id="status-label" style="font-size:2.2rem; font-weight:800; letter-spacing:.03em; margin:2px 0 16px; color: {{ colors.get(status.state, 'var(--muted)') }};">
       {{ labels.get(status.state, status.state) }}
     </div>
     <div class="muted">FEHLVERSUCHE SEIT LETZTEM ERFOLG: <strong id="failed-attempts" style="color:var(--text);">{{ status.failed_attempts }}</strong> / 3</div>
     <div class="muted" id="last-event-wrap" {% if not status.last_event_at %}style="display:none;"{% endif %}>
       LETZTES EREIGNIS: <span id="last-event-at">{{ status.last_event_at or '' }}</span>
     </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="panel-head"><span>Ereignisse nach Typ (letzte 50)</span></div>
+  <div class="panel-body">
+    <div id="chart-wrap" style="display:flex; align-items:flex-end; gap:14px; height:120px;"></div>
   </div>
 </div>
 
@@ -51,30 +61,45 @@
 
 <script>
   const COLORS = {offen: "var(--green)", verschlossen: "var(--yellow)", alarm: "var(--red)", unbekannt: "var(--muted)"};
+  const ICONS = {offen: "🔓", verschlossen: "🔒", alarm: "🚨", unbekannt: "❔"};
   const LABELS = {offen: "OFFEN", verschlossen: "VERSCHLOSSEN", alarm: "ALARM", unbekannt: "UNBEKANNT"};
+  const EVENT_COLORS = {granted: "var(--green)", denied: "var(--yellow)", alarm: "var(--red)", locked: "var(--blue)", ready: "var(--purple)", code_updated: "var(--green2)"};
   let lastState = "{{ status.state }}";
+  let sirenTimer = null;
+  let sirenCtx = null;
 
-  // "Tung tung tung" Alarm-Sound per Web Audio API (kein Audio-File noetig)
-  function playAlarmBeeps() {
+  // Dramatische Alarm-Sirene: durchgehender Zwei-Ton-Wechsel (wie Polizei/Feuerwehr), laeuft
+  // solange der Alarm aktiv ist, statt nur 3x kurz zu piepen.
+  function startSiren() {
+    if (sirenTimer) return;
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [0, 0.35, 0.7].forEach((delay) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "square";
-        osc.frequency.value = 110;
-        gain.gain.value = 0.15;
-        osc.connect(gain).connect(ctx.destination);
-        const t = ctx.currentTime + delay;
-        osc.start(t);
-        osc.stop(t + 0.18);
-      });
+      sirenCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = sirenCtx.createOscillator();
+      const gain = sirenCtx.createGain();
+      osc.type = "sawtooth";
+      gain.gain.value = 0.12;
+      osc.connect(gain).connect(sirenCtx.destination);
+      osc.start();
+      let high = true;
+      sirenTimer = setInterval(() => {
+        osc.frequency.setValueAtTime(high ? 880 : 587, sirenCtx.currentTime);
+        high = !high;
+      }, 260);
+      sirenCtx._osc = osc;
     } catch (e) { /* Audio nicht verfuegbar, egal */ }
+  }
+  function stopSiren() {
+    if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
+    if (sirenCtx) {
+      try { sirenCtx._osc.stop(); sirenCtx.close(); } catch (e) {}
+      sirenCtx = null;
+    }
   }
 
   function setAlarmVisual(active) {
-    document.body.classList.toggle("alarm-flash", active);
+    document.body.classList.toggle("alarm-active", active);
     document.getElementById("alarm-gif").style.display = active ? "inline-block" : "none";
+    if (active) startSiren(); else stopSiren();
   }
 
   function renderEvents(events) {
@@ -91,6 +116,28 @@
     wrap.innerHTML = html;
   }
 
+  function renderChart(events) {
+    const counts = {};
+    for (const e of events) counts[e.event] = (counts[e.event] || 0) + 1;
+    const max = Math.max(1, ...Object.values(counts));
+    const wrap = document.getElementById("chart-wrap");
+    const keys = Object.keys(counts);
+    if (!keys.length) {
+      wrap.innerHTML = '<p class="muted">Noch keine Daten.</p>';
+      return;
+    }
+    wrap.innerHTML = keys.map((k) => {
+      const h = Math.max(6, Math.round((counts[k] / max) * 100));
+      const color = EVENT_COLORS[k] || "var(--blue)";
+      return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <div style="font-size:.75rem; color:var(--muted); font-weight:700;">${counts[k]}</div>
+        <div style="width:100%; max-width:36px; height:${h}px; border-radius:6px 6px 2px 2px;
+                    background: linear-gradient(180deg, ${color}, color-mix(in srgb, ${color} 40%, transparent));"></div>
+        <div style="font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.03em;">${k}</div>
+      </div>`;
+    }).join("");
+  }
+
   async function pollStatus() {
     try {
       const res = await fetch("/api/status");
@@ -102,10 +149,12 @@
       badge.className = "badge " + (data.arduino_connected ? "badge-connected" : "badge-disconnected");
 
       const state = data.status.state;
+      document.getElementById("status-icon").textContent = ICONS[state] || "❔";
       const label = document.getElementById("status-label");
       label.textContent = LABELS[state] || state;
       label.style.color = COLORS[state] || "var(--muted)";
-      document.getElementById("status-card").style.borderLeftColor = COLORS[state] || "var(--muted)";
+      document.getElementById("status-tile").style.background =
+        `radial-gradient(circle at 50% 0%, color-mix(in srgb, ${COLORS[state] || 'var(--muted)'} 18%, transparent), transparent 70%)`;
 
       document.getElementById("failed-attempts").textContent = data.status.failed_attempts;
 
@@ -116,11 +165,9 @@
       }
 
       renderEvents(data.events);
+      renderChart(data.events);
 
       setAlarmVisual(state === "alarm");
-      if (state === "alarm" && lastState !== "alarm") {
-        playAlarmBeeps();
-      }
       lastState = state;
     } catch (e) {
       // Verbindung kurz weg, naechster Poll versucht's wieder
@@ -128,6 +175,7 @@
   }
 
   setAlarmVisual(lastState === "alarm");
+  pollStatus();
   setInterval(pollStatus, 2000);
 </script>
 {% endblock %}
