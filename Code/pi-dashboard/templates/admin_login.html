@@ -2,12 +2,14 @@
 {% block title %}Admin-Login{% endblock %}
 {% block content %}
 <div class="card">
-  <h1>Admin-Login</h1>
-  <p class="muted">Dashboard-Admin-Passwort (nicht der Tresor-Code!)</p>
-  {% if error %}<p class="msg-error">{{ error }}</p>{% endif %}
-  <form method="post">
-    <input type="password" name="admin_password" placeholder="Admin-Passwort" required autofocus>
-    <button type="submit">Einloggen</button>
-  </form>
+  <div class="panel-head"><span>Admin-Login</span></div>
+  <div class="panel-body">
+    <p class="muted">Dashboard-Admin-Passwort (nicht der Tresor-Code!)</p>
+    {% if error %}<p class="msg-error">{{ error }}</p>{% endif %}
+    <form method="post">
+      <input type="password" name="admin_password" placeholder="Admin-Passwort" required autofocus>
+      <button type="submit">Einloggen</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

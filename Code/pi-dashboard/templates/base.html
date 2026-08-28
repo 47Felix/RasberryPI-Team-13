@@ -6,45 +6,100 @@
   <title>{% block title %}Tresor-Dashboard{% endblock %}</title>
   <style>
     :root {
-      --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
-      --green: #22c55e; --yellow: #eab308; --red: #ef4444; --blue: #3b82f6;
+      --bg: #0a0d12; --panel: #12161d; --panel-border: #232a35; --text: #d6dce5; --muted: #6b7688;
+      --green: #37d67a; --yellow: #f2b93d; --red: #ff4d4f; --blue: #3ea6ff; --accent: #14181f;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text);
-      display: flex; flex-direction: column; align-items: center; padding: 24px 16px;
+      margin: 0; font-family: 'Consolas', 'SFMono-Regular', Menlo, monospace;
+      background:
+        linear-gradient(var(--accent) 1px, transparent 1px) 0 0 / 100% 24px,
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background-color .15s ease;
+    }
+    body.alarm-flash {
+      animation: alarmFlash 0.6s steps(2, jump-none) infinite;
+    }
+    @keyframes alarmFlash {
+      0%, 100% { background-color: var(--bg); }
+      50% { background-color: #3a0708; }
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--panel-border);
+      position: sticky; top: 0; z-index: 5;
+    }
+    .topbar .brand {
+      display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .06em;
+      font-size: .95rem; text-transform: uppercase; color: var(--text);
+    }
+    .topbar .brand .dot {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+    .topbar nav { display: flex; gap: 4px; }
+    .topbar nav a {
+      color: var(--muted); text-decoration: none; font-size: .8rem; letter-spacing: .04em;
+      padding: 6px 12px; border-radius: 4px; border: 1px solid transparent;
+      text-transform: uppercase;
+    }
+    .topbar nav a:hover { color: var(--text); border-color: var(--panel-border); background: var(--accent); }
+
+    main {
+      max-width: 760px; margin: 0 auto; padding: 20px 16px 40px;
+      display: flex; flex-direction: column; gap: 16px;
     }
     .card {
-      background: var(--card); border-radius: 12px; padding: 24px; width: 100%;
-      max-width: 640px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.3);
+      background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px;
+      padding: 0; box-shadow: 0 0 0 1px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.35);
+      overflow: hidden;
     }
-    h1 { margin-top: 0; font-size: 1.4rem; }
-    nav { width: 100%; max-width: 640px; display: flex; justify-content: space-between; margin-bottom: 12px; }
-    nav a { color: var(--blue); text-decoration: none; font-size: .9rem; }
-    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #334155; }
-    th { color: var(--muted); font-weight: 600; }
-    .muted { color: var(--muted); font-size: .85rem; }
+    .card > .panel-head {
+      padding: 8px 14px; border-bottom: 1px solid var(--panel-border);
+      font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card > .panel-body { padding: 18px 16px; }
+    h1 { margin: 0 0 12px; font-size: .95rem; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--panel-border); }
+    th { color: var(--muted); font-weight: 600; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; }
+    td { color: var(--text); }
+    .muted { color: var(--muted); font-size: .82rem; }
     input[type=password], input[type=text] {
-      width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #334155;
-      background: #0f172a; color: var(--text); font-size: 1rem; margin: 8px 0;
+      width: 100%; padding: 10px; border-radius: 4px; border: 1px solid var(--panel-border);
+      background: var(--bg); color: var(--text); font-size: .95rem; margin: 8px 0;
+      font-family: inherit;
     }
+    input:focus { outline: none; border-color: var(--blue); }
     button {
-      background: var(--blue); color: white; border: none; padding: 10px 18px;
-      border-radius: 8px; font-size: 1rem; cursor: pointer;
+      background: var(--blue); color: #05141f; border: none; padding: 10px 18px;
+      border-radius: 4px; font-size: .85rem; cursor: pointer; font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase; font-family: inherit;
     }
+    button:hover { filter: brightness(1.1); }
     .msg-success { color: var(--green); }
     .msg-error { color: var(--red); }
-    .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: .8rem; }
-    .badge-connected { background: rgba(34,197,94,.2); color: var(--green); }
-    .badge-disconnected { background: rgba(239,68,68,.2); color: var(--red); }
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 3px; font-size: .72rem;
+      text-transform: uppercase; letter-spacing: .04em; border: 1px solid transparent;
+    }
+    .badge-connected { background: rgba(55,214,122,.12); color: var(--green); border-color: rgba(55,214,122,.3); }
+    .badge-disconnected { background: rgba(255,77,79,.12); color: var(--red); border-color: rgba(255,77,79,.3); }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="{{ url_for('dashboard') }}">🏠 Dashboard</a>
-    <a href="{{ url_for('admin') }}">⚙️ Code aendern</a>
-  </nav>
-  {% block content %}{% endblock %}
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> TRESOR // MONITOR</div>
+    <nav>
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('admin') }}">Code aendern</a>
+    </nav>
+  </div>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 </body>
 </html>
