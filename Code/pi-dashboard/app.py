@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import serial
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
 
 BASE_DIR = Path(__file__).parent
 DB_PATH = Path(os.environ.get("DASHBOARD_DB_PATH", BASE_DIR / "tresor.db"))
@@ -112,6 +112,9 @@ def handle_line(line):
         live_status.update(state="alarm", last_event_at=now)
         log_event("alarm")
         notify_discord("🚨 **Tresor-Alarm ausgeloest!** Zu viele falsche Codes eingegeben.")
+    elif line == "EVENT:LOCKED":
+        live_status.update(state="verschlossen", last_event_at=now)
+        log_event("locked", detail="Automatisch nach Zugang wieder verriegelt")
     elif line == "EVENT:READY":
         live_status.update(state="verschlossen", failed_attempts=0, last_event_at=now)
         log_event("ready", detail="Arduino gestartet/verbunden")
@@ -159,6 +162,19 @@ def send_new_code(new_code):
             return True, None
         except Exception as e:
             return False, str(e)
+
+
+@app.route("/api/status")
+def api_status():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute("SELECT * FROM events ORDER BY id DESC LIMIT 50").fetchall()
+    conn.close()
+    return jsonify(
+        status=live_status,
+        events=[dict(r) for r in rows],
+        arduino_connected=serial_conn["obj"] is not None,
+    )
 
 
 @app.route("/")

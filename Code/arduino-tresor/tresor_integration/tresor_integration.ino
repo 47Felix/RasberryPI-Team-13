@@ -121,12 +121,13 @@ void accessGranted() {
 
   digitalWrite(greenLED, HIGH);
   lockServo.write(unlockedAngle);
+  Serial.println("EVENT:GRANTED");
   delay(4000);
   lockServo.write(lockedAngle);
   digitalWrite(greenLED, LOW);
+  Serial.println("EVENT:LOCKED");
 
   failedAttempts = 0;
-  Serial.println("EVENT:GRANTED");
   delay(1000);
   showIdleScreen();
 }
