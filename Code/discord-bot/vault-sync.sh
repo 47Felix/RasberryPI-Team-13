@@ -16,7 +16,36 @@ NOTIFY_CHANNEL_ID="1542105092596174878"  # pi-projekt (Textkanal im Projekt)
 
 log() { echo "[$(date -Iseconds)] $*" >> "$LOG_FILE"; }
 
+notify_discord() {
+  if [ -f "$ENV_FILE" ]; then
+    local msg="$1"
+    local token
+    token="$(grep -oP '(?<=^DISCORD_BOT_TOKEN=).*' "$ENV_FILE")"
+    curl -s -X POST "https://discord.com/api/v10/channels/$NOTIFY_CHANNEL_ID/messages" \
+      -H "Authorization: Bot $token" -H "Content-Type: application/json" \
+      -d "$(python3 -c "import json,sys; print(json.dumps({'content': sys.argv[1]}))" "$msg")" \
+      >>"$LOG_FILE" 2>&1
+  fi
+}
+
+on_error() {
+  log "ABBRUCH: Skript unerwartet beendet (Zeile $1, Exit-Code $2) - siehe vault-sync.log fuer Details."
+  notify_discord "⚠️ Vault-Sync abgebrochen (Fehler in Zeile $1, Exit-Code $2). Bitte \`vault-sync.log\` auf der VM pruefen."
+}
+trap 'on_error $LINENO $?' ERR
+
 cd "$REPO_PATH"
+
+# Frische Credentials von der aktiven amogus_911-Session kopieren, statt einer
+# einmalig kopierten OAuth-Session zu vertrauen: Ein einmalig kopiertes Token
+# rotiert bei jedem Refresh unabhaengig vom Original weiter und faellt nach ein
+# paar Tagen still auseinander ("OAuth session expired and could not be
+# refreshed", passiert am 27./28.08.2026 - siehe Claude Discord Bot Setup.md).
+SOURCE_CREDS="$HOME/sessions/amogus_911/.credentials.json"
+if [ -f "$SOURCE_CREDS" ]; then
+  cp "$SOURCE_CREDS" "$CONFIG_DIR/.credentials.json"
+  chmod 600 "$CONFIG_DIR/.credentials.json"
+fi
 
 # GitHub-Token aus der bereits konfigurierten Remote-URL ziehen (gleiches Fine-Grained-Token
 # wie fuer den interaktiven Bot/Repo-Clone, liegt nicht separat im Vault - siehe Zugangsdaten-Hinweis)
@@ -48,13 +77,7 @@ DIRTY="$(git status --porcelain)"
 if [ -n "$DIRTY" ]; then
   log "ABBRUCH: Arbeitsverzeichnis auf main ist nicht sauber, moeglicherweise unfertige Arbeit eines Teammitglieds. Ueberspringe diesen Lauf ohne Aenderungen:"
   log "$DIRTY"
-  if [ -f "$ENV_FILE" ]; then
-    DISCORD_BOT_TOKEN="$(grep -oP '(?<=^DISCORD_BOT_TOKEN=).*' "$ENV_FILE")"
-    curl -s -X POST "https://discord.com/api/v10/channels/$NOTIFY_CHANNEL_ID/messages" \
-      -H "Authorization: Bot $DISCORD_BOT_TOKEN" -H "Content-Type: application/json" \
-      -d "$(python3 -c "import json; print(json.dumps({'content': '⚠️ Vault-Sync uebersprungen: main hat unversionierte/uncommittete Aenderungen im Arbeitsverzeichnis der VM. Bitte pruefen, bevor der naechste Sync laeuft.'}))")" \
-      >>"$LOG_FILE" 2>&1
-  fi
+  notify_discord "⚠️ Vault-Sync uebersprungen: main hat unversionierte/uncommittete Aenderungen im Arbeitsverzeichnis der VM. Bitte pruefen, bevor der naechste Sync laeuft."
   exit 0
 fi
 
@@ -118,11 +141,7 @@ echo "$CURRENT_SHA" > "$STATE_FILE"
 git checkout --detach origin/main >>"$LOG_FILE" 2>&1
 
 if [ -n "$PR_URL" ]; then
-  DISCORD_BOT_TOKEN="$(grep -oP '(?<=^DISCORD_BOT_TOKEN=).*' "$ENV_FILE")"
-  curl -s -X POST "https://discord.com/api/v10/channels/$NOTIFY_CHANNEL_ID/messages" \
-    -H "Authorization: Bot $DISCORD_BOT_TOKEN" -H "Content-Type: application/json" \
-    -d "$(python3 -c "import json; print(json.dumps({'content': '📚 Taeglicher Vault-Sync: neuer PR $PR_URL (bitte pruefen/mergen)'}))")" \
-    >>"$LOG_FILE" 2>&1
+  notify_discord "📚 Taeglicher Vault-Sync: neuer PR $PR_URL (bitte pruefen/mergen)"
 fi
 
 log "=== Vault-Sync Ende ==="
