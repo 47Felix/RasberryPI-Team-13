@@ -19,16 +19,16 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 Details/Aufteilung siehe [[WS-Kurzprojekt Freitag]].
 
 ### Pi-Dashboard (Erweiterung, [[Erweiterung - Raspberry Pi Dashboard]])
-- [#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung — Software fertig, seit 28.08.2026 per echtem Hardware-Test verifiziert (2 dabei gefundene Bugs gefixt, siehe [[Erweiterung - Raspberry Pi Dashboard]])
-- [#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi — SQLite-Logging fertig, per HTTP + echtem Hardware-Test verifiziert
-- [#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend — Flask-Dashboard fertig, läuft als systemd-Service, seit 28.08.2026 mit Live-Updates per Polling (kein manuelles Neuladen mehr nötig)
-- [#40](https://github.com/47Felix/RasberryPI-Team-13/issues/40) Track J – Code/Passwort über Webinterface ändern — Formular fertig, eigenes Admin-Passwort
-- [#41](https://github.com/47Felix/RasberryPI-Team-13/issues/41) Stretch – Discord-Bot meldet Alarm automatisch — implementiert (direkter API-Call bei EVENT:ALARM)
-- [#42](https://github.com/47Felix/RasberryPI-Team-13/issues/42) Stretch – Live-Status-Anzeige + Versuchszähler — als Text-Ampel im Dashboard umgesetzt
-
-Alle sechs noch **offen** in GitHub (Stand 28.08.2026), obwohl die Hardware-in-the-loop-Verifikation inzwischen erfolgt ist – siehe [[Erweiterung - Raspberry Pi Dashboard]] Abschnitt "Hardware-Test".
+Alle 6 Tracks (#37-#42) sind fertig, verifiziert und mittlerweile geschlossen – siehe unten. Milestone [#5](https://github.com/47Felix/RasberryPI-Team-13/milestone/5) wurde entsprechend ebenfalls geschlossen.
 
 ## ✅ Geschlossen (was wurde gemacht)
+
+- **[#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung** – Arduino sendet `EVENT:READY/GRANTED/DENIED/ALARM/LOCKED` per USB-Serial an den Pi, Autodetect + Reconnect verifiziert per echtem Hardware-Test (28.08.2026). Siehe [[Erweiterung - Raspberry Pi Dashboard]].
+- **[#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi** – Flask-App liest Serial im Hintergrund-Thread, loggt alle Ereignisse mit UTC-Zeitstempel in SQLite (`tresor.db`), läuft als systemd-Service `tresor-dashboard`. Per Mock- und echtem Hardware-Test bestätigt.
+- **[#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend** – Live-Ampel, Versuchszähler und Ereignis-Verlauf, seit dem Hardware-Test mit `/api/status`-Polling alle 2s ohne manuelles Neuladen. Erreichbar im WLAN und per Tailscale.
+- **[#40](https://github.com/47Felix/RasberryPI-Team-13/issues/40) Track J – Code/Passwort über Webinterface ändern** – `/admin`-Formular mit eigenem Admin-Passwort (getrennt vom Tresor-Code) setzt per `SETCODE`-Serial-Befehl einen neuen Tresor-Code.
+- **[#41](https://github.com/47Felix/RasberryPI-Team-13/issues/41) Stretch – Discord-Bot meldet Alarm automatisch** – bei `EVENT:ALARM` postet der Pi automatisch eine Discord-Nachricht in #pi-projekt per REST-API (User-Agent-Bug beim Testen gefunden und gefixt).
+- **[#42](https://github.com/47Felix/RasberryPI-Team-13/issues/42) Stretch – Live-Status-Anzeige + Versuchszähler** – als Text-Ampel im Dashboard umgesetzt (groß, farbig) inkl. Versuchszähler, keine physische LED-Ampel-Hardware (bewusste Einschränkung, siehe "Was noch fehlt" in [[Erweiterung - Raspberry Pi Dashboard]]).
 
 - **[#1](https://github.com/47Felix/RasberryPI-Team-13/issues/1) LED-Hardware auf Breadboard aufbauen** – LED + Vorwiderstand an GPIO4/Pin7 + Ground verkabelt, bestehender Node-RED-Flow erfolgreich getestet. Siehe [[Node-RED Flow - LED Test]].
 - **[#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2) Node-RED mit MQTT verknüpfen** – LED-Flow um Topic `team13-1/led/set` erweitert (Broker localhost:1883), Function-Node wandelt Payload in Boolean um, softwareseitig via `mosquitto_pub` getestet. Siehe [[Node-RED Flow - LED Test]].
