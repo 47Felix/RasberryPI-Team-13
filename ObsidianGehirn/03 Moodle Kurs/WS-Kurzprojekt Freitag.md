@@ -45,6 +45,9 @@ Milestone: [Milestone #1 "WS-Kurzprojekt & Präsentation (Freitag)"](https://git
 ### Fortschritt (26.08.2026)
 Kombinierter Arduino-Sketch für Track A (Keypad+Code-Prüf-Logik), B (Servo), C (LCD1602) und D (LEDs, **ohne** Buzzer) gemerged: [`Code/arduino-tresor/tresor_integration/tresor_integration.ino`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Code/arduino-tresor/tresor_integration/tresor_integration.ino) (PR [#30](https://github.com/47Felix/RasberryPI-Team-13/pull/30)). Buzzer-Teil von Track D folgt noch (Pin D11 im Sketch reserviert), ebenso Track E (Gehäuse) und F (finale Gesamtintegration). Issues [#15](https://github.com/47Felix/RasberryPI-Team-13/issues/15)-[#18](https://github.com/47Felix/RasberryPI-Team-13/issues/18) bleiben deshalb auf GitHub bewusst noch offen.
 
+### Präsentation (27.08.2026)
+10-Folien-Deck erstellt: [`Praesentation/tresor-praesentation.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Praesentation/tresor-praesentation.md) (Marp-Markdown) + fertig gerenderte [HTML-Version](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Praesentation/tresor-praesentation.html) zum direkten Präsentieren im Browser. Deckt Aufgabe/Idee/Hardware/Architektur/Team-Tracks/Pi-Dashboard/Lessons Learned ab, endet mit Ankündigung der Live-Demo. Siehe [[Erweiterung - Raspberry Pi Dashboard]] für die Dashboard-Details.
+
 ### Erledigt ✅
 - [x] Kleinteam bilden → [#10](https://github.com/47Felix/RasberryPI-Team-13/issues/10) (closed)
 - [x] Projektidee finden → [#11](https://github.com/47Felix/RasberryPI-Team-13/issues/11) (closed)
