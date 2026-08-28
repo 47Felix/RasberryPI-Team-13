@@ -14,24 +14,19 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 ### Kurzprojekt "Digitaler Tresor" (Milestone [#1](https://github.com/47Felix/RasberryPI-Team-13/milestone/1), Deadline 28.08.2026)
 - [#13](https://github.com/47Felix/RasberryPI-Team-13/issues/13) Kurzpräsentation vorbereiten (10 Minuten)
 - [#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14) Präsentation am Freitag halten
-- [#15](https://github.com/47Felix/RasberryPI-Team-13/issues/15) Track A – Keypad-Eingabe + Code-Prüf-Logik (@47Felix)
-- [#16](https://github.com/47Felix/RasberryPI-Team-13/issues/16) Track B – Servo-Schließmechanismus
-- [#17](https://github.com/47Felix/RasberryPI-Team-13/issues/17) Track C – LCD1602-Statusanzeige
-- [#18](https://github.com/47Felix/RasberryPI-Team-13/issues/18) Track D – Buzzer + LED Feedback und Alarm-Logik
-- [#19](https://github.com/47Felix/RasberryPI-Team-13/issues/19) Track E – Box/Gehäuse bauen
-- [#20](https://github.com/47Felix/RasberryPI-Team-13/issues/20) Track F – Gesamtintegration (braucht #15-#18 fertig)
+- [#19](https://github.com/47Felix/RasberryPI-Team-13/issues/19) Track E – Box/Gehäuse bauen (bewusst nicht gebaut, benotungsfrei)
 
 Details/Aufteilung siehe [[WS-Kurzprojekt Freitag]].
 
 ### Pi-Dashboard (Erweiterung, [[Erweiterung - Raspberry Pi Dashboard]])
-- [#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung — Software fertig (Serial-Protokoll + Sketch-Erweiterung), Hardware-Test steht noch aus
-- [#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi — SQLite-Logging fertig, per HTTP getestet
-- [#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend — Flask-Dashboard fertig, läuft als systemd-Service
+- [#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung — Software fertig, seit 28.08.2026 per echtem Hardware-Test verifiziert (2 dabei gefundene Bugs gefixt, siehe [[Erweiterung - Raspberry Pi Dashboard]])
+- [#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi — SQLite-Logging fertig, per HTTP + echtem Hardware-Test verifiziert
+- [#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend — Flask-Dashboard fertig, läuft als systemd-Service, seit 28.08.2026 mit Live-Updates per Polling (kein manuelles Neuladen mehr nötig)
 - [#40](https://github.com/47Felix/RasberryPI-Team-13/issues/40) Track J – Code/Passwort über Webinterface ändern — Formular fertig, eigenes Admin-Passwort
 - [#41](https://github.com/47Felix/RasberryPI-Team-13/issues/41) Stretch – Discord-Bot meldet Alarm automatisch — implementiert (direkter API-Call bei EVENT:ALARM)
 - [#42](https://github.com/47Felix/RasberryPI-Team-13/issues/42) Stretch – Live-Status-Anzeige + Versuchszähler — als Text-Ampel im Dashboard umgesetzt
 
-Alle sechs bewusst noch **offen gelassen** statt geschlossen: die Software ist fertig und per HTTP end-to-end getestet, aber ohne angeschlossenen Arduino nicht als Hardware-in-the-loop verifiziert – siehe [[Erweiterung - Raspberry Pi Dashboard]] Abschnitt "Was noch fehlt".
+Alle sechs noch **offen** in GitHub (Stand 28.08.2026), obwohl die Hardware-in-the-loop-Verifikation inzwischen erfolgt ist – siehe [[Erweiterung - Raspberry Pi Dashboard]] Abschnitt "Hardware-Test".
 
 ## ✅ Geschlossen (was wurde gemacht)
 
@@ -41,6 +36,11 @@ Alle sechs bewusst noch **offen gelassen** statt geschlossen: die Software ist f
 - **[#10](https://github.com/47Felix/RasberryPI-Team-13/issues/10) Kleinteam bilden** – 4er-Team steht (ganzes Team 13).
 - **[#11](https://github.com/47Felix/RasberryPI-Team-13/issues/11) Projektidee finden** – Entscheidung für "Digitaler Tresor / Escape-Box" (Keypad + Servo-Schloss + LCD + Buzzer/LED) aus dem Elegoo-UNO-R3-Kit. Siehe [[WS-Kurzprojekt Freitag]].
 - **[#12](https://github.com/47Felix/RasberryPI-Team-13/issues/12) Kurzprojekt umsetzen (Hardware+Software)** – war zu grob geschnitten, aufgeteilt in die 6 parallelen Tracks #15-#20 (siehe oben).
+- **[#15](https://github.com/47Felix/RasberryPI-Team-13/issues/15) Track A – Keypad-Eingabe + Code-Prüf-Logik** – 4x4-Keypad ausgelesen und mit fest hinterlegtem Code verglichen, Prüf-Logik erkennt richtigen/falschen Code zuverlässig. Teil des gemeinsamen Sketches `Code/arduino-tresor/tresor_integration/tresor_integration.ino` (PR [#30](https://github.com/47Felix/RasberryPI-Team-13/pull/30)).
+- **[#16](https://github.com/47Felix/RasberryPI-Team-13/issues/16) Track B – Servo-Schließmechanismus** – Servo verkabelt und bewegt sich bei richtigem Code wie vorgesehen; Mechanik softwareseitig fertig, hängt aktuell nur an keiner echten Tür (siehe #19, Gehäuse bewusst nicht gebaut).
+- **[#17](https://github.com/47Felix/RasberryPI-Team-13/issues/17) Track C – LCD1602-Statusanzeige** – LCD1602 verkabelt, zeigt Statustexte ("Code eingeben...", "Zugang gewährt", "Falscher Code", "Gesperrt!") wie geplant an.
+- **[#18](https://github.com/47Felix/RasberryPI-Team-13/issues/18) Track D – Buzzer + LED Feedback und Alarm-Logik** – Rot/Grün-LED-Feedback und Buzzer-Töne (kurz = richtig, lang/tief = falsch) laufen wie gewollt, inkl. Alarm-Logik nach 3 Fehlversuchen (Dauerton + blinkende rote LED).
+- **[#20](https://github.com/47Felix/RasberryPI-Team-13/issues/20) Track F – Gesamtintegration** – Keypad, Code-Prüfung, Servo, LCD und Buzzer/LED in einem gemeinsamen Sketch zusammengeführt, Pin-Konflikte aufgelöst, End-zu-End-Ablauf funktioniert. Danach noch zwei Nachbesserungen: fehlende Funktionsprototypen ergänzt (PR [#36](https://github.com/47Felix/RasberryPI-Team-13/pull/36)) und der Sketch-Ordner bereinigt, damit `arduino-cli` nur noch eine `.ino` kompiliert (PR [#47](https://github.com/47Felix/RasberryPI-Team-13/pull/47)). Offen blieb nur das physische Gehäuse (#19), kein Blocker für die Integration selbst.
 
 ## Verwandte Notizen
 - [[WS-Kurzprojekt Freitag]]
