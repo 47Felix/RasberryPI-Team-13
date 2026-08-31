@@ -10,31 +10,30 @@ Vorbereitung/Bearbeitung der "Today duties" von **Montag 31.08.** (First Brainst
 
 Die Karte "First Brainstorming" auf dem Haupt-Board verweist auf das Worksheet `case_analysis_worksheet.pdf` (Titel: *"The Internet and Politics – Your Network, Your Rules?"*). Das Worksheet hat drei leere Slots **CASE 1 / CASE 2 / CASE 3** – für jeden Case: Kernprobleme, wer ist betroffen, mögliche Lösungsideen. Genau das sind die "3 Cases", die heute ausgefüllt werden müssen.
 
-Die Cases habe ich **nicht erfunden**, sondern aus der echten Ausstellerliste des Aktionstags **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg (buewi.de/netz-ablauf, findet parallel heute statt) hergeleitet – dort sind reale Organisationen mit Ständen/Workshops vertreten. Drei davon decken unterschiedliche Facetten von "digitale Demokratie" ab.
+**Korrektur (auf Wunsch von Felix):** Alle 3 Cases beziehen sich jetzt auf **digi&demo** selbst statt auf drei verschiedene Organisationen vom Aktionstag. digi&demo nennt auf der eigenen Seite ([digiunddemo.de](https://www.digiunddemo.de/)) explizit drei Herausforderungen für offenen digitalen Diskurs: **Hate Speech, Desinformation und Polarisierung** – genau das sind jetzt CASE 1/2/3, jeweils mit Bezug zu digi&demos eigenem Stand (Meinungsboard + Erkennungs-Spiel) und ihrem Projekt "pleenum".
 
 > [!info] Ausgefülltes Worksheet
-> Das Case-Analysis-Worksheet ist im Layout des Original-PDFs ausgefüllt und liegt als eigener Bereich im Repo: [`DTEW-Workshop/`](https://github.com/47Felix/RasberryPI-Team-13/tree/main/DTEW-Workshop) (Markdown-Quelle, HTML- und PDF-Version) – nach demselben Muster wie [[WS-Kurzprojekt Freitag]]/`Praesentation/`.
+> Das Case-Analysis-Worksheet ist im Layout des Original-PDFs ausgefüllt und liegt als eigener Bereich im Repo: [`DTEW-Workshop/`](https://github.com/47Felix/RasberryPI-Team-13/tree/main/DTEW-Workshop) (Markdown-Quelle, HTML- und PDF-Version, auf Englisch als Workshop-Sprache) – nach demselben Muster wie [[WS-Kurzprojekt Freitag]]/`Praesentation/`.
 
-### CASE 1 – juuuport (Cybermobbing/Hate Speech gegen Einzelpersonen)
-Online-Beratungsplattform, betrieben von und für Jugendliche.
-- **Kernprobleme:** (1) Jugendliche erleben Cybermobbing/Hate Speech direkt gerichtet gegen sich; (2) Melde-/Hilfe-Angebote großer Plattformen wirken unpersönlich/langsam; (3) Betroffene wissen oft nicht, an wen sie sich wenden können.
-- **Wer ist betroffen?** Jugendliche, die online angefeindet werden.
-- **Mögliche Lösungsideen:** (1) Niedrigschwelliger Peer-to-Peer-Chat statt anonymem Meldeformular; (2) sichtbarer Bearbeitungsstatus nach einer Meldung; (3) Sammlung vorgefertigter, sachlicher Gegenrede-Antworten zum Weiterverwenden.
+### CASE 1 – digi&demo: Hate Speech
+- **Kernprobleme:** (1) Aggressive/toxische Kommentare unter politischen Beiträgen schrecken Menschen vom Mitreden ab; (2) Melde-Werkzeuge großer Plattformen wirken langsam/unpersönlich; (3) Betroffene erleben oft koordinierte Angriffe ("Shitstorms") statt Einzelkommentare, allein dagegen wehren ist schwer.
+- **Wer ist betroffen?** Jugendliche/junge Erwachsene, die sich politisch äußern – besonders aus Gruppen, die häufiger Ziel von Hass werden.
+- **Mögliche Lösungsideen:** (1) Moderierte Diskussionsräume mit klaren Regeln (ähnlich pleenum); (2) community-getragene Gegenrede-Tools; (3) sichtbarer Status nach einer Meldung ("gemeldet → geprüft → Ergebnis").
 
-### CASE 2 – Amadeu Antonio Stiftung / HateShield (koordinierte Hassangriffe gegen Communities)
-Projekt "HateShield – Connected Communities", unterstützt von rassistischer digitaler Gewalt betroffene Gruppen.
-- **Kernprobleme:** (1) Koordinierte Hass-Kampagnen ("Shitstorms") gegen marginalisierte Gruppen; (2) einzelne Betroffene/kleine Communities haben kaum Ressourcen/Wissen, sich technisch und rechtlich zu wehren; (3) Angriffe sind oft nicht dokumentiert, dadurch schwer nachweisbar/meldbar.
-- **Wer ist betroffen?** Marginalisierte Gruppen, Aktivist:innen, kleine Community-Accounts.
-- **Mögliche Lösungsideen:** (1) Gemeinsame "Schutz-Checkliste"/Vorlage für Communities; (2) einfaches Dokumentations-Tool für Beweissicherung (Screenshots + Zeitstempel); (3) Vernetzung betroffener Communities untereinander (Frühwarnung).
-
-### CASE 3 – digi&demo (Desinformation/manipulierte Inhalte)
-Interaktiver Stand: Meinungsboard zu Social Media + Online-Spiel, das die Fähigkeit testet, manipulierte Inhalte zu erkennen. Eigenes Projekt "pleenum" für offenen, konstruktiven digitalen Diskurs.
+### CASE 2 – digi&demo: Desinformation
+Bezug: digi&demos Online-Spiel am Stand testet die Fähigkeit, manipulierte Inhalte zu erkennen.
 - **Kernprobleme:** (1) Jugendliche/junge Erwachsene tun sich schwer, manipulierte/Fake-Inhalte von echten zu unterscheiden; (2) Desinformation untergräbt Vertrauen in politische Debatten; (3) bestehende Aufklärungsangebote erreichen die Zielgruppe oft nicht (zu trocken/theoretisch).
 - **Wer ist betroffen?** Jugendliche/Erstwähler:innen, die sich politisch über Social Media informieren.
-- **Mögliche Lösungsideen:** (1) Gamifizierter "Spot-the-Fake"-Trainer (ähnlich dem digi&demo-Spiel, aber z. B. als Browser-Erweiterung); (2) kurze, alltagstaugliche Erklär-Snippets statt langer Aufklärungstexte; (3) Community-basiertes Faktencheck-Feature (ähnlich Community Notes).
+- **Mögliche Lösungsideen:** (1) Gamifizierter "Spot-the-Fake"-Trainer (ähnlich dem digi&demo-Spiel), z. B. als Browser-Erweiterung; (2) kurze, alltagstaugliche Erklär-Snippets statt langer Aufklärungstexte; (3) Community-basiertes Faktencheck-Feature (ähnlich Community Notes).
+
+### CASE 3 – digi&demo: Polarisierung
+Bezug: digi&demos eigenes Projekt "pleenum" zielt direkt auf offenen, konstruktiven digitalen Diskurs statt Lagerbildung.
+- **Kernprobleme:** (1) Algorithmen/Filterblasen verstärken einseitige Ansichten (Echo-Kammern); (2) politische Diskussionen eskalieren schnell in "wir gegen die" statt echtem Austausch; (3) konstruktiver Austausch über Meinungsgrenzen hinweg ist online selten.
+- **Wer ist betroffen?** Social-Media-Nutzer:innen, die sich politisch positionieren – besonders junge Menschen, die ihre politische Meinung noch bilden.
+- **Mögliche Lösungsideen:** (1) Strukturiertes Diskursformat nach pleenum-Vorbild (erst Gegenperspektiven zeigen, dann antworten lassen); (2) Nudges, die zum Lesen der Gegenmeinung anregen, bevor man kommentiert; (3) moderierte Cross-Bubble-Formate, die unterschiedliche politische Lager gezielt zusammenbringen.
 
 > [!tip] Für morgen (Dienstag)
-> Aus diesen 3 Cases wählt ihr laut Mittwoch-Aufgabe später *einen* aus, den ihr vertieft (Problem Statement + Personas unten sind aktuell auf Case 1+3 zugeschnitten, da die am ehesten zu "digitale Demokratie" im engeren Sinn passen – Case 2 ist eher Richtung Schutz vor Hass, auch spannend, aber andere Zielgruppe). Auf dem echten Flipchart/Worksheet vor Ort einfach eintragen oder anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen.
+> Aus diesen 3 Cases wählt ihr laut Mittwoch-Aufgabe später *einen* aus, den ihr vertieft. Auf dem echten Flipchart/Worksheet vor Ort einfach eintragen oder anpassen, falls euch eine andere Gewichtung mehr überzeugt.
 
 ## Offen – nur ihr könnt das vor Ort machen
 - 📝 **Gruppenfoto + Motto** aufs Team-Board
@@ -79,6 +78,7 @@ Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom
 - Moderierte Diskussionsräume mit klaren, transparenten Regeln (ähnlich "pleenum"-Ansatz, aber ggf. spezifisch auf Jugendliche zugeschnitten)
 - Niedrigschwelliges, schnelles Melde-/Eskalationssystem bei Hate Speech mit sichtbarem Status ("gemeldet → geprüft → Ergebnis")
 - Gamifizierte/spielerische Einstiegshürde, um auch zurückhaltende Nutzer:innen zum ersten Beitrag zu ermutigen
+- Strukturiertes Diskursformat gegen Polarisierung: Gegenperspektive zeigen, bevor man selbst kommentieren kann (siehe Case 3)
 
 ## Was noch fehlt
 - [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen

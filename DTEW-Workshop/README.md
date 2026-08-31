@@ -8,11 +8,11 @@ Deliverables für den zusätzlichen "2026 International Design Thinking and Entr
 
 ## Worum geht's
 
-Ausgefülltes `case_analysis_worksheet.pdf` vom Haupt-Board (Case *"The Internet and Politics – Your Network, Your Rules?"*) für die Montags-Aufgabe "First Brainstorming". Die 3 Cases (CASE 1/2/3) sind nicht erfunden, sondern aus der echten Ausstellerliste des parallel laufenden Aktionstags **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg hergeleitet (buewi.de/netz-ablauf):
+Ausgefülltes `case_analysis_worksheet.pdf` vom Haupt-Board (Case *"The Internet and Politics – Your Network, Your Rules?"*) für die Montags-Aufgabe "First Brainstorming". Alle 3 Cases (CASE 1/2/3) drehen sich um **digi&demo e.V.** (digiunddemo.de), unsere inhaltliche Richtung, verbunden über den parallel laufenden Aktionstag **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg (buewi.de/netz-ablauf). digi&demo nennt selbst drei Herausforderungen für offenen digitalen Diskurs – genau die drei sind unsere Cases:
 
-1. **juuuport** – Cybermobbing/Hate Speech gegen Einzelpersonen
-2. **Amadeu Antonio Stiftung / HateShield** – koordinierte Hassangriffe gegen Communities
-3. **digi&demo** – Desinformation/manipulierte Inhalte
+1. **digi&demo – Hate Speech**
+2. **digi&demo – Desinformation**
+3. **digi&demo – Polarisierung**
 
 ## Neu rendern nach Änderungen an der `.md`/`.html`
 
@@ -35,4 +35,4 @@ const { chromium } = require('playwright');
 
 ## Nächster Schritt
 
-Mittwoch: einen der drei Cases als Fokus wählen und daraus 1–2 Problem Statements bauen (Case 1 und 3 passen am ehesten zu "digitale Demokratie" im engeren Sinn). Siehe [[Team 13 - Digitale Demokratie]] im Vault.
+Mittwoch: einen der drei Cases als Fokus wählen und daraus 1–2 Problem Statements bauen. Siehe [[Team 13 - Digitale Demokratie]] im Vault.
