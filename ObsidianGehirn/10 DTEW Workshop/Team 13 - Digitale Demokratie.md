@@ -10,7 +10,10 @@ Vorbereitung/Bearbeitung der "Today duties" von **Montag 31.08.** (First Brainst
 
 Die Karte "First Brainstorming" auf dem Haupt-Board verweist auf das Worksheet `case_analysis_worksheet.pdf` (Titel: *"The Internet and Politics – Your Network, Your Rules?"*). Das Worksheet hat drei leere Slots **CASE 1 / CASE 2 / CASE 3** – für jeden Case: Kernprobleme, wer ist betroffen, mögliche Lösungsideen. Genau das sind die "3 Cases", die heute ausgefüllt werden müssen.
 
-Die Cases habe ich **nicht erfunden**, sondern aus der echten Ausstellerliste des Aktionstags **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg (buewi.de/netz-ablauf, findet parallel heute statt) hergeleitet – dort sind reale Organisationen mit Ständen/Workshops vertreten. Drei davon decken unterschiedliche Facetten von "digitale Demokratie" ab:
+Die Cases habe ich **nicht erfunden**, sondern aus der echten Ausstellerliste des Aktionstags **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg (buewi.de/netz-ablauf, findet parallel heute statt) hergeleitet – dort sind reale Organisationen mit Ständen/Workshops vertreten. Drei davon decken unterschiedliche Facetten von "digitale Demokratie" ab.
+
+> [!info] Ausgefülltes Worksheet
+> Das Case-Analysis-Worksheet ist im Layout des Original-PDFs ausgefüllt und liegt als eigener Bereich im Repo: [`DTEW-Workshop/`](https://github.com/47Felix/RasberryPI-Team-13/tree/main/DTEW-Workshop) (Markdown-Quelle, HTML- und PDF-Version) – nach demselben Muster wie [[WS-Kurzprojekt Freitag]]/`Praesentation/`.
 
 ### CASE 1 – juuuport (Cybermobbing/Hate Speech gegen Einzelpersonen)
 Online-Beratungsplattform, betrieben von und für Jugendliche.
@@ -78,7 +81,7 @@ Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom
 - Gamifizierte/spielerische Einstiegshürde, um auch zurückhaltende Nutzer:innen zum ersten Beitrag zu ermutigen
 
 ## Was noch fehlt
-- [ ] Die 3 Cases oben aufs echte Flipchart/Worksheet übertragen (oder anpassen) und auf dem Team-Board teilen
+- [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
 - [ ] Team Canvas gemeinsam ausfüllen (Ziele/Rollen/Regeln)
 - [ ] Team-13-Karte im Teams-Übersicht-Board pflegen
@@ -87,6 +90,7 @@ Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom
 
 ## Verwandte Notizen
 - [[DTEW Hamburg - Übersicht]]
+- [`DTEW-Workshop/` im Repo](https://github.com/47Felix/RasberryPI-Team-13/tree/main/DTEW-Workshop) – ausgefülltes Case-Analysis-Worksheet
 - [[Doku-Regeln]]
 
 #dtew #workshop #digitale-demokratie

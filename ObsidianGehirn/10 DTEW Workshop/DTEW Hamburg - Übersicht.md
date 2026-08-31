@@ -32,6 +32,7 @@ Das deckt sich mit dem Event **"Dein Netz, Deine Regeln!"** von "Netz Macht Poli
 
 ## Verwandte Notizen
 - [[Team 13 - Digitale Demokratie]]
+- [`DTEW-Workshop/` im Repo](https://github.com/47Felix/RasberryPI-Team-13/tree/main/DTEW-Workshop) – Deliverables (ausgefüllte Worksheets etc.), analog zu `Praesentation/`
 - [[Doku-Regeln]]
 - [[⚠️ Zugangsdaten - Hinweis]]
 
