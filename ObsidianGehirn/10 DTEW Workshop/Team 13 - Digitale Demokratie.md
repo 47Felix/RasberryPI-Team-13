@@ -4,7 +4,34 @@ tags: [dtew, workshop, digitale-demokratie]
 
 # Team 13 – Digitale Demokratie (DTEW Hamburg)
 
-Vorbereitung/Bearbeitung der "Today duties" von **Dienstag 01.09.2026** (siehe [[DTEW Hamburg - Übersicht]]). Claude hat vorab recherchiert und einen Entwurf vorbereitet, wo das ohne echte Team-Session möglich war (Themenrecherche, Problem Statement, Proto-Personas). Alles mit ✅/📝-Markierung unten **muss noch von Felix/Erik/Dogan vor Ort gemacht bzw. bestätigt werden** – das sind keine Dinge, die sich am Schreibtisch erfinden lassen.
+Vorbereitung/Bearbeitung der "Today duties" von **Montag 31.08.** (First Brainstorming / Case Analysis) und **Dienstag 01.09.2026** (siehe [[DTEW Hamburg - Übersicht]]). Claude hat vorab recherchiert und einen Entwurf vorbereitet, wo das ohne echte Team-Session möglich war (Themenrecherche, Case Analysis, Problem Statement, Proto-Personas). Alles mit ✅/📝-Markierung unten **muss noch von Felix/Erik/Dogan vor Ort gemacht bzw. bestätigt werden** – das sind keine Dinge, die sich am Schreibtisch erfinden lassen.
+
+## Montag 31.08 – First Brainstorming: Case Analysis
+
+Die Karte "First Brainstorming" auf dem Haupt-Board verweist auf das Worksheet `case_analysis_worksheet.pdf` (Titel: *"The Internet and Politics – Your Network, Your Rules?"*). Das Worksheet hat drei leere Slots **CASE 1 / CASE 2 / CASE 3** – für jeden Case: Kernprobleme, wer ist betroffen, mögliche Lösungsideen. Genau das sind die "3 Cases", die heute ausgefüllt werden müssen.
+
+Die Cases habe ich **nicht erfunden**, sondern aus der echten Ausstellerliste des Aktionstags **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg (buewi.de/netz-ablauf, findet parallel heute statt) hergeleitet – dort sind reale Organisationen mit Ständen/Workshops vertreten. Drei davon decken unterschiedliche Facetten von "digitale Demokratie" ab:
+
+### CASE 1 – juuuport (Cybermobbing/Hate Speech gegen Einzelpersonen)
+Online-Beratungsplattform, betrieben von und für Jugendliche.
+- **Kernprobleme:** (1) Jugendliche erleben Cybermobbing/Hate Speech direkt gerichtet gegen sich; (2) Melde-/Hilfe-Angebote großer Plattformen wirken unpersönlich/langsam; (3) Betroffene wissen oft nicht, an wen sie sich wenden können.
+- **Wer ist betroffen?** Jugendliche, die online angefeindet werden.
+- **Mögliche Lösungsideen:** (1) Niedrigschwelliger Peer-to-Peer-Chat statt anonymem Meldeformular; (2) sichtbarer Bearbeitungsstatus nach einer Meldung; (3) Sammlung vorgefertigter, sachlicher Gegenrede-Antworten zum Weiterverwenden.
+
+### CASE 2 – Amadeu Antonio Stiftung / HateShield (koordinierte Hassangriffe gegen Communities)
+Projekt "HateShield – Connected Communities", unterstützt von rassistischer digitaler Gewalt betroffene Gruppen.
+- **Kernprobleme:** (1) Koordinierte Hass-Kampagnen ("Shitstorms") gegen marginalisierte Gruppen; (2) einzelne Betroffene/kleine Communities haben kaum Ressourcen/Wissen, sich technisch und rechtlich zu wehren; (3) Angriffe sind oft nicht dokumentiert, dadurch schwer nachweisbar/meldbar.
+- **Wer ist betroffen?** Marginalisierte Gruppen, Aktivist:innen, kleine Community-Accounts.
+- **Mögliche Lösungsideen:** (1) Gemeinsame "Schutz-Checkliste"/Vorlage für Communities; (2) einfaches Dokumentations-Tool für Beweissicherung (Screenshots + Zeitstempel); (3) Vernetzung betroffener Communities untereinander (Frühwarnung).
+
+### CASE 3 – digi&demo (Desinformation/manipulierte Inhalte)
+Interaktiver Stand: Meinungsboard zu Social Media + Online-Spiel, das die Fähigkeit testet, manipulierte Inhalte zu erkennen. Eigenes Projekt "pleenum" für offenen, konstruktiven digitalen Diskurs.
+- **Kernprobleme:** (1) Jugendliche/junge Erwachsene tun sich schwer, manipulierte/Fake-Inhalte von echten zu unterscheiden; (2) Desinformation untergräbt Vertrauen in politische Debatten; (3) bestehende Aufklärungsangebote erreichen die Zielgruppe oft nicht (zu trocken/theoretisch).
+- **Wer ist betroffen?** Jugendliche/Erstwähler:innen, die sich politisch über Social Media informieren.
+- **Mögliche Lösungsideen:** (1) Gamifizierter "Spot-the-Fake"-Trainer (ähnlich dem digi&demo-Spiel, aber z. B. als Browser-Erweiterung); (2) kurze, alltagstaugliche Erklär-Snippets statt langer Aufklärungstexte; (3) Community-basiertes Faktencheck-Feature (ähnlich Community Notes).
+
+> [!tip] Für morgen (Dienstag)
+> Aus diesen 3 Cases wählt ihr laut Mittwoch-Aufgabe später *einen* aus, den ihr vertieft (Problem Statement + Personas unten sind aktuell auf Case 1+3 zugeschnitten, da die am ehesten zu "digitale Demokratie" im engeren Sinn passen – Case 2 ist eher Richtung Schutz vor Hass, auch spannend, aber andere Zielgruppe). Auf dem echten Flipchart/Worksheet vor Ort einfach eintragen oder anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen.
 
 ## Offen – nur ihr könnt das vor Ort machen
 - 📝 **Gruppenfoto + Motto** aufs Team-Board
@@ -51,6 +78,7 @@ Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom
 - Gamifizierte/spielerische Einstiegshürde, um auch zurückhaltende Nutzer:innen zum ersten Beitrag zu ermutigen
 
 ## Was noch fehlt
+- [ ] Die 3 Cases oben aufs echte Flipchart/Worksheet übertragen (oder anpassen) und auf dem Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
 - [ ] Team Canvas gemeinsam ausfüllen (Ziele/Rollen/Regeln)
 - [ ] Team-13-Karte im Teams-Übersicht-Board pflegen
