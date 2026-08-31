@@ -1,71 +1,71 @@
 # The Internet and Politics – Your Network, Your Rules?
-## Case Analysis (ausgefüllt, Team 13)
+## Case Analysis (filled in, Team 13)
 
 **Task:** Choose 2–3 cases, identify the key problems, and think about possible solutions.
 
-Quelle des leeren Formulars: `case_analysis_worksheet.pdf` auf dem DTEW-Haupt-Board. Die drei Cases wurden nicht erfunden, sondern aus der echten Ausstellerliste des parallel laufenden Aktionstags **"Dein Netz, Deine Regeln!"** im Bürgerhaus Wilhelmsburg (31.08.2026, buewi.de/netz-ablauf) hergeleitet – siehe [[Team 13 - Digitale Demokratie]] im Vault für den vollen Rechercheweg.
+Source of the blank form: `case_analysis_worksheet.pdf` on the DTEW main board. The three cases were not invented but derived from the real list of exhibitors at the parallel action day **"Dein Netz, Deine Regeln!" ("Your Net, Your Rules!")** at Bürgerhaus Wilhelmsburg (31.08.2026, buewi.de/netz-ablauf) – see [[Team 13 - Digitale Demokratie]] in the vault for the full research trail (German, internal team notes).
 
 ## 1. Choose your cases
 
 | | Case |
 |---|---|
-| **CASE 1** | juuuport – Cybermobbing/Hate Speech gegen Einzelpersonen |
-| **CASE 2** | Amadeu Antonio Stiftung / HateShield – koordinierte Hassangriffe gegen Communities |
-| **CASE 3** | digi&demo – Desinformation/manipulierte Inhalte |
+| **CASE 1** | juuuport – Cyberbullying/hate speech against individuals |
+| **CASE 2** | Amadeu Antonio Stiftung / HateShield – coordinated hate attacks against communities |
+| **CASE 3** | digi&demo – Disinformation/manipulated content |
 
 ## Ideas on Case 1 – juuuport
 
-Online-Beratungsplattform, betrieben von und für Jugendliche.
+Online counseling platform, run by and for young people.
 
 **Core problems**
-1. Jugendliche erleben Cybermobbing/Hate Speech direkt gegen sich selbst gerichtet.
-2. Melde-/Hilfe-Angebote großer Plattformen wirken unpersönlich und langsam.
-3. Betroffene wissen oft nicht, an wen sie sich konkret wenden können.
+1. Young people experience cyberbullying/hate speech directed at them personally.
+2. Reporting/help features on major platforms feel impersonal and slow.
+3. Those affected often don't know who to turn to.
 
 **Who is affected?**
-Jugendliche, die online angefeindet werden.
+Young people who are attacked online.
 
 **Possible solutions**
-1. Niedrigschwelliger Peer-to-Peer-Chat statt anonymem Meldeformular.
-2. Sichtbarer Bearbeitungsstatus nach einer Meldung ("gemeldet → geprüft → Ergebnis").
-3. Sammlung vorgefertigter, sachlicher Gegenrede-Antworten zum Weiterverwenden.
+1. Low-threshold peer-to-peer chat instead of an anonymous report form.
+2. Visible status after a report is filed ("reported → reviewed → outcome").
+3. A collection of ready-made, factual counter-speech replies to reuse.
 
 ## Ideas on Case 2 – Amadeu Antonio Stiftung / HateShield
 
-Projekt "HateShield – Connected Communities", unterstützt von rassistischer digitaler Gewalt betroffene Gruppen.
+Project "HateShield – Connected Communities", supporting communities affected by racist digital violence.
 
 **Core problems**
-1. Koordinierte Hass-Kampagnen ("Shitstorms") gegen marginalisierte Gruppen.
-2. Einzelne Betroffene/kleine Communities haben kaum Ressourcen oder Wissen, sich technisch und rechtlich zu wehren.
-3. Angriffe sind oft nicht dokumentiert und dadurch schwer nachweisbar oder meldbar.
+1. Coordinated hate campaigns ("shitstorms") targeting marginalized groups.
+2. Individual targets/small communities have little capacity or knowledge to defend themselves technically and legally.
+3. Attacks are often undocumented, making them hard to prove or report.
 
 **Who is affected?**
-Marginalisierte Gruppen, Aktivist:innen, kleine Community-Accounts.
+Marginalized groups, activists, small community accounts.
 
 **Possible solutions**
-1. Gemeinsame "Schutz-Checkliste"/Vorlage für Communities.
-2. Einfaches Dokumentations-Tool für Beweissicherung (Screenshots + Zeitstempel).
-3. Vernetzung betroffener Communities untereinander als Frühwarnsystem.
+1. A shared "protection checklist"/template for communities.
+2. A simple documentation tool for evidence (screenshots + timestamps).
+3. Networking affected communities together as an early-warning system.
 
 ## Ideas on Case 3 – digi&demo
 
-Interaktiver Stand: Meinungsboard zu Social Media + Online-Spiel, das die Fähigkeit testet, manipulierte Inhalte zu erkennen. Eigenes Projekt "pleenum" für offenen, konstruktiven digitalen Diskurs.
+Interactive booth: an opinion board on social media plus an online game testing the ability to spot manipulated content. Runs its own project "pleenum" for open, constructive digital discourse.
 
 **Core problems**
-1. Jugendliche/junge Erwachsene tun sich schwer, manipulierte/Fake-Inhalte von echten zu unterscheiden.
-2. Desinformation untergräbt Vertrauen in politische Debatten.
-3. Bestehende Aufklärungsangebote erreichen die Zielgruppe oft nicht (zu trocken/theoretisch).
+1. Young people/young adults struggle to tell manipulated/fake content from real content.
+2. Disinformation undermines trust in political debate.
+3. Existing awareness campaigns often don't reach the target group (too dry/theoretical).
 
 **Who is affected?**
-Jugendliche/Erstwähler:innen, die sich politisch über Social Media informieren.
+Young people/first-time voters who get political information via social media.
 
 **Possible solutions**
-1. Gamifizierter "Spot-the-Fake"-Trainer (ähnlich dem digi&demo-Spiel), z. B. als Browser-Erweiterung.
-2. Kurze, alltagstaugliche Erklär-Snippets statt langer Aufklärungstexte.
-3. Community-basiertes Faktencheck-Feature (ähnlich Community Notes).
+1. A gamified "spot-the-fake" trainer (similar to the digi&demo game), e.g. as a browser extension.
+2. Short, everyday-usable explainer snippets instead of long educational texts.
+3. A community-based fact-check feature (similar to Community Notes).
 
 ---
 
-> **Tip (aus dem Original-Worksheet):** Focus on the problem first. Good solution ideas often become clearer once you know who is affected and why.
+> **Tip (from the original worksheet):** Focus on the problem first. Good solution ideas often become clearer once you know who is affected and why.
 
-**Nächster Schritt (Mittwoch):** Einen der drei Cases als Fokus wählen und daraus 1-2 Problem Statements bauen. Case 1 und 3 passen am ehesten zu "digitale Demokratie" im engeren Sinn (siehe Team-Notiz im Vault).
+**Next step (Wednesday):** Pick one of the three cases as our focus and turn it into 1–2 problem statements. Case 1 and 3 fit "digital democracy" in the narrower sense best (see team notes in the vault).
