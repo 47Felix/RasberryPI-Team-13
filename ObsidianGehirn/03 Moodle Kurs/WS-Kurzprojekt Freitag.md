@@ -4,6 +4,9 @@ tags: [moodle, workshop, kurzprojekt, praesentation]
 
 # "Thank god it's (NOT) Friday" – Kurzprojekt & Abschlusspräsentation
 
+> [!success] ✅ Abgeschlossen (28.08.2026)
+> Präsentation erfolgreich gehalten, lief gut. Kurzprojekt "Digitaler Tresor" damit komplett fertig – alle zugehörigen Issues (#10-#20, #13-#14) geschlossen, Milestone [#1](https://github.com/47Felix/RasberryPI-Team-13/milestone/1) geschlossen. Auch die Pi-Dashboard-Erweiterung (Milestone [#5](https://github.com/47Felix/RasberryPI-Team-13/milestone/5)) ist fertig und per echtem Hardware-Test verifiziert.
+
 > [!important] Deadline: Freitag, 28.08.2026 (Uhrzeit noch TBA)
 > Abschluss-Challenge der Workshop-Woche ("Piece of Pi?", siehe [[Kursstruktur]] Punkt 5 "Freies Kurzprojekt und Präsentation"). **Benotungsfrei** – es geht um Ruhm, Ehre, Spaß und ein bisschen Wettkampfgedanken, nicht um Schulnoten.
 
