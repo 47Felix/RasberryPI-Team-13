@@ -71,6 +71,13 @@ Erster Test mit tatsaechlich per USB angeschlossenem Arduino (nicht mehr Mock-Se
 
 Siehe PR [#48](https://github.com/47Felix/RasberryPI-Team-13/pull/48).
 
+## Dashboard-Design (28.08.2026)
+
+Frontend (`Code/pi-dashboard/templates/*.html`) zweimal überarbeitet, angelehnt an einen Grafana-Referenzscreenshot (`Code/image.png`):
+
+1. **Erste Fassung** (PR [#52](https://github.com/47Felix/RasberryPI-Team-13/pull/52)): dunkles Monitoring-Design mit Monospace-Font, Panel-Header/-Body-Struktur, farbigem Akzent-Rand je Status. Bei `EVENT:ALARM` blinkt die Seite rot, ein GIF (`static/alarm.gif`) poppt auf, drei per Web Audio API synthetisierte Beeps ertönen.
+2. **Zweite Fassung** (PR [#54](https://github.com/47Felix/RasberryPI-Team-13/pull/54)): näher am Referenzbild – Sidebar mit Icon-Nav, Topbar mit Breadcrumb + Pill-Badges, abgerundete Panels mit Farbverläufen statt eckigem Terminal-Look, neues Mini-Balkendiagramm "Ereignisse nach Typ". Alarm deutlich dramatischer: Vollbild-Rot-Strobe, Screen-Shake, Warnstreifen-Banner oben/unten, größeres GIF mit Glow, durchgehende Zwei-Ton-Sirene (statt einmaliger Beeps) per Web Audio API, läuft solange der Alarm aktiv ist.
+
 ## Was noch fehlt
 
 - [ ] `SETCODE`-Timing pruefen: Wenn `checkSerialCommands()` mitten in einem `delay()` (z.B. waehrend `accessGranted()` 4 Sekunden wartet) aufgerufen werden soll, geht das mit dem aktuellen Sketch-Aufbau nicht (Arduino ist in dem Moment blockiert) – nur relevant, falls das im echten Betrieb stoert.

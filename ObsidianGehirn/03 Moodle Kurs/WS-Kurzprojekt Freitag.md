@@ -4,6 +4,9 @@ tags: [moodle, workshop, kurzprojekt, praesentation]
 
 # "Thank god it's (NOT) Friday" – Kurzprojekt & Abschlusspräsentation
 
+> [!success] ✅ Abgeschlossen (28.08.2026)
+> Präsentation erfolgreich gehalten, lief gut. Kurzprojekt "Digitaler Tresor" damit komplett fertig – alle zugehörigen Issues (#10-#20, #13-#14) geschlossen, Milestone [#1](https://github.com/47Felix/RasberryPI-Team-13/milestone/1) geschlossen. Auch die Pi-Dashboard-Erweiterung (Milestone [#5](https://github.com/47Felix/RasberryPI-Team-13/milestone/5)) ist fertig und per echtem Hardware-Test verifiziert.
+
 > [!important] Deadline: Freitag, 28.08.2026 (Uhrzeit noch TBA)
 > Abschluss-Challenge der Workshop-Woche ("Piece of Pi?", siehe [[Kursstruktur]] Punkt 5 "Freies Kurzprojekt und Präsentation"). **Benotungsfrei** – es geht um Ruhm, Ehre, Spaß und ein bisschen Wettkampfgedanken, nicht um Schulnoten.
 
@@ -51,9 +54,14 @@ Buzzer-Feedback, Gesamtintegration und End-zu-End-Test abgeschlossen – Issues 
 ### Präsentation (27.08.2026)
 10-Folien-Deck erstellt: [`Praesentation/tresor-praesentation.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Praesentation/tresor-praesentation.md) (Marp-Markdown) + fertig gerenderte [HTML-Version](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Praesentation/tresor-praesentation.html) zum direkten Präsentieren im Browser. Deckt Aufgabe/Idee/Hardware/Architektur/Team-Tracks/Pi-Dashboard/Lessons Learned ab, endet mit Ankündigung der Live-Demo. Siehe [[Erweiterung - Raspberry Pi Dashboard]] für die Dashboard-Details.
 
+### Kurzprojekt abgeschlossen (28.08.2026)
+Präsentation wie geplant gehalten, Issue [#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14) geschlossen. Gehäuse/Box (Track E, [#19](https://github.com/47Felix/RasberryPI-Team-13/issues/19)) blieb wie von Anfang an vereinbart bewusst ungebaut (benotungsfrei). Damit ist Milestone #1 komplett erledigt – keine offenen Issues zum Kurzprojekt mehr, siehe [[Issues - Übersicht]].
+
 ### Erledigt ✅
 - [x] Kleinteam bilden → [#10](https://github.com/47Felix/RasberryPI-Team-13/issues/10) (closed)
 - [x] Projektidee finden → [#11](https://github.com/47Felix/RasberryPI-Team-13/issues/11) (closed)
+- [x] Kurzpräsentation vorbereiten → [#13](https://github.com/47Felix/RasberryPI-Team-13/issues/13) (closed)
+- [x] Präsentation Freitag halten → [#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14) (closed)
 
 ## Verwandte Notizen
 - [[Kursstruktur]]

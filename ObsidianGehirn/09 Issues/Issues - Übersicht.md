@@ -11,15 +11,7 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-### Kurzprojekt "Digitaler Tresor" (Milestone [#1](https://github.com/47Felix/RasberryPI-Team-13/milestone/1), Deadline 28.08.2026)
-- [#13](https://github.com/47Felix/RasberryPI-Team-13/issues/13) Kurzpräsentation vorbereiten (10 Minuten)
-- [#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14) Präsentation am Freitag halten
-- [#19](https://github.com/47Felix/RasberryPI-Team-13/issues/19) Track E – Box/Gehäuse bauen (bewusst nicht gebaut, benotungsfrei)
-
-Details/Aufteilung siehe [[WS-Kurzprojekt Freitag]].
-
-### Pi-Dashboard (Erweiterung, [[Erweiterung - Raspberry Pi Dashboard]])
-Alle 6 Tracks (#37-#42) sind fertig, verifiziert und mittlerweile geschlossen – siehe unten. Milestone [#5](https://github.com/47Felix/RasberryPI-Team-13/milestone/5) wurde entsprechend ebenfalls geschlossen.
+Aktuell keine offenen Issues (Stand 29.08.2026) – das Kurzprojekt "Digitaler Tresor" inkl. Pi-Dashboard-Erweiterung und Präsentation ist komplett abgeschlossen, alle Tracks/Issues sind geschlossen.
 
 ## ✅ Geschlossen (was wurde gemacht)
 
@@ -41,6 +33,15 @@ Alle 6 Tracks (#37-#42) sind fertig, verifiziert und mittlerweile geschlossen �
 - **[#17](https://github.com/47Felix/RasberryPI-Team-13/issues/17) Track C – LCD1602-Statusanzeige** – LCD1602 verkabelt, zeigt Statustexte ("Code eingeben...", "Zugang gewährt", "Falscher Code", "Gesperrt!") wie geplant an.
 - **[#18](https://github.com/47Felix/RasberryPI-Team-13/issues/18) Track D – Buzzer + LED Feedback und Alarm-Logik** – Rot/Grün-LED-Feedback und Buzzer-Töne (kurz = richtig, lang/tief = falsch) laufen wie gewollt, inkl. Alarm-Logik nach 3 Fehlversuchen (Dauerton + blinkende rote LED).
 - **[#20](https://github.com/47Felix/RasberryPI-Team-13/issues/20) Track F – Gesamtintegration** – Keypad, Code-Prüfung, Servo, LCD und Buzzer/LED in einem gemeinsamen Sketch zusammengeführt, Pin-Konflikte aufgelöst, End-zu-End-Ablauf funktioniert. Danach noch zwei Nachbesserungen: fehlende Funktionsprototypen ergänzt (PR [#36](https://github.com/47Felix/RasberryPI-Team-13/pull/36)) und der Sketch-Ordner bereinigt, damit `arduino-cli` nur noch eine `.ino` kompiliert (PR [#47](https://github.com/47Felix/RasberryPI-Team-13/pull/47)). Offen blieb nur das physische Gehäuse (#19), kein Blocker für die Integration selbst.
+- **[#19](https://github.com/47Felix/RasberryPI-Team-13/issues/19) Track E – Box/Gehäuse bauen** – bewusst nicht umgesetzt, wie von Anfang an im Team vereinbart (benotungsfrei, kein Blocker für Servo-Mechanik #16 oder Integration #20). Am 28.08.2026 zusammen mit der Präsentation geschlossen.
+- **[#13](https://github.com/47Felix/RasberryPI-Team-13/issues/13) Kurzpräsentation vorbereiten (10 Minuten)** – 10-Folien-Deck erstellt (`Praesentation/tresor-praesentation.md`, Marp) plus fertig gerenderte HTML-Version, deckt Aufgabe, Architektur, Team-Tracks, Pi-Dashboard-Erweiterung und Lessons Learned ab. Siehe [[WS-Kurzprojekt Freitag]].
+- **[#14](https://github.com/47Felix/RasberryPI-Team-13/issues/14) Präsentation am Freitag halten** – Präsentation am 28.08.2026 wie geplant gehalten, Issue am selben Tag geschlossen.
+- **[#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung** – Serial-Protokoll (`EVENT:READY/GRANTED/DENIED/ALARM/...`) definiert, Pi liest USB-Seriell mit Geräte-Autodetect und 5s-Reconnect. Am 28.08.2026 mit echtem angeschlossenem Arduino verifiziert; dabei ein fehlendes Re-Lock-Event nach dem Wiederverriegeln gefunden und als neues `EVENT:LOCKED` nachgerüstet. Siehe [[Erweiterung - Raspberry Pi Dashboard]].
+- **[#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi** – jedes Ereignis wird mit UTC-Zeitstempel in SQLite (`tresor.db`) geloggt, per HTTP- und echtem Hardware-Test verifiziert.
+- **[#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend** – Flask-Dashboard mit Live-Ampel, Versuchszähler und Verlauf der letzten 50 Ereignisse, läuft als systemd-Service (`tresor-dashboard`). Seit 28.08.2026 mit echten Live-Updates per `/api/status`-Endpunkt + 2s-JS-Polling statt manuellem Neuladen. Design am selben Tag zweimal überarbeitet (Grafana-artiger Monitoring-Look, siehe [[Erweiterung - Raspberry Pi Dashboard]]).
+- **[#40](https://github.com/47Felix/RasberryPI-Team-13/issues/40) Track J – Code/Passwort über Webinterface ändern** – eigenes `/admin`-Formular mit vom Tresor-Code getrenntem Admin-Passwort, sendet `SETCODE:<code>` per Serial an den Arduino.
+- **[#41](https://github.com/47Felix/RasberryPI-Team-13/issues/41) Stretch – Discord-Bot meldet Alarm automatisch** – bei `EVENT:ALARM` schickt der Pi direkt eine Discord-Nachricht per REST-API in `#pi-projekt`; dabei einen 403-Bug gefunden und gefixt (Discord/Cloudflare blockte Pythons Standard-`urllib`-User-Agent).
+- **[#42](https://github.com/47Felix/RasberryPI-Team-13/issues/42) Stretch – Live-Status-Anzeige + Versuchszähler** – als große farbige Text-Ampel im Dashboard umgesetzt, keine eigene physische LED-Ampel-Hardware am Pi.
 
 ## Verwandte Notizen
 - [[WS-Kurzprojekt Freitag]]
