@@ -15,6 +15,13 @@ Aktuell keine offenen Issues (Stand 29.08.2026) – das Kurzprojekt "Digitaler T
 
 ## ✅ Geschlossen (was wurde gemacht)
 
+- **[#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung** – Arduino sendet `EVENT:READY/GRANTED/DENIED/ALARM/LOCKED` per USB-Serial an den Pi, Autodetect + Reconnect verifiziert per echtem Hardware-Test (28.08.2026). Siehe [[Erweiterung - Raspberry Pi Dashboard]].
+- **[#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi** – Flask-App liest Serial im Hintergrund-Thread, loggt alle Ereignisse mit UTC-Zeitstempel in SQLite (`tresor.db`), läuft als systemd-Service `tresor-dashboard`. Per Mock- und echtem Hardware-Test bestätigt.
+- **[#39](https://github.com/47Felix/RasberryPI-Team-13/issues/39) Track I – Web-Dashboard Frontend** – Live-Ampel, Versuchszähler und Ereignis-Verlauf, seit dem Hardware-Test mit `/api/status`-Polling alle 2s ohne manuelles Neuladen. Erreichbar im WLAN und per Tailscale.
+- **[#40](https://github.com/47Felix/RasberryPI-Team-13/issues/40) Track J – Code/Passwort über Webinterface ändern** – `/admin`-Formular mit eigenem Admin-Passwort (getrennt vom Tresor-Code) setzt per `SETCODE`-Serial-Befehl einen neuen Tresor-Code.
+- **[#41](https://github.com/47Felix/RasberryPI-Team-13/issues/41) Stretch – Discord-Bot meldet Alarm automatisch** – bei `EVENT:ALARM` postet der Pi automatisch eine Discord-Nachricht in #pi-projekt per REST-API (User-Agent-Bug beim Testen gefunden und gefixt).
+- **[#42](https://github.com/47Felix/RasberryPI-Team-13/issues/42) Stretch – Live-Status-Anzeige + Versuchszähler** – als Text-Ampel im Dashboard umgesetzt (groß, farbig) inkl. Versuchszähler, keine physische LED-Ampel-Hardware (bewusste Einschränkung, siehe "Was noch fehlt" in [[Erweiterung - Raspberry Pi Dashboard]]).
+
 - **[#1](https://github.com/47Felix/RasberryPI-Team-13/issues/1) LED-Hardware auf Breadboard aufbauen** – LED + Vorwiderstand an GPIO4/Pin7 + Ground verkabelt, bestehender Node-RED-Flow erfolgreich getestet. Siehe [[Node-RED Flow - LED Test]].
 - **[#2](https://github.com/47Felix/RasberryPI-Team-13/issues/2) Node-RED mit MQTT verknüpfen** – LED-Flow um Topic `team13-1/led/set` erweitert (Broker localhost:1883), Function-Node wandelt Payload in Boolean um, softwareseitig via `mosquitto_pub` getestet. Siehe [[Node-RED Flow - LED Test]].
 - **[#3](https://github.com/47Felix/RasberryPI-Team-13/issues/3) Arduino + Elegoo-Kit Temperatursensor testen** – DHT11-Modul auf Breadboard mit Elegoo-UNO-R3 verkabelt, Arduino-Sketch mit DHT-Library geschrieben, Sensor liefert Werte (Kalibrierung/Wackelkontakt war noch ein Thema). Siehe [[Dogan - Brain Dump]].
