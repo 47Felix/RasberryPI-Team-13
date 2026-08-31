@@ -90,14 +90,12 @@ arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno Code/arduino-tresor/tr
 3. **`Keypad.h`/`Servo.h: No such file or directory`**: Beide Libraries müssen auf dem Pi explizit per `arduino-cli lib install` nachinstalliert werden – anders als in der klassischen Arduino-IDE ist `Servo` bei `arduino-cli`/AVR-Core nicht automatisch mit dabei.
 4. **`OS error: cannot open port /dev/ttyACM0: Device or resource busy`**: Der laufende `tresor-dashboard`-Service haelt den seriellen Port offen (er verbindet sich automatisch). Vor jedem Neu-Flashen: `sudo systemctl stop tresor-dashboard`, flashen, danach `sudo systemctl start tresor-dashboard` (verbindet sich innerhalb von ~5s automatisch neu).
 
-## Dashboard-Design v2 (28.08.2026)
+## Dashboard-Design (28.08.2026)
 
-Erste Design-Fassung war zu minimalistisch (Monospace/Terminal-Look) und traf den gewuenschten "Monitoring-Tool"-Vibe nicht (Referenzbild: `Code/image.png`, ein Grafana-Screenshot). Ueberarbeitet in PR [#54](https://github.com/47Felix/RasberryPI-Team-13/pull/54):
+Frontend (`Code/pi-dashboard/templates/*.html`) zweimal überarbeitet, angelehnt an einen Grafana-Referenzscreenshot (`Code/image.png`):
 
-- Sidebar mit Icon-Nav, Topbar mit Breadcrumb + Pill-Badges (`SOURCE: ARDUINO`, `● LIVE · 2S`), abgerundete Panels mit Farbverlaeufen
-- Neues Mini-Balkendiagramm "Ereignisse nach Typ" (farbige Gradient-Balken aus den letzten 50 Events, `/api/status` liefert die Rohdaten dafuer)
-- Status-Kachel als grosse "Singlestat" mit Icon (🔓/🔒/🚨) + radialem Farbverlauf je Zustand
-- **Alarm deutlich dramatischer**: Vollbild-Rot-Strobe, Screen-Shake (CSS-Animation auf `.shell`), gelb-schwarze Warnstreifen oben/unten, das Team-GIF (`Code/sahur-tung-tung-tung-sahur.gif`, liegt als `Code/pi-dashboard/static/alarm.gif`) poppt vergroessert mit Glow auf, dazu eine **durchgehende Zwei-Ton-Sirene** per Web Audio API (laeuft solange `state === "alarm"`, kein Audio-File noetig – Oszillator-basiert synthetisiert)
+1. **Erste Fassung** (PR [#52](https://github.com/47Felix/RasberryPI-Team-13/pull/52)): dunkles Monitoring-Design mit Monospace-Font, Panel-Header/-Body-Struktur, farbigem Akzent-Rand je Status. Bei `EVENT:ALARM` blinkt die Seite rot, ein GIF (`static/alarm.gif`) poppt auf, drei per Web Audio API synthetisierte Beeps ertönen.
+2. **Zweite Fassung** (PR [#54](https://github.com/47Felix/RasberryPI-Team-13/pull/54)): näher am Referenzbild – Sidebar mit Icon-Nav, Topbar mit Breadcrumb + Pill-Badges, abgerundete Panels mit Farbverläufen statt eckigem Terminal-Look, neues Mini-Balkendiagramm "Ereignisse nach Typ". Alarm deutlich dramatischer: Vollbild-Rot-Strobe, Screen-Shake, Warnstreifen-Banner oben/unten, größeres GIF mit Glow, durchgehende Zwei-Ton-Sirene (statt einmaliger Beeps) per Web Audio API, läuft solange der Alarm aktiv ist.
 
 Deploy auf dem Pi nach Merge: `cp Code/pi-dashboard/templates/*.html ~/tresor-dashboard/templates/ && sudo systemctl restart tresor-dashboard`.
 

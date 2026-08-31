@@ -81,7 +81,15 @@ async def run_claude(config_dir: str, worktree_path: str, message: str, session_
         return ("Timeout: Claude hat zu lange gebraucht.", session_id)
 
     if proc.returncode != 0:
-        return (f"Fehler von Claude:\n```\n{stderr.decode()[:1500]}\n```", session_id)
+        # stderr ist bei der Claude-Code-CLI oft leer, weil Fehler
+        # (z.B. abgelaufene OAuth-Session, ungueltige --resume-Session-ID,
+        # kaputter Worktree) bei --output-format json haeufig als JSON auf
+        # stdout statt auf stderr landen. Ohne Fallback zeigte der Bot dann
+        # nur "Fehler von Claude:" mit leerem Codeblock an.
+        detail = stderr.decode().strip() or stdout.decode().strip()
+        if not detail:
+            detail = f"(keine Ausgabe von Claude, nur Exit-Code {proc.returncode})"
+        return (f"Fehler von Claude:\n```\n{detail[:1500]}\n```", session_id)
 
     try:
         data = json.loads(stdout.decode())
