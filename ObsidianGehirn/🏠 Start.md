@@ -47,6 +47,10 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 ## 🧠 Brain Dump
 - [[🧠 Brain Dump - Übersicht]]
 
+## 🌍 DTEW Workshop Hamburg (zusätzliches Projekt, 31.08.–12.09.2026)
+- [[DTEW Hamburg - Übersicht]]
+- [[Team 13 - Digitale Demokratie]]
+
 ## 🔐 Sonstiges
 - [[Zugangsdaten - Hinweis]]
 
