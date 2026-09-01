@@ -17,7 +17,7 @@ Aufgabenliste für Dienstag, 01.09.2026 (siehe [[DTEW Hamburg - Übersicht]]). C
 - Keep all work timeboxed
 
 ## 📝 Nur vor Ort möglich
-- **Teampathy Map** (45 Min) – das offizielle PDF-Template vom Haupt-Board liegt jetzt im Repo ([`empathy-map-template.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/empathy-map-template.pdf)), noch nicht als Entwurf ausgefüllt (📝 muss vor Ort passieren). Falls es eine klassische Empathy-Map-Struktur ist (Says/Thinks/Does/Feels, hier aufs Team statt auf eine Persona angewendet), als Gesprächseinstieg: Was sagen wir als Team über das Thema? Was denken wir wirklich? Was tun wir schon (Recherche etc.)? Wie fühlen wir uns beim Thema (überfordert/motiviert/unsicher)? Zeitlich strikt auf 45 Min begrenzen.
+- **Teampathy Map** (45 Min) – das offizielle Template vom Haupt-Board ist [`team-canvas.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/team-canvas.pdf) (siehe [[Team 13 - Digitale Demokratie]] für die 5 Spalten Goals/Roles/Purpose/Values/Rules), noch nicht als Entwurf ausgefüllt (📝 muss vor Ort passieren, echtes Gespräch zu dritt). Das generische [`empathy-map-template.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/empathy-map-template.pdf) (Says/Thinks/Does/Feels) liegt ebenfalls im Repo, falls zusätzlich zur Team Canvas noch eine klassische Empathy-Map-Runde gemacht wird.
 - Gruppenfoto + Motto aufs Team-Board
 - Arbeitsraum eintragen
 - Facilitator für heute+morgen bestimmen (Vorschlag: rotierend, da nur 3 Personen im Team – siehe Walt-Disney-Methode unten, die sich ideal auf 3 Rollen aufteilt)

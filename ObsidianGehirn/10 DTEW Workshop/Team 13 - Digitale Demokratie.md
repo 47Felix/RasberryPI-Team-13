@@ -39,7 +39,7 @@ Bezug: digi&demos eigenes Projekt "pleenum" zielt direkt auf offenen, konstrukti
 - 📝 **Gruppenfoto + Motto** aufs Team-Board
 - 📝 **Arbeitsraum** eintragen, sobald zugewiesen
 - 📝 **Facilitator für heute+morgen** bestimmen (rotierend? siehe Team Canvas unten)
-- 📝 **Team Canvas / Teampathy Map** (45 Min, siehe PDF `team_canvas.drawio.pdf` auf dem Haupt-Board) – die eigentliche Übung (Ziele/Rollen/Regeln als Team festlegen) braucht echtes Gespräch zu dritt, kein sinnvoller Claude-Entwurf möglich. Vorschlag als Gesprächs-Einstieg:
+- 📝 **Team Canvas / Teampathy Map** (45 Min, siehe [`team-canvas.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/team-canvas.pdf), jetzt im Repo unter `DTEW-Workshop/templates/`) – die eigentliche Übung (Ziele/Rollen/Regeln als Team festlegen) braucht echtes Gespräch zu dritt, kein sinnvoller Claude-Entwurf möglich. Vorschlag als Gesprächs-Einstieg:
   - **Ziele:** Was wollen wir in den 2 Wochen konkret zeigen können? (z. B. funktionierender Klick-Prototyp statt nur Konzept – passt zu unserem sonstigen Pi-Projekt-Stil, wo am Ende immer echt getestet wurde)
   - **Rollen:** Wer übernimmt was (Recherche/Interviews, Design/Prototyp, Präsentation)? Bei 3 Leuten reicht grobe Aufteilung statt starrer Rollen.
   - **Regeln:** z. B. täglich kurz synchronisieren (Daily-Fragen sind eh im Board vorgegeben), Ergebnisse direkt aufs Team-Board – ähnlich wie unsere bestehende Doku-Regeln-Kultur im Pi-Projekt.
