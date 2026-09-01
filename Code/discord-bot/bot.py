@@ -22,6 +22,7 @@ WORKTREES_BASE = Path(os.path.expanduser("~/repos/worktrees"))
 SESSIONS_BASE = Path(os.path.expanduser("~/sessions"))
 USERS_FILE = Path(__file__).parent / "users.json"
 CLAUDE_TIMEOUT_SECONDS = 300
+AUTO_RESET_AFTER_MESSAGES = 25  # Session wird danach automatisch neu gestartet, kein !register noetig
 
 
 def ensure_worktree(name: str) -> str:
@@ -106,6 +107,18 @@ def chunk_message(text: str, limit: int = 1900):
         yield text[i : i + limit]
 
 
+def bump_and_maybe_reset(user_entry: dict) -> bool:
+    """Zaehlt eine Nachricht mit. Gibt True zurueck, wenn die Session ab
+    jetzt zurueckgesetzt wird (naechste Nachricht laeuft ohne --resume,
+    also faktisch ein "Clear") - Registrierung/Worktree bleiben unberuehrt,
+    niemand muss sich deswegen neu per !register anmelden."""
+    user_entry["message_count"] = user_entry.get("message_count", 0) + 1
+    if user_entry["message_count"] >= AUTO_RESET_AFTER_MESSAGES:
+        user_entry["message_count"] = 0
+        return True
+    return False
+
+
 @bot.event
 async def on_ready():
     print(f"Eingeloggt als {bot.user}")
@@ -133,6 +146,7 @@ async def register(ctx: commands.Context, name: str):
         "config_dir": str(config_dir),
         "worktree": worktree_path,
         "session_id": None,
+        "message_count": 0,
     }
     save_users(users)
 
@@ -140,6 +154,23 @@ async def register(ctx: commands.Context, name: str):
         f"Registriert als `{safe_name}` (eigene Worktree unter `{worktree_path}` angelegt).\n"
         f"Jetzt noch per SSH auf der VM einmalig ausfuehren:\n"
         f"```\nCLAUDE_CONFIG_DIR={config_dir} claude login\n```"
+    )
+
+
+@bot.command(name="clear")
+async def clear(ctx: commands.Context):
+    users = load_users()
+    user_entry = users.get(str(ctx.author.id))
+    if not user_entry:
+        await ctx.send("Du bist noch nicht registriert. Schreib `!register <deinname>`.")
+        return
+    user_entry["session_id"] = None
+    user_entry["message_count"] = 0
+    users[str(ctx.author.id)] = user_entry
+    save_users(users)
+    await ctx.send(
+        "Kontext geleert - naechste Nachricht startet eine frische Claude-Session. "
+        "Registrierung bleibt bestehen, kein erneutes !register noetig."
     )
 
 
@@ -175,11 +206,21 @@ async def on_message(message: discord.Message):
 
     if new_session_id != user_entry.get("session_id"):
         user_entry["session_id"] = new_session_id
-        users[str(message.author.id)] = user_entry
-        save_users(users)
+
+    reset_now = bump_and_maybe_reset(user_entry)
+    if reset_now:
+        user_entry["session_id"] = None
+
+    users[str(message.author.id)] = user_entry
+    save_users(users)
 
     for chunk in chunk_message(answer):
         await message.reply(chunk)
+
+    if reset_now:
+        await message.channel.send(
+            "_Kontext automatisch aufgeraeumt (neue Session, keine erneute Registrierung noetig)._"
+        )
 
 
 if __name__ == "__main__":
