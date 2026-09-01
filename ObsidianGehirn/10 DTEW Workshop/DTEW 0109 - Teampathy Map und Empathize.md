@@ -17,7 +17,7 @@ Aufgabenliste für Dienstag, 01.09.2026 (siehe [[DTEW Hamburg - Übersicht]]). C
 - Keep all work timeboxed
 
 ## 📝 Nur vor Ort möglich
-- **Teampathy Map** (45 Min) – das offizielle PDF-Template vom Haupt-Board hab ich nicht vorliegen (Board nicht auslesbar, siehe [[TaskCards Board]]), daher kein vorgefertigter Entwurf. Falls es eine klassische Empathy-Map-Struktur ist (Says/Thinks/Does/Feels, hier aufs Team statt auf eine Persona angewendet), als Gesprächseinstieg: Was sagen wir als Team über das Thema? Was denken wir wirklich? Was tun wir schon (Recherche etc.)? Wie fühlen wir uns beim Thema (überfordert/motiviert/unsicher)? Zeitlich strikt auf 45 Min begrenzen.
+- **Teampathy Map** (45 Min) – das offizielle PDF-Template vom Haupt-Board liegt jetzt im Repo ([`empathy-map-template.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/empathy-map-template.pdf)), noch nicht als Entwurf ausgefüllt (📝 muss vor Ort passieren). Falls es eine klassische Empathy-Map-Struktur ist (Says/Thinks/Does/Feels, hier aufs Team statt auf eine Persona angewendet), als Gesprächseinstieg: Was sagen wir als Team über das Thema? Was denken wir wirklich? Was tun wir schon (Recherche etc.)? Wie fühlen wir uns beim Thema (überfordert/motiviert/unsicher)? Zeitlich strikt auf 45 Min begrenzen.
 - Gruppenfoto + Motto aufs Team-Board
 - Arbeitsraum eintragen
 - Facilitator für heute+morgen bestimmen (Vorschlag: rotierend, da nur 3 Personen im Team – siehe Walt-Disney-Methode unten, die sich ideal auf 3 Rollen aufteilt)
@@ -43,7 +43,7 @@ Vorschlag: **Kurzinterviews mit 2-3 anderen Workshop-Teilnehmenden**, konkrete F
 
 ## ✅ Vorbereitet: Ideation-Methode
 
-**Empfehlung: Walt-Disney-Methode** statt 6-3-5 – passt besser zu einem 3er-Team:
+**Empfehlung: Walt-Disney-Methode** ([offizielles Template](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/fiedler-disney-method-english.pdf) vom Haupt-Board) statt 6-3-5 – passt besser zu einem 3er-Team:
 - **Träumer:in** (eine Person): völlig frei spinnen, keine Machbarkeits-Fragen erlaubt – "Wie sähe der perfekte Feed aus, wenn alles möglich wäre?"
 - **Realist:in** (eine Person): wie könnte man die Traum-Ideen tatsächlich technisch umsetzen (Bezug zu Lasses Vorschlag: Recommender-Testumgebung auf existierenden Frameworks)?
 - **Kritiker:in** (eine Person): was könnte schiefgehen, was fehlt noch, wo hakt's?

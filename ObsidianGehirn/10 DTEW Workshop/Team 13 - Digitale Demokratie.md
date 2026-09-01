@@ -58,7 +58,7 @@ Ausgangs-Case: *"The Internet and Politics – Your Network, Your Rules?"*, verk
 > Wie können wir Jugendliche/junge Erwachsene dabei unterstützen, sich sicher und konstruktiv an politischen Diskussionen im digitalen Raum zu beteiligen – ohne durch Hate Speech, Desinformation oder Shitstorms abgeschreckt oder zum Schweigen gebracht zu werden?
 
 ### Proto-Personas (Entwurf – **noch nicht durch echte Interviews validiert**, siehe "Was noch fehlt")
-Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom Haupt-Board, gebaut aus der Desk-Research oben statt aus echten Interviews:
+Zwei Ausgangs-Personas nach [`persona-template.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/persona-template.pdf)/[`persona-empathy-map.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/persona-empathy-map.pdf) vom Haupt-Board (jetzt im Repo unter `DTEW-Workshop/templates/`), gebaut aus der Desk-Research oben statt aus echten Interviews:
 
 **1. "Lena, 17, will mitreden, traut sich aber nicht"**
 - Politisch interessiert, folgt Debatten auf Instagram/TikTok, postet aber selten selbst
@@ -72,7 +72,7 @@ Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom
 
 ### Zwei Empathize-Methoden für morgen (aus den Workshop-Vorlagen)
 1. **Experten-/Sekundärquellen-Auswertung** (bereits oben gemacht): digiunddemo.de + buewi.de-Programm als Startpunkt statt bei null anzufangen.
-2. **AEIOU-Beobachtung** (`Observation AEIOU.pdf` vom Haupt-Board) oder **Kurzinterviews** mit 2-3 anderen Workshop-Teilnehmenden/Passanten am Bürgerhaus-Aktionstag selbst – bietet sich an, weil der Aktionstag parallel am 31.08. stattfindet und echte Zielgruppen-Nähe (Jugendliche, die sich für digitale Rechte interessieren) vor Ort hat.
+2. **AEIOU-Beobachtung** ([`observation-aeiou.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/observation-aeiou.pdf), jetzt im Repo unter `DTEW-Workshop/templates/`) oder **Kurzinterviews** mit 2-3 anderen Workshop-Teilnehmenden/Passanten am Bürgerhaus-Aktionstag selbst – bietet sich an, weil der Aktionstag parallel am 31.08. stattfindet und echte Zielgruppen-Nähe (Jugendliche, die sich für digitale Rechte interessieren) vor Ort hat.
 
 ### Erste Lösungsideen (nur Stichpunkte, offen für Ideation-Phase Mittwoch)
 - Moderierte Diskussionsräume mit klaren, transparenten Regeln (ähnlich "pleenum"-Ansatz, aber ggf. spezifisch auf Jugendliche zugeschnitten)
