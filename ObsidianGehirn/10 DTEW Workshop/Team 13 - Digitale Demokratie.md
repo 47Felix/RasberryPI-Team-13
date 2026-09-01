@@ -80,6 +80,23 @@ Zwei Ausgangs-Personas nach `Persona_template.pdf`/`persona_empathy_map.pdf` vom
 - Gamifizierte/spielerische Einstiegshürde, um auch zurückhaltende Nutzer:innen zum ersten Beitrag zu ermutigen
 - Strukturiertes Diskursformat gegen Polarisierung: Gegenperspektive zeigen, bevor man selbst kommentieren kann (siehe Case 3)
 
+## Direkter Input von digi&demo (Themenvertiefung, erhalten 01.09.)
+
+digi&demo hat direkt Themenvorschläge für den Workshop sowie technische Umsetzungsideen ihres technischen Mitglieds **Lasse** geschickt. Passt sehr gut zu unseren 3 Cases vom Montag – eher eine Vertiefung als was Neues:
+
+**Inhaltliche Themen → Zuordnung zu unseren Cases:**
+- *"Handling user anonymity"* (Schutz vor Anfeindungen vs. Strafverfolgbarkeit) → vertieft **Case 1 (Hate Speech)** um eine neue Spannungsfrage, die wir am Montag noch nicht hatten.
+- *"Fact-checking & objectivity"* (KI- vs. Menschen-Checks, gibt's überhaupt objektive Fakten?) → vertieft **Case 2 (Desinformation)**.
+- *"Design of feeds / 'For You'"* (Recommender vielfältig statt Bubble-verstärkend) → deckt sich fast 1:1 mit unserer bestehenden **Case-3-Problembeschreibung (Polarisierung)**.
+
+**Lasses technische Umsetzungsvorschläge (für den Prototyp):**
+1. Testumgebung für Plattform-Mechaniken/Recommender-Systeme, basierend auf existierenden Frameworks (→ Case 3)
+2. State-of-the-art multimodale Satire-/Fake-News-Detektoren auf deutschen Datensätzen trainieren (→ Case 2)
+3. Fake-News-Detektor für Echtzeit-Einsatz trainieren/deployen – kleines effizientes Netz vs. großes Modell distilliert, inkl. Accuracy-/Ressourcen-Benchmarking (→ Case 2)
+
+> [!tip] Machbarkeits-Einschätzung fürs 2-Wochen-Prototyping
+> Vorschlag 1 (Recommender-Testumgebung, Case 3) ist am ehesten machbar – "basierend auf existierenden Frameworks" heißt zusammenbauen/konfigurieren statt ML-Forschung, passt zu unserer bisher gezeigten Stärke (Systeme integrieren, siehe Pi-Dashboard-Projekt). Vorschläge 2 und 3 (Case 2) sind deutlich anspruchsvoller (NLP/ML-Training, Modell-Distillation, Benchmarking) und ohne ML-Vorerfahrung im Team riskant für 2 Wochen. Falls Case 1 oder 2 inhaltlich reizvoller ist: dann eher konzeptioneller/UX-Prototyp (z.B. Melde-Flow-Mockup) statt echtes ML-Modell.
+
 ## Was noch fehlt
 - [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
