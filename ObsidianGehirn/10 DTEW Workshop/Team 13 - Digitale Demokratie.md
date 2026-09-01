@@ -32,7 +32,7 @@ Bezug: digi&demos eigenes Projekt "pleenum" zielt direkt auf offenen, konstrukti
 - **Wer ist betroffen?** Social-Media-Nutzer:innen, die sich politisch positionieren – besonders junge Menschen, die ihre politische Meinung noch bilden.
 - **Mögliche Lösungsideen:** (1) Strukturiertes Diskursformat nach pleenum-Vorbild (erst Gegenperspektiven zeigen, dann antworten lassen); (2) Nudges, die zum Lesen der Gegenmeinung anregen, bevor man kommentiert; (3) moderierte Cross-Bubble-Formate, die unterschiedliche politische Lager gezielt zusammenbringen.
 
-> [!tip] Für morgen (Dienstag)
+> [!tip] Für Mittwoch
 > Aus diesen 3 Cases wählt ihr laut Mittwoch-Aufgabe später *einen* aus, den ihr vertieft. Auf dem echten Flipchart/Worksheet vor Ort einfach eintragen oder anpassen, falls euch eine andere Gewichtung mehr überzeugt.
 
 ## Offen – nur ihr könnt das vor Ort machen
@@ -70,7 +70,7 @@ Zwei Ausgangs-Personas nach [`persona-template.pdf`](https://github.com/47Felix/
 - Pain Point: Meldefunktionen bei großen Plattformen fühlen sich langsam/wirkungslos an
 - Bedürfnis: schnelle, nachvollziehbare Reaktion auf Hate Speech, Gefühl von Fairness/Transparenz im Prozess
 
-### Zwei Empathize-Methoden für morgen (aus den Workshop-Vorlagen)
+### Zwei Empathize-Methoden für heute (aus den Workshop-Vorlagen)
 1. **Experten-/Sekundärquellen-Auswertung** (bereits oben gemacht): digiunddemo.de + buewi.de-Programm als Startpunkt statt bei null anzufangen.
 2. **AEIOU-Beobachtung** ([`observation-aeiou.pdf`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/templates/observation-aeiou.pdf), jetzt im Repo unter `DTEW-Workshop/templates/`) oder **Kurzinterviews** mit 2-3 anderen Workshop-Teilnehmenden/Passanten am Bürgerhaus-Aktionstag selbst – bietet sich an, weil der Aktionstag parallel am 31.08. stattfindet und echte Zielgruppen-Nähe (Jugendliche, die sich für digitale Rechte interessieren) vor Ort hat.
 
@@ -108,6 +108,9 @@ Deckt sich mit der Machbarkeits-Einschätzung oben (Lasses Vorschlag 1: Testumge
 > [!warning] Personas anpassen
 > Die bisherigen Proto-Personas "Lena" und "Jamal" (siehe unten im Dokument) waren auf **Case 1 (Hate Speech)** zugeschnitten – Angst vor Anfeindungen/Cybermobbing. Für **Case 3 (Feed-Design/Bubbles)** passen sie nicht mehr direkt. Neue, auf Case 3 ausgerichtete Proto-Personas gibt's in [[DTEW 0109 - Teampathy Map und Empathize]].
 
+## Ausblick Donnerstag 03.09. – optionaler AI-Workshop
+Laut Board 10:00 Uhr optionaler AI-Workshop in Raum 121 (Vorbereitung: Python 3.10 installieren; Inhalte laut Board: Einführung, Modell-Training für Bilderkennung, Labeling für Objekterkennung, Modell-Training für Objekterkennung). Könnte für uns relevant sein, falls das Team sich für Case 2 (Desinformation) entscheidet und Lasses ML-Vorschläge (Fake-News-/Satire-Detektoren, siehe unten) tatsächlich verfolgt werden wollen – sonst eher optional, da unsere bisherige Stärke laut Machbarkeits-Einschätzung eher "Systeme integrieren" statt ML-Training ist.
+
 ## Was noch fehlt
 - [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
@@ -115,6 +118,7 @@ Deckt sich mit der Machbarkeits-Einschätzung oben (Lasses Vorschlag 1: Testumge
 - [ ] Team-13-Karte im Teams-Übersicht-Board pflegen
 - [ ] Facilitator-Rolle klären
 - [ ] Tech-Stack für Prototyp festlegen (noch offen, hängt von Lösungsidee ab)
+- [ ] Entscheiden, ob AI-Workshop Donnerstag relevant ist (siehe oben)
 
 ## Verwandte Notizen
 - [[DTEW Hamburg - Übersicht]]
