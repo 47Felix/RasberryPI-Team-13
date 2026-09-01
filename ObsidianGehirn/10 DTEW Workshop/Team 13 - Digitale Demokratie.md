@@ -97,6 +97,17 @@ digi&demo hat direkt Themenvorschläge für den Workshop sowie technische Umsetz
 > [!tip] Machbarkeits-Einschätzung fürs 2-Wochen-Prototyping
 > Vorschlag 1 (Recommender-Testumgebung, Case 3) ist am ehesten machbar – "basierend auf existierenden Frameworks" heißt zusammenbauen/konfigurieren statt ML-Forschung, passt zu unserer bisher gezeigten Stärke (Systeme integrieren, siehe Pi-Dashboard-Projekt). Vorschläge 2 und 3 (Case 2) sind deutlich anspruchsvoller (NLP/ML-Training, Modell-Distillation, Benchmarking) und ohne ML-Vorerfahrung im Team riskant für 2 Wochen. Falls Case 1 oder 2 inhaltlich reizvoller ist: dann eher konzeptioneller/UX-Prototyp (z.B. Melde-Flow-Mockup) statt echtes ML-Modell.
 
+## ✅ Finale Case-Entscheidung (01.09.2026)
+
+Team hat sich entschieden: **Case 3 – Design of feeds / "For You"** ist das Thema, das wir umsetzen. Wörtlich aus dem digi&demo-Input:
+
+> "Design of feeds / 'For You': instead of algorithms that can reinforce bubbles, and bubbles that form through self-selection – how can recommenders be designed to inform users in a way that is varied but still topically relevant?"
+
+Deckt sich mit der Machbarkeits-Einschätzung oben (Lasses Vorschlag 1: Testumgebung für Recommender-Mechaniken, basierend auf existierenden Frameworks – am realistischsten fürs 2-Wochen-Prototyping ohne ML-Vorerfahrung im Team).
+
+> [!warning] Personas anpassen
+> Die bisherigen Proto-Personas "Lena" und "Jamal" (siehe unten im Dokument) waren auf **Case 1 (Hate Speech)** zugeschnitten – Angst vor Anfeindungen/Cybermobbing. Für **Case 3 (Feed-Design/Bubbles)** passen sie nicht mehr direkt. Neue, auf Case 3 ausgerichtete Proto-Personas gibt's in [[DTEW 0109 - Teampathy Map und Empathize]].
+
 ## Was noch fehlt
 - [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
