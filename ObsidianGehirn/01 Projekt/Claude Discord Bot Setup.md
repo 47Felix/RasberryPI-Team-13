@@ -103,6 +103,7 @@ Damit der Bot nicht bei jedem `Strg+C` oder Terminal-Schließen stirbt, läuft e
 
 ## Gelernte Stolperfallen (für neue Teammitglieder)
 
+- **Leere Fehlermeldung im Discord-Kanal (Fix 31.08.2026, PR [#59](https://github.com/47Felix/RasberryPI-Team-13/pull/59)):** Die Claude-Code-CLI schreibt Fehler bei `--output-format json` oft als JSON auf **stdout** statt auf stderr (z. B. abgelaufene OAuth-Session, ungültige `--resume`-Session-ID, kaputter Worktree). Der Bot zeigte bei leerem stderr bisher nur "Fehler von Claude:" mit leerem Codeblock – `run_claude()` in `bot.py` fällt jetzt auf stdout zurück, wenn stderr leer ist.
 - `claude login` **nicht** innerhalb einer bereits laufenden interaktiven `claude`-Chat-Sitzung als Nachricht eintippen – das schickt nur Text an Claude, statt den Login auszulösen. Entweder in einer normalen Shell ausführen, oder innerhalb einer Claude-Code-Sitzung mit vorangestelltem `!` als echten Shell-Befehl (`! claude login`).
 - Der `CLAUDE_CONFIG_DIR`-Ordnername ist frei wählbar – muss **nicht** mit dem Discord-Usernamen oder Chatnamen übereinstimmen, nur exakt mit dem Argument bei `!register` matchen.
 - Discord-Threads haben eigene Channel-IDs, unabhängig vom übergeordneten Kanal – ohne den `parent_id`-Check reagiert der Bot dort nicht.
