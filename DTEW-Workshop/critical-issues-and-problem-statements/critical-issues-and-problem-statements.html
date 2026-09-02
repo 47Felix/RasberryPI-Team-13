@@ -47,6 +47,16 @@
   }
   .checklist li { list-style: none; margin-left: -20px; }
   .checklist li::before { content: "☐ "; }
+  .warn {
+    border: 1px solid #e8c674;
+    background: #fdf6e3;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 8px 0 14px;
+    font-size: 13px;
+    color: #33394a;
+  }
+  .warn b { color: #8a6d1a; }
 </style>
 </head>
 <body>
@@ -88,11 +98,21 @@
   <div class="role"><b>Realist:</b> Test environment based on an existing open-source recommender framework (e.g. a simple content-based or collaborative-filtering sample project), fed with a small, self-assembled example dataset (articles/posts with roughly labeled perspectives). Show two ranking modes side by side in the same Flask frontend: "Standard" (pure similarity, bubble-reinforcing) vs. "Diversity-aware" (deliberately mixes in topically related counter-perspectives).</div>
   <div class="role"><b>Critic:</b> Open risks: (1) Where does a credible, non-trivial example dataset come from in the available time? (2) How objectively can "perspectives" even be labeled without introducing our own bias? (3) Will a demo with sample/synthetic data be convincing enough for peer feedback and the final presentation, or does it need real content? (4) Is the difference from "pleenum" clear enough to outsiders?</div>
 
-  <h2>Peer Feedback (11:30): Talking Points</h2>
+  <h2>Peer Feedback (12:45): Talking Points</h2>
+  <div class="warn"><b>Update from the organizers:</b> time moved to 12:45 (was 11:30). Pitch to 3-4 other groups. The room list names Team 13 twice (Room 217 with Marius, Room 127 with Heiko), confirm on-site which one applies.</div>
   <ul>
     <li><b>Core problem:</b> "For You" feeds reinforce filter bubbles. Some don't notice it (Mia), some notice but can't escape it (Tom).</li>
     <li><b>Target group:</b> young adults (18–25) who mainly consume political/societal content through algorithmic feeds.</li>
     <li><b>Solution idea:</b> a recommender test environment showing two feed variants side by side (bubble-reinforcing vs. diversity-aware), built on an existing framework.</li>
+    <li><b>Key features for the prototype:</b>
+      <ul>
+        <li>Two feed modes shown side by side in the same interface: "Standard" (pure similarity) vs. "Diversity-aware" (deliberately mixes in topically related counter-perspectives)</li>
+        <li>Built on an existing open-source recommender framework, no self-trained ML model</li>
+        <li>Small example dataset with roughly labeled perspectives/topics</li>
+        <li>Simple Flask web frontend to switch between/compare both modes directly</li>
+        <li>Optional (if time allows): visible marking of which posts were deliberately mixed in as counter-perspectives in the diversity-aware mode</li>
+      </ul>
+    </li>
     <li><b>Question for other groups:</b> do you know similar approaches/tools? How would you measure "varied but still relevant"?</li>
   </ul>
 
@@ -101,10 +121,11 @@
     <li>Critical issues (5–10) confirmed/adjusted by the team, transferred to <code>Critical_Issues.pdf</code></li>
     <li>One or both problem statements finalized</li>
     <li>Walt-Disney (or 6-3-5) round actually run with the team, outcome documented</li>
-    <li>Peer feedback results (11:30) captured</li>
+    <li>Peer feedback results (12:45) captured</li>
     <li>Team Board card updated with today's status</li>
     <li>Facilitator role (open since Tuesday) resolved</li>
     <li>Example dataset for the recommender demo decided</li>
+    <li>Room for peer feedback confirmed on-site (217 vs. 127)</li>
   </ul>
 </body>
 </html>

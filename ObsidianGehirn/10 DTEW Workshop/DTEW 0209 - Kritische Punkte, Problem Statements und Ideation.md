@@ -6,13 +6,16 @@ tags: [dtew, workshop, digitale-demokratie]
 
 Aufgabenliste für Mittwoch, 02.09.2026 (siehe [[DTEW Hamburg - Übersicht]]). Case ist final entschieden: **Case 3 – Feed-/Recommender-Design gegen Bubble-Verstärkung** (siehe [[Team 13 - Digitale Demokratie]]), Proto-Personas Mia/Tom stehen bereits (siehe [[DTEW 0109 - Teampathy Map und Empathize]]). Wie an den Vortagen: Alles mit 📝 markiert **muss vor Ort/live im Team bzw. per WebEx passieren**, kein Schreibtisch-Ersatz möglich.
 
+> [!warning] Update von der Orga (02.09., per Discord)
+> Peer-Feedback-Zeit auf **12:45** verschoben (vorher 11:30), Pitch an **3-4** andere Gruppen (vorher 2-3), zusätzliche Pitch-Frage **"key features for your prototype"** dazugekommen. Raumliste nennt Team 13 zweimal: Raum 217 (Marius, mit Teams 1/4/9/13/15) und Raum 127 (Heiko, mit Teams 11/13/20/21/22) – vor Ort unbedingt klären, wo ihr hin müsst.
+
 ## Aufgaben von heute (Original, Workshop-Vorgabe)
 - Ergebnisse präsentieren: Problem + Personas erklären, erste Lösungsideen teilen, offene Fragen mitbringen
 - 5–10 kritische Punkte finden (`Critical_Issues.pdf` vom Haupt-Board)
 - 1–2 Problem Statements formulieren (vor der Ideation)
 - 1 Ideation-Methode nutzen: 6-3-5 oder Walt-Disney-Methode
 - Alle Studierenden ins WebEx holen
-- 11:30 Peer Feedback: Pitch an 2-3 andere Gruppen (Kernprobleme / Zielgruppe / Lösungsideen)
+- 12:45 Peer Feedback: Pitch an 3-4 andere Gruppen (Kernprobleme / Zielgruppe / Lösungsideen / Key Features), Update von der Orga siehe Kasten oben
 - Team-Boards aktualisieren
 - Daily: Was gestern, was heute, Blocker?
 - Ergebnisse reviewen: Gefällt die Idee von gestern noch? Welches Feedback? Rechercheergebnisse? Konkurrenz am Markt, was lässt sich davon lernen?
@@ -21,7 +24,7 @@ Aufgabenliste für Mittwoch, 02.09.2026 (siehe [[DTEW Hamburg - Übersicht]]). C
 ## 📝 Nur vor Ort/live möglich
 - **Alle Studierenden ins WebEx holen** – reine Logistik, kein Vorbereitungs-Task
 - **Ergebnisse präsentieren** (Problem + Personas erklären, Lösungsideen teilen, offene Fragen stellen) – Inhalt unten vorbereitet, Vortrag selbst braucht das Team
-- **11:30 Peer Feedback** mit 2-3 anderen Gruppen – Pitch-Stichpunkte unten vorbereitet, das Gespräch selbst nicht ersetzbar
+- **12:45 Peer Feedback** mit 3-4 anderen Gruppen – Pitch-Stichpunkte (inkl. Key Features) unten vorbereitet, das Gespräch selbst nicht ersetzbar, Raum vor Ort klären (217 vs. 127)
 - **Daily** (gestern/heute/Blocker) – ehrliche Antworten aus dem Team, siehe Vorschlag unten als Gerüst
 - **Ideation-Runde selbst** (Walt-Disney: Dreamer/Realist/Critic zu dritt) – unten als Entwurf vorbereitet (Startpunkt, kein Ersatz für die echte 30-Min-Runde im Team)
 - **Konkurrenzrecherche vertiefen** – digi&demos "pleenum" ist bereits als Referenz erfasst (siehe unten), weitere Recherche (z.B. bestehende "diversity-aware" Feed-Tools) bringt am meisten, wenn im Team gemeinsam gesucht wird
@@ -70,24 +73,31 @@ Startpunkt für die echte 3er-Runde (Dreamer/Realist/Critic, siehe [[DTEW 0109 -
 - **digi&demo e.V. – "pleenum":** eigenes Projekt für offenen, transparenten, konstruktiven digitalen Diskurs – nächstliegende Referenz, da wir direkt mit digi&demo im Austausch stehen. Unterscheidung: pleenum fokussiert auf Diskursformat/Moderation, unser Case-3-Ansatz fokussiert konkret auf das Feed-/Recommender-Ranking selbst.
 - Weitere Recherche zu bestehenden "diversity-aware"/"bridging" Recommender-Ansätzen (z.B. Community-Notes-artige oder Cross-Perspective-Feed-Experimente) bietet sich als Team-Aufgabe für heute an – am ehesten ergiebig, wenn während des Peer-Feedbacks auch andere Gruppen gefragt werden, ob sie Vergleichbares kennen.
 
-## ✅ Vorbereitet: Pitch-Stichpunkte fürs Peer Feedback (11:30)
+## ✅ Vorbereitet: Pitch-Stichpunkte fürs Peer Feedback (12:45)
 
 - **Kernproblem:** "For You"-Feeds verstärken Filterblasen – manche merken es nicht (Mia), manche merken es und kommen trotzdem nicht raus (Tom).
 - **Zielgruppe:** Junge Erwachsene (18–25), die politische/gesellschaftliche Inhalte hauptsächlich über algorithmische Feeds konsumieren.
 - **Lösungsidee:** Recommender-Testumgebung, die zwei Feed-Varianten nebeneinander zeigt (bubble-verstärkend vs. diversity-aware), auf Basis eines bestehenden Frameworks.
+- **Key Features fürs Prototyp** (neu von der Orga gefragt, siehe Update-Kasten oben):
+  - Zwei Feed-Modi im selben Interface nebeneinander: "Standard" (reine Ähnlichkeit) vs. "Diversity-aware" (bewusst eingemischte, thematisch verwandte Gegenperspektiven)
+  - Basiert auf bestehendem Open-Source-Recommender-Framework, kein selbst trainiertes ML-Modell
+  - Kleiner Beispiel-Datensatz mit grob gelabelten Perspektiven/Themen
+  - Einfaches Flask-Web-Frontend zum direkten Umschalten/Vergleichen beider Modi
+  - Optional (falls Zeit reicht): sichtbare Kennzeichnung, welche Posts im Diversity-Modus bewusst als Gegenperspektive eingemischt wurden
 - **Offene Frage an andere Gruppen:** Kennt ihr ähnliche Ansätze/Tools? Wie würdet ihr "vielfältig, aber noch relevant" messen?
 
 ## ✅ Vorbereitet: Daily-Gerüst
 
 - **Gestern (01.09.):** Teampathy Map/Team Canvas bearbeitet, Case 3 final entschieden, Proto-Personas Mia/Tom erstellt, Team-Board-Karte (Problem/Solution/Target Group/Tech Stack) vorbereitet.
-- **Heute (02.09.):** Kritische Punkte + Problem Statements schärfen, Ideation-Runde (Walt-Disney), Peer Feedback um 11:30, Team-Board aktualisieren.
+- **Heute (02.09.):** Kritische Punkte + Problem Statements schärfen, Ideation-Runde (Walt-Disney), Peer Feedback um 12:45, Team-Board aktualisieren.
 - **Blocker:** *(vor Ort ausfüllen – z.B. offene Facilitator-Frage, fehlender Beispiel-Datensatz, WebEx-Technik)*
 
 ## Was noch fehlt
 - [ ] Kritische Punkte (5-10) im Team bestätigen/ergänzen und auf `Critical_Issues.pdf` übertragen
 - [ ] Eines oder beide Problem Statements final auswählen/schärfen
 - [ ] Walt-Disney-Runde (oder 6-3-5) tatsächlich im Team durchführen, Ergebnis dokumentieren
-- [ ] Peer-Feedback-Ergebnisse (11:30) festhalten
+- [ ] Peer-Feedback-Ergebnisse (12:45) festhalten
+- [ ] Raum fuer Peer Feedback vor Ort geklaert (217 vs. 127)
 - [ ] Team-Board-Karte mit heutigem Stand aktualisieren
 - [ ] Facilitator-Rolle (offen seit Dienstag) endgültig klären
 - [ ] Beispiel-Datensatz für die Recommender-Demo festlegen
