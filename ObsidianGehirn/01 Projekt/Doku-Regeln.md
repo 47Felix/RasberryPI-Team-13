@@ -46,6 +46,12 @@ Zwei echte Hebel, um näher an "vollautomatisch" zu kommen, falls gewünscht:
 >
 > **Unterordner pro Deliverable (seit 02.09.2026):** Sobald ein Deliverable mehrere Formatvarianten hat (`.md` + `.html` + ggf. `.pdf`), bekommt es einen eigenen Unterordner im Präsentations-Ordner, benannt wie die Dateien selbst (z. B. `DTEW-Workshop/personas-mia-tom/personas-mia-tom.{md,html,pdf}`), statt lose im Wurzelverzeichnis zu liegen – sonst wird der Ordner bei mehreren Deliverables schnell unübersichtlich. Ein einzelnes `.md` ohne weitere Varianten (z. B. eine reine Notiz) muss nicht in einen eigenen Unterordner.
 
+## Kein KI-Stil in Dokumenten (seit 02.09.2026)
+> [!important] Verbindliche Regel
+> Claude schreibt in Dokumenten (Vault-Notizen, Präsentations-/Abgabe-Dateien, Code-Kommentare) **ohne die typischen KI-Textmarker** – allen voran der Gedankenstrich "—" (Geviertstrich) zum Aneinanderreihen von Nebensätzen. Stattdessen normale Satzzeichen verwenden: Punkt, Komma, Doppelpunkt oder Klammern, je nachdem was grammatikalisch passt. Der kurze Halbgeviertstrich "–" für Zeiträume/Aufzählungen (z. B. "18–25", "31.08.–12.09.") ist davon ausgenommen, das ist normale deutsche Typografie und bereits durchgängiger Vault-Stil.
+>
+> Gilt für alles, was neu geschrieben wird – bestehende ältere Notizen müssen nicht rückwirkend durchsucht werden, außer es wird gezielt danach gefragt.
+
 ## GitHub Issues (seit 26.08.2026)
 > [!important] Verbindliche Regel
 > **Sobald ein GitHub-Issue erledigt/geschlossen wird (egal ob Claude oder ein Teammitglied es schließt), trägt Claude einen kurzen Eintrag in [[Issues - Übersicht]] ein** – 2-4 Sätze, *was* konkret gemacht wurde, nicht nur "erledigt". Eintrag wandert von "🟢 Offen" nach "✅ Geschlossen", verlinkt auf das Issue und ggf. die Detail-Notiz (z. B. Brain Dump). Gilt auch rückwirkend für neu entdeckte geschlossene Issues.

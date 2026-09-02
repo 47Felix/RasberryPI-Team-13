@@ -1,6 +1,6 @@
 # Personas – Mia & Tom (Case 3: Feed/Recommender Design)
 
-> Draft based on desk research + the team's proto-persona notes from Tuesday (01.09.), **not yet validated by real interviews** — see [[DTEW 0109 - Teampathy Map und Empathize]]. Filled into the official persona template from the main board ([`persona-template.pdf`](../templates/persona-template.pdf)). Confirm/adjust with the team, ideally after the short interviews suggested as the empathize method.
+> Draft based on desk research + the team's proto-persona notes from Tuesday (01.09.), **not yet validated by real interviews** (see [[DTEW 0109 - Teampathy Map und Empathize]]). Filled into the official persona template from the main board ([`persona-template.pdf`](../templates/persona-template.pdf)). Confirm/adjust with the team, ideally after the short interviews suggested as the empathize method.
 
 ## Persona 1 – Mia
 
@@ -10,17 +10,17 @@
 | **Job** | Student (undecided major, first year) |
 | **Status** | Single, lives in a shared flat |
 | **Location** | Mid-size city |
-| **Archetype** | "The Everyperson" — average, unreflective media user |
+| **Archetype** | "The Everyperson", average, unreflective media user |
 
-**Quote:** *"I'm informed — I scroll through the news every day."*
+**Quote:** *"I'm informed, I scroll through the news every day."*
 
 **Motivation:** Wants to feel informed and keep up with what her friends are talking about, without much effort.
 
 **Goals:** Stay reasonably up to date on current events; not fall behind in conversations with friends and family.
 
-**Pain points / frustration:** Doesn't realize her feed mostly confirms what she already thinks. Occasionally caught off guard when friends hold a very different opinion — briefly unsettling, but she doesn't connect it to her feed.
+**Pain points / frustration:** Doesn't realize her feed mostly confirms what she already thinks. Occasionally caught off guard when friends hold a very different opinion, briefly unsettling, but she doesn't connect it to her feed.
 
-**Short bio:** Mia checks Instagram and TikTok multiple times a day, mostly following accounts and topics that already match her views. She sees herself as informed and open-minded but has never actively sought out a differing opinion — she simply doesn't encounter the need to.
+**Short bio:** Mia checks Instagram and TikTok multiple times a day, mostly following accounts and topics that already match her views. She sees herself as informed and open-minded but has never actively sought out a differing opinion; she simply doesn't encounter the need to.
 
 **Personality** (Introverted↔Extroverted / Thinking↔Feeling / Free↔Dependent / Social↔Ego):
 - Introverted ●●●○○○○○○○ Extroverted *(leans introverted, ~30%)*
@@ -46,7 +46,7 @@
 | **Job** | Student (working part-time) |
 | **Status** | Single, lives alone |
 | **Location** | Mid-size city |
-| **Archetype** | "The Seeker" — actively questions his own information diet |
+| **Archetype** | "The Seeker", actively questions his own information diet |
 
 **Quote:** *"I don't want my feed to just tell me I'm right."*
 
@@ -76,9 +76,9 @@
 
 ## Note on the sliders
 
-The bars above are a rough textual approximation of the template's slider fields — when transferring to the actual `persona-template.pdf` layout (or a hand-drawn flipchart version), just mark the sliders at roughly the same position rather than reading exact percentages.
+The bars above are a rough textual approximation of the template's slider fields. When transferring to the actual `persona-template.pdf` layout (or a hand-drawn flipchart version), just mark the sliders at roughly the same position rather than reading exact percentages.
 
 ## Related notes
-- [[DTEW 0109 - Teampathy Map und Empathize]] — original proto-persona notes
+- [[DTEW 0109 - Teampathy Map und Empathize]] (original proto-persona notes)
 - [[Team 13 - Digitale Demokratie]]
 - [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]]
