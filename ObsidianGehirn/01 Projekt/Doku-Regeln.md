@@ -36,6 +36,14 @@ Zwei echte Hebel, um näher an "vollautomatisch" zu kommen, falls gewünscht:
 1. **Claudian-Einstellung "Persistent/Pinned Context"** (`persistentExternalContextPaths` bzw. Pinned-Context-Feature in den Claudian-Einstellungen): Diese Notiz bzw. [[🏠 Start]] dort dauerhaft anheften, dann lädt Claude die Doku-Regeln garantiert bei **jedem** neuen Chat automatisch mit, statt sich darauf zu verlassen, dass zuerst Start.md gelesen wird. Muss von Anton/Felix in den Claudian-Einstellungen gesetzt werden (nicht per Git-Commit, ist lokale Plugin-Konfiguration) – bei Bedarf sag Bescheid, dann geh ich das mit euch durch.
 2. **Fortgeschritten/nicht gebaut:** Ein periodischer Scheduled-Job (z. B. per `/schedule`-Skill), der die Chat-Transkripte unter `ObsidianGehirn/.claudian/sessions/*.json` ausliest und automatisch Vault-Updates ableitet – technisch machbar, aber deutlich aufwändiger und fehleranfälliger (Transkript-Parsing, Gefahr von Doppel-Einträgen). Nur sinnvoll, falls das Trigger-Wort auf Dauer zu nervig ist.
 
+## Präsentations-/Abgabe-Dateien: eigener Ordner außerhalb vom Vault (seit 02.09.2026)
+> [!important] Verbindliche Regel
+> Alles, was das Team **jemandem zeigen/präsentieren/abgeben** muss (Workshop-Deliverables, Präsentationsfolien, ausgefüllte Worksheets, Pitch-Material etc.), legt Claude **zusätzlich** zum normalen Vault-Eintrag in einem eigenen Ordner **außerhalb** von `ObsidianGehirn/` im Repo-Root ab – ein Ordner pro Projekt/Kontext, nicht pro einzelner Datei. Das Vault bleibt der Ort für Prozess/Recherche/Entscheidungen, der externe Ordner ist die fertige Präsentations-/Abgabeversion.
+>
+> Bereits etablierte Beispiel-Ordner: [`Praesentation/`](../../Praesentation) (Kurzprojekt Freitag), [`DTEW-Workshop/`](../../DTEW-Workshop) (Design-Thinking-Workshop Hamburg). Für neue Kontexte (z. B. eine spätere Pi-Projekt-Abschlusspräsentation) entsprechend einen neuen Ordner nach demselben Muster anlegen.
+>
+> Ablauf: Quelldatei als Markdown (`.md`, bei internationalen/englischsprachigen Kontexten auf Englisch), dazu eine gerenderte `.html`-Version zum direkten Anzeigen, bei Bedarf zusätzlich als `.pdf` gerendert (siehe Render-Snippet in [`DTEW-Workshop/README.md`](../../DTEW-Workshop/README.md) als Vorlage). Im Vault an der passenden Notiz nur noch draufhinweisen/verlinken, statt den vollen Inhalt zu duplizieren.
+
 ## GitHub Issues (seit 26.08.2026)
 > [!important] Verbindliche Regel
 > **Sobald ein GitHub-Issue erledigt/geschlossen wird (egal ob Claude oder ein Teammitglied es schließt), trägt Claude einen kurzen Eintrag in [[Issues - Übersicht]] ein** – 2-4 Sätze, *was* konkret gemacht wurde, nicht nur "erledigt". Eintrag wandert von "🟢 Offen" nach "✅ Geschlossen", verlinkt auf das Issue und ggf. die Detail-Notiz (z. B. Brain Dump). Gilt auch rückwirkend für neu entdeckte geschlossene Issues.
