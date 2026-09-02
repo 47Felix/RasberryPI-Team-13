@@ -5,6 +5,7 @@ Deliverables für den zusätzlichen "2026 International Design Thinking and Entr
 - **`case-analysis-worksheet.md`** – Quelldatei (Markdown), die bei Änderungen bearbeitet werden sollte. **Auf Englisch**, wie der Workshop (internationales Team, Original-Worksheet ist auch Englisch).
 - **`case-analysis-worksheet.html`** – fertig gerenderte Version zum direkten Anzeigen im Browser (eigenständig, kein Marp/Build-Schritt nötig).
 - **`case-analysis-worksheet.pdf`** – PDF-Version im Layout des Original-Worksheets vom DTEW-Haupt-Board, ausgefüllt mit unseren 3 Cases – das ist das eigentliche Abgabe-Dokument für den Workshop.
+- **`templates/`** – unausgefüllte Original-Vorlagen vom DTEW-Haupt-Board (Empathy Map, Persona-Template, Persona-Empathy-Map, Observation AEIOU, Problem Tree, Fiedler-Disney-Methode, Tutorial-Übersicht Design-Thinking-Methoden). Referenzmaterial, keine eigenen Deliverables – siehe [[Team 13 - Digitale Demokratie]] und [[DTEW 0109 - Teampathy Map und Empathize]] für unsere ausgefüllten Versionen.
 
 ## Worum geht's
 
@@ -35,4 +36,4 @@ const { chromium } = require('playwright');
 
 ## Nächster Schritt
 
-Mittwoch: einen der drei Cases als Fokus wählen und daraus 1–2 Problem Statements bauen. Siehe [[Team 13 - Digitale Demokratie]] im Vault.
+Case 3 (Feed-/Recommender-Design) ist entschieden (siehe [[Team 13 - Digitale Demokratie]]). Mittwoch 02.09.: kritische Punkte, 1–2 Problem Statements und eine Ideation-Runde (6-3-5 oder Walt-Disney) dazu ausarbeiten. Siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]] im Vault.
