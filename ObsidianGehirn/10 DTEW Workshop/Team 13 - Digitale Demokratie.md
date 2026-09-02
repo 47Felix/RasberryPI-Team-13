@@ -111,6 +111,9 @@ Deckt sich mit der Machbarkeits-Einschätzung oben (Lasses Vorschlag 1: Testumge
 ## Ausblick Donnerstag 03.09. – optionaler AI-Workshop
 Laut Board 10:00 Uhr optionaler AI-Workshop in Raum 121 (Vorbereitung: Python 3.10 installieren; Inhalte laut Board: Einführung, Modell-Training für Bilderkennung, Labeling für Objekterkennung, Modell-Training für Objekterkennung). Könnte für uns relevant sein, falls das Team sich für Case 2 (Desinformation) entscheidet und Lasses ML-Vorschläge (Fake-News-/Satire-Detektoren, siehe unten) tatsächlich verfolgt werden wollen – sonst eher optional, da unsere bisherige Stärke laut Machbarkeits-Einschätzung eher "Systeme integrieren" statt ML-Training ist.
 
+## Mittwoch 02.09. – Kritische Punkte, Problem Statements, Ideation
+Bearbeitung siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]]: 8 vorbereitete kritische Punkte, 2 zugeschärfte Problem Statements (je Persona), Walt-Disney-Ideation-Entwurf, Pitch-Stichpunkte fürs 11:30-Peer-Feedback.
+
 ## Was noch fehlt
 - [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
@@ -119,9 +122,12 @@ Laut Board 10:00 Uhr optionaler AI-Workshop in Raum 121 (Vorbereitung: Python 3.
 - [ ] Facilitator-Rolle klären
 - [ ] Tech-Stack für Prototyp festlegen (noch offen, hängt von Lösungsidee ab)
 - [ ] Entscheiden, ob AI-Workshop Donnerstag relevant ist (siehe oben)
+- [ ] Kritische Punkte/Problem Statements/Ideation vom Mittwoch im Team bestätigen (siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]])
 
 ## Verwandte Notizen
 - [[DTEW Hamburg - Übersicht]]
+- [[DTEW 0109 - Teampathy Map und Empathize]]
+- [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]]
 - [`DTEW-Workshop/` im Repo](https://github.com/47Felix/RasberryPI-Team-13/tree/main/DTEW-Workshop) – ausgefülltes Case-Analysis-Worksheet
 - [[Doku-Regeln]]
 

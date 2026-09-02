@@ -36,4 +36,4 @@ const { chromium } = require('playwright');
 
 ## Nächster Schritt
 
-Mittwoch: einen der drei Cases als Fokus wählen und daraus 1–2 Problem Statements bauen. Siehe [[Team 13 - Digitale Demokratie]] im Vault.
+Case 3 (Feed-/Recommender-Design) ist entschieden (siehe [[Team 13 - Digitale Demokratie]]). Mittwoch 02.09.: kritische Punkte, 1–2 Problem Statements und eine Ideation-Runde (6-3-5 oder Walt-Disney) dazu ausarbeiten. Siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]] im Vault.
