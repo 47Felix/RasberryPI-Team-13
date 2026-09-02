@@ -69,6 +69,10 @@ Danach im Discord-Kanal einmalig:
 
 `<name>` muss exakt dem Ordnernamen unter `~/sessions/` entsprechen. Der Bot merkt sich danach pro Discord-User-ID eine `session_id`, damit der Gesprächsverlauf über mehrere Nachrichten erhalten bleibt (`claude --resume <session-id>`).
 
+### Automatischer Kontext-Reset nach 25 Nachrichten (seit 01.09.2026, PR [#67](https://github.com/47Felix/RasberryPI-Team-13/pull/67))
+
+Sessions liefen vorher unbegrenzt mit `--resume` auf derselben `session_id` weiter, wodurch die pro Nachricht mitgeschickten Tokens (und damit der Verbrauch) stetig wuchsen. Jetzt zählt der Bot pro User die Nachrichten mit (`message_count` in `users.json`) und verwirft die `session_id` automatisch nach `AUTO_RESET_AFTER_MESSAGES = 25` Nachrichten (Konstante in `bot.py`) – die nächste Nachricht startet dann eine frische Session, der Bot meldet das im Kanal. Zusätzlich gibt es den manuellen Befehl `!clear`, der Session und Zähler sofort zurücksetzt. Registrierung, Config-Dir und Worktree bleiben davon unberührt – niemand muss sich neu per `!register` anmelden.
+
 ## Discord-Setup
 
 - Bot-Application im Discord Developer Portal angelegt, **MESSAGE CONTENT INTENT** aktiviert (sonst sieht der Bot keine normalen Nachrichten, nur Metadaten)
