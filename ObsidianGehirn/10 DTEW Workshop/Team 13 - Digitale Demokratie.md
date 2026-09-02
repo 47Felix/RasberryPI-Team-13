@@ -115,7 +115,7 @@ Laut Board 10:00 Uhr optionaler AI-Workshop in Raum 121 (Vorbereitung: Python 3.
 Bearbeitung siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]]: 8 vorbereitete kritische Punkte, 2 zugeschärfte Problem Statements (je Persona), Walt-Disney-Ideation-Entwurf, Pitch-Stichpunkte fürs 11:30-Peer-Feedback.
 
 ## Was noch fehlt
-- [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
+- [ ] Ausgefülltes Worksheet (`DTEW-Workshop/case-analysis-worksheet/case-analysis-worksheet.pdf`) gegenlesen/anpassen, falls euch andere Cases vom Aktionstag mehr überzeugen, und aufs Team-Board teilen
 - [ ] Echte Personas/Empathy Map validieren (Interviews statt nur Proto-Personas)
 - [ ] Team Canvas gemeinsam ausfüllen (Ziele/Rollen/Regeln)
 - [ ] Team-13-Karte im Teams-Übersicht-Board pflegen

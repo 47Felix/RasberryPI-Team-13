@@ -43,6 +43,8 @@ Zwei echte Hebel, um näher an "vollautomatisch" zu kommen, falls gewünscht:
 > Bereits etablierte Beispiel-Ordner: [`Praesentation/`](../../Praesentation) (Kurzprojekt Freitag), [`DTEW-Workshop/`](../../DTEW-Workshop) (Design-Thinking-Workshop Hamburg). Für neue Kontexte (z. B. eine spätere Pi-Projekt-Abschlusspräsentation) entsprechend einen neuen Ordner nach demselben Muster anlegen.
 >
 > Ablauf: Quelldatei als Markdown (`.md`, bei internationalen/englischsprachigen Kontexten auf Englisch), dazu eine gerenderte `.html`-Version zum direkten Anzeigen, bei Bedarf zusätzlich als `.pdf` gerendert (siehe Render-Snippet in [`DTEW-Workshop/README.md`](../../DTEW-Workshop/README.md) als Vorlage). Im Vault an der passenden Notiz nur noch draufhinweisen/verlinken, statt den vollen Inhalt zu duplizieren.
+>
+> **Unterordner pro Deliverable (seit 02.09.2026):** Sobald ein Deliverable mehrere Formatvarianten hat (`.md` + `.html` + ggf. `.pdf`), bekommt es einen eigenen Unterordner im Präsentations-Ordner, benannt wie die Dateien selbst (z. B. `DTEW-Workshop/personas-mia-tom/personas-mia-tom.{md,html,pdf}`), statt lose im Wurzelverzeichnis zu liegen – sonst wird der Ordner bei mehreren Deliverables schnell unübersichtlich. Ein einzelnes `.md` ohne weitere Varianten (z. B. eine reine Notiz) muss nicht in einen eigenen Unterordner.
 
 ## GitHub Issues (seit 26.08.2026)
 > [!important] Verbindliche Regel

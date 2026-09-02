@@ -1,6 +1,6 @@
 # Personas – Mia & Tom (Case 3: Feed/Recommender Design)
 
-> Draft based on desk research + the team's proto-persona notes from Tuesday (01.09.), **not yet validated by real interviews** — see [[DTEW 0109 - Teampathy Map und Empathize]]. Filled into the official persona template from the main board ([`persona-template.pdf`](templates/persona-template.pdf)). Confirm/adjust with the team, ideally after the short interviews suggested as the empathize method.
+> Draft based on desk research + the team's proto-persona notes from Tuesday (01.09.), **not yet validated by real interviews** — see [[DTEW 0109 - Teampathy Map und Empathize]]. Filled into the official persona template from the main board ([`persona-template.pdf`](../templates/persona-template.pdf)). Confirm/adjust with the team, ideally after the short interviews suggested as the empathize method.
 
 ## Persona 1 – Mia
 
