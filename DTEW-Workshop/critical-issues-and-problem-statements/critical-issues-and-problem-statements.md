@@ -33,11 +33,20 @@ Starting point for the real 3-person round, not a finished result.
 - **Realist:** Test environment based on an existing open-source recommender framework (e.g. a simple content-based or collaborative-filtering sample project), fed with a small, self-assembled example dataset (articles/posts with roughly labeled perspectives). Show two ranking modes side by side in the same Flask frontend: "Standard" (pure similarity, bubble-reinforcing) vs. "Diversity-aware" (deliberately mixes in topically related counter-perspectives).
 - **Critic:** Open risks: (1) Where does a credible, non-trivial example dataset come from in the available time? (2) How objectively can "perspectives" even be labeled without introducing our own bias? (3) Will a demo with sample/synthetic data be convincing enough for peer feedback and the final presentation, or does it need real content? (4) Is the difference from "pleenum" clear enough to outsiders?
 
-## Peer Feedback (11:30), talking points
+## Peer Feedback (12:45), talking points
+
+> [!warning] Update von der Orga
+> Zeit auf 12:45 verschoben (vorher 11:30). Pitch an 3-4 andere Gruppen. Raumliste nennt Team 13 zweimal (Raum 217 bei Marius und Raum 127 bei Heiko), das vor Ort unbedingt gegenchecken.
 
 - **Core problem:** "For You" feeds reinforce filter bubbles. Some don't notice it (Mia), some notice but can't escape it (Tom).
 - **Target group:** young adults (18–25) who mainly consume political/societal content through algorithmic feeds.
 - **Solution idea:** a recommender test environment showing two feed variants side by side (bubble-reinforcing vs. diversity-aware), built on an existing framework.
+- **Key features for the prototype:**
+  - Two feed modes shown side by side in the same interface: "Standard" (pure similarity) vs. "Diversity-aware" (deliberately mixes in topically related counter-perspectives)
+  - Built on an existing open-source recommender framework, no self-trained ML model
+  - Small example dataset with roughly labeled perspectives/topics
+  - Simple Flask web frontend to switch between/compare both modes directly
+  - Optional (if time allows): visible marking of which posts were deliberately mixed in as counter-perspectives in the diversity-aware mode
 - **Question for other groups:** do you know similar approaches/tools? How would you measure "varied but still relevant"?
 
 ## Still open after the live session
@@ -45,7 +54,8 @@ Starting point for the real 3-person round, not a finished result.
 - [ ] Critical issues (5–10) confirmed/adjusted by the team, transferred to `Critical_Issues.pdf`
 - [ ] One or both problem statements finalized
 - [ ] Walt-Disney (or 6-3-5) round actually run with the team, outcome documented here
-- [ ] Peer feedback results (11:30) captured
+- [ ] Peer feedback results (12:45) captured
 - [ ] Team Board card updated with today's status
 - [ ] Facilitator role (open since Tuesday) resolved
 - [ ] Example dataset for the recommender demo decided
+- [ ] Room for peer feedback confirmed on-site (217 vs. 127)
