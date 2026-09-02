@@ -57,16 +57,16 @@ Danach eine Runde rotieren (jede:r übernimmt eine andere Rolle), damit nicht ei
 Fertiger Text für die Team-13-Karte im Teams-Übersicht-Board (Workshop-Sprache Englisch, zum Reinkopieren):
 
 **Problem:**
-> Social media "For You" feeds are optimized for engagement, which reinforces filter bubbles and self-selected echo chambers. Some users don't even notice they're in a bubble; others notice but can't break out because the algorithm keeps showing similar content. This weakens exposure to diverse, topically relevant perspectives — a core challenge for healthy democratic discourse (digi&demo e.V.'s focus).
+> Social media "For You" feeds are optimized for engagement, which reinforces filter bubbles and self-selected echo chambers. Some users don't even notice they're in a bubble; others notice but can't break out because the algorithm keeps showing similar content. This weakens exposure to diverse, topically relevant perspectives, a core challenge for healthy democratic discourse (digi&demo e.V.'s focus).
 
 **Target Group:**
-> Young adults (18–25) who consume political/social content mainly through algorithmic feeds (Instagram, TikTok, X) — both those unaware they're in a bubble ("Mia, 20") and those aware but stuck in it ("Tom, 22").
+> Young adults (18–25) who consume political/social content mainly through algorithmic feeds (Instagram, TikTok, X), both those unaware they're in a bubble ("Mia, 20") and those aware but stuck in it ("Tom, 22").
 
 **Solution ideas:**
-> A recommender/feed prototype that deliberately mixes well-curated, topically relevant counter-perspectives into a user's feed — instead of pure engagement-optimization. Built on an existing open-source recommender framework, adapted to demonstrate "varied but still relevant" ranking instead of pure similarity-based ranking.
+> A recommender/feed prototype that deliberately mixes well-curated, topically relevant counter-perspectives into a user's feed instead of pure engagement-optimization. Built on an existing open-source recommender framework, adapted to demonstrate "varied but still relevant" ranking instead of pure similarity-based ranking.
 
 **Technology stack:**
-> Python backend for the recommender logic (on a sample content dataset), simple Flask web frontend to demo two feed versions side-by-side (bubble-reinforcing vs. diversity-aware) — same stack the team already used successfully for the Pi-Dashboard project in the Smart Systems short project.
+> Python backend for the recommender logic (on a sample content dataset), simple Flask web frontend to demo two feed versions side-by-side (bubble-reinforcing vs. diversity-aware). Same stack the team already used successfully for the Pi-Dashboard project in the Smart Systems short project.
 
 > [!note] Tech-Stack ist ein Vorschlag
 > Basiert auf dem, was im Team schon erfolgreich genutzt wurde (Python/Flask, Tresor-Pi-Dashboard) und passt zu Lasses Empfehlung "basierend auf existierenden Frameworks". Bei Bedarf im Team anpassen/bestätigen.
