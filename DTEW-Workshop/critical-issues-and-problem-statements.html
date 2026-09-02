@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Critical Issues & Problem Statements – Team 13 – Wednesday 02.09.</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1a1a2e;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+    line-height: 1.45;
+  }
+  .eyebrow { color: #55607a; font-size: 14px; margin-bottom: 4px; }
+  h1 { font-size: 26px; margin: 0 0 18px; }
+  .task { font-size: 14px; color: #33394a; margin-bottom: 28px; }
+  .task b { color: #1a1a2e; }
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a3a8f;
+    margin: 30px 0 4px;
+    page-break-after: avoid;
+  }
+  .sub { font-size: 13px; color: #55607a; margin: 0 0 12px; font-style: italic; }
+  ol, ul { margin: 4px 0; padding-left: 20px; }
+  li { margin-bottom: 6px; font-size: 13.5px; }
+  .statement {
+    border: 1px solid #cfd6e4;
+    background: #eef1f8;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 8px 0 14px;
+    font-size: 13.5px;
+  }
+  .statement b { color: #1a3a8f; }
+  .role { margin-bottom: 10px; font-size: 13.5px; }
+  .role b { color: #1a1a2e; }
+  .tip {
+    font-size: 13px;
+    color: #55607a;
+    border-top: 1px solid #cfd6e4;
+    padding-top: 14px;
+    margin-top: 8px;
+  }
+  .checklist li { list-style: none; margin-left: -20px; }
+  .checklist li::before { content: "☐ "; }
+</style>
+</head>
+<body>
+  <div class="eyebrow">DTEW Hamburg 2026 · Team 13 · Wednesday 02.09.</div>
+  <h1>Critical Issues, Problem Statements &amp; Ideation</h1>
+  <div class="task">
+    <b>Case 3:</b> Feed/Recommender Design against Bubble Reinforcement.
+    Draft prepared ahead of the live session — to be confirmed/trimmed with the team,
+    then transferred to the official <code>Critical_Issues.pdf</code> from the main board
+    and shared on the Team Board.
+  </div>
+
+  <h2>Critical Issues</h2>
+  <p class="sub">Draft — trim to 5–10 with the team</p>
+  <ol>
+    <li><b>Unconscious problem for part of the target group:</b> users like "Mia" often don't realize they're in a bubble — hard to address without feeling patronizing.</li>
+    <li><b>Conflict with the underlying business model:</b> real platforms optimize feeds for engagement, not diversity — our prototype deliberately does the opposite and needs to make that legible.</li>
+    <li><b>Hard balance of "varied but still relevant":</b> too many counter-perspectives feel like spam/irrelevant, too few change nothing — the core difficulty of the whole brief.</li>
+    <li><b>No prior ML experience in the team:</b> building a "real" ML recommender in 2 weeks is risky — using an existing framework is a precondition.</li>
+    <li><b>No example dataset yet:</b> a credible demo needs content with recognizable perspectives/"camps" — synthetic vs. real data, licensing questions still open.</li>
+    <li><b>No metric yet:</b> how do we measure/show "perspective diversity" at all, rather than just claiming it subjectively?</li>
+    <li><b>Differentiation from digi&amp;demo's own product "pleenum":</b> what makes our prototype different/complementary instead of a duplicate?</li>
+    <li><b>User acceptance:</b> will users accept a deliberately "disruptive" counter-opinion in their feed, or will they just close the app?</li>
+  </ol>
+  <p class="tip">Points 9/10 to be added on-site if peer feedback or the daily surfaces new angles — e.g. technical room/WebEx constraints, time pressure until Friday.</p>
+
+  <h2>Problem Statements</h2>
+  <p class="sub">Draft — pick/sharpen one before ideation</p>
+  <div class="statement"><b>PS1 – for persona "Mia" (doesn't notice the bubble):</b><br>
+    How might we help young adults (18–25), who consider their "For You" feed balanced, recognize unconscious filter bubbles and encounter topically relevant counter-perspectives — without feeling patronized or disrupted?
+  </div>
+  <div class="statement"><b>PS2 – for persona "Tom" (wants out, can't find a way):</b><br>
+    How might we enable young adults, who actively want to break out of their filter bubble but keep getting pulled back to similar content by the algorithm, to get a feed that deliberately shows diverse but still topically relevant perspectives — without having to search for them themselves?
+  </div>
+
+  <h2>Ideation Draft — Walt-Disney Method</h2>
+  <p class="sub">Starting point for the real 3-person round — not a finished result</p>
+  <div class="role"><b>Dreamer:</b> A feed that openly shows which "bubble" you're currently in (e.g. a visible "perspective compass") and proactively weaves in well-curated counter-perspectives on a regular basis — playful, not preachy.</div>
+  <div class="role"><b>Realist:</b> Test environment based on an existing open-source recommender framework (e.g. a simple content-based or collaborative-filtering sample project), fed with a small, self-assembled example dataset (articles/posts with roughly labeled perspectives). Show two ranking modes side by side in the same Flask frontend: "Standard" (pure similarity, bubble-reinforcing) vs. "Diversity-aware" (deliberately mixes in topically related counter-perspectives).</div>
+  <div class="role"><b>Critic:</b> Open risks — (1) Where does a credible, non-trivial example dataset come from in the available time? (2) How objectively can "perspectives" even be labeled without introducing our own bias? (3) Will a demo with sample/synthetic data be convincing enough for peer feedback and the final presentation, or does it need real content? (4) Is the difference from "pleenum" clear enough to outsiders?</div>
+
+  <h2>Peer Feedback (11:30) — Talking Points</h2>
+  <ul>
+    <li><b>Core problem:</b> "For You" feeds reinforce filter bubbles — some don't notice it (Mia), some notice but can't escape it (Tom).</li>
+    <li><b>Target group:</b> young adults (18–25) who mainly consume political/societal content through algorithmic feeds.</li>
+    <li><b>Solution idea:</b> a recommender test environment showing two feed variants side by side (bubble-reinforcing vs. diversity-aware), built on an existing framework.</li>
+    <li><b>Question for other groups:</b> do you know similar approaches/tools? How would you measure "varied but still relevant"?</li>
+  </ul>
+
+  <h2>Still Open After the Live Session</h2>
+  <ul class="checklist">
+    <li>Critical issues (5–10) confirmed/adjusted by the team, transferred to <code>Critical_Issues.pdf</code></li>
+    <li>One or both problem statements finalized</li>
+    <li>Walt-Disney (or 6-3-5) round actually run with the team, outcome documented</li>
+    <li>Peer feedback results (11:30) captured</li>
+    <li>Team Board card updated with today's status</li>
+    <li>Facilitator role (open since Tuesday) resolved</li>
+    <li>Example dataset for the recommender demo decided</li>
+  </ul>
+</body>
+</html>

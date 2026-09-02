@@ -6,6 +6,7 @@ Deliverables für den zusätzlichen "2026 International Design Thinking and Entr
 - **`case-analysis-worksheet.html`** – fertig gerenderte Version zum direkten Anzeigen im Browser (eigenständig, kein Marp/Build-Schritt nötig).
 - **`case-analysis-worksheet.pdf`** – PDF-Version im Layout des Original-Worksheets vom DTEW-Haupt-Board, ausgefüllt mit unseren 3 Cases – das ist das eigentliche Abgabe-Dokument für den Workshop.
 - **`templates/`** – unausgefüllte Original-Vorlagen vom DTEW-Haupt-Board (Empathy Map, Persona-Template, Persona-Empathy-Map, Observation AEIOU, Problem Tree, Fiedler-Disney-Methode, Tutorial-Übersicht Design-Thinking-Methoden). Referenzmaterial, keine eigenen Deliverables – siehe [[Team 13 - Digitale Demokratie]] und [[DTEW 0109 - Teampathy Map und Empathize]] für unsere ausgefüllten Versionen.
+- **`critical-issues-and-problem-statements.md`/`.html`** – Mittwochs-Aufgabe (02.09.): kritische Punkte, Problem Statements, Walt-Disney-Ideation-Entwurf, Pitch-Stichpunkte fürs Peer Feedback. Entwurf zum Reinkopieren/Anpassen im Team, danach ins offizielle `Critical_Issues.pdf` vom Haupt-Board übertragen (liegt uns noch nicht lokal vor) – siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]].
 
 ## Worum geht's
 
