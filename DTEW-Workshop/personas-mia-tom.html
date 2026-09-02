@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Personas – Mia & Tom – Team 13 – Case 3</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1a1a2e;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 20px 48px;
+    line-height: 1.4;
+  }
+  .eyebrow { color: #55607a; font-size: 13px; margin-bottom: 4px; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  .task { font-size: 13px; color: #33394a; margin-bottom: 24px; }
+  .persona {
+    border: 1px solid #cfd6e4;
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin-bottom: 28px;
+    page-break-inside: avoid;
+  }
+  .persona h2 {
+    color: #1a3a8f;
+    font-size: 20px;
+    margin: 0 0 14px;
+    letter-spacing: 0.5px;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: 190px 1fr 220px;
+    gap: 22px;
+  }
+  .facts div { font-size: 13px; margin-bottom: 6px; }
+  .facts b { display: inline-block; width: 70px; color: #55607a; font-weight: 600; }
+  .photo {
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: #d7dceb;
+    margin: 6px 0 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: #8892ab; font-size: 40px; font-weight: 700;
+  }
+  .quote {
+    border: 1px solid #cfd6e4;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    font-style: italic;
+    color: #33394a;
+    background: #f7f9fc;
+  }
+  .field { margin-bottom: 12px; }
+  .field h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #1a3a8f;
+    margin: 0 0 4px;
+  }
+  .field p { font-size: 13px; margin: 0; }
+  .slider-row { margin-bottom: 10px; }
+  .slider-labels {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: #55607a; margin-bottom: 2px;
+  }
+  .slider-track {
+    height: 6px; border-radius: 3px; background: #eef1f8;
+    border: 1px solid #cfd6e4; position: relative;
+  }
+  .slider-fill {
+    position: absolute; top: -3px; width: 10px; height: 12px;
+    border-radius: 50%; background: #1a3a8f;
+    transform: translateX(-50%);
+  }
+  .sidehead {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: #1a3a8f; margin: 14px 0 4px;
+  }
+  .brands { font-size: 13px; margin-top: 10px; }
+  .note {
+    font-size: 12px; color: #55607a; border-top: 1px solid #cfd6e4;
+    padding-top: 12px; margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+  <div class="eyebrow">DTEW Hamburg 2026 · Team 13 · Case 3 – Feed/Recommender Design</div>
+  <h1>Personas – Mia &amp; Tom</h1>
+  <div class="task">
+    Draft based on desk research + Tuesday's proto-persona notes — <b>not yet validated by real interviews</b>.
+    Filled into the official persona template from the main board.
+  </div>
+
+  <!-- PERSONA 1: MIA -->
+  <div class="persona">
+    <h2>PERSONA — Mia</h2>
+    <div class="cols">
+      <div>
+        <div class="facts">
+          <div><b>Age</b> 20</div>
+          <div><b>Job</b> Student</div>
+          <div><b>Status</b> Single</div>
+          <div><b>Location</b> Mid-size city</div>
+          <div><b>Archetype</b> The Everyperson</div>
+        </div>
+        <div class="photo">M</div>
+        <h3 style="font-size:12px;text-transform:uppercase;color:#1a3a8f;margin:0 0 4px;">Quote</h3>
+        <div class="quote">"I'm informed — I scroll through the news every day."</div>
+      </div>
+      <div>
+        <div class="field"><h3>Motivation</h3><p>Wants to feel informed and keep up with what her friends are talking about, without much effort.</p></div>
+        <div class="field"><h3>Goals</h3><p>Stay reasonably up to date on current events; not fall behind in conversations with friends and family.</p></div>
+        <div class="field"><h3>Pain points / Frustration</h3><p>Doesn't realize her feed mostly confirms what she already thinks. Occasionally caught off guard when friends hold a very different opinion.</p></div>
+        <div class="field"><h3>Short bio</h3><p>Checks Instagram/TikTok multiple times a day, mostly following accounts that already match her views. Sees herself as informed and open-minded but has never actively sought a differing opinion.</p></div>
+      </div>
+      <div>
+        <div class="sidehead">Personality</div>
+        <div class="slider-row"><div class="slider-labels"><span>Introverted</span><span>Extroverted</span></div><div class="slider-track"><div class="slider-fill" style="left:30%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Thinking</span><span>Feeling</span></div><div class="slider-track"><div class="slider-fill" style="left:65%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Free</span><span>Dependent</span></div><div class="slider-track"><div class="slider-fill" style="left:45%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Social</span><span>Ego</span></div><div class="slider-track"><div class="slider-fill" style="left:35%"></div></div></div>
+
+        <div class="sidehead">Technology</div>
+        <div class="slider-row"><div class="slider-labels"><span>IT &amp; Internet</span></div><div class="slider-track"><div class="slider-fill" style="left:70%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Software</span></div><div class="slider-track"><div class="slider-fill" style="left:30%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Mobile Apps</span></div><div class="slider-track"><div class="slider-fill" style="left:90%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Social Networks</span></div><div class="slider-track"><div class="slider-fill" style="left:98%"></div></div></div>
+
+        <div class="brands"><b>Brands:</b> Instagram, TikTok</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERSONA 2: TOM -->
+  <div class="persona">
+    <h2>PERSONA — Tom</h2>
+    <div class="cols">
+      <div>
+        <div class="facts">
+          <div><b>Age</b> 22</div>
+          <div><b>Job</b> Student (part-time job)</div>
+          <div><b>Status</b> Single</div>
+          <div><b>Location</b> Mid-size city</div>
+          <div><b>Archetype</b> The Seeker</div>
+        </div>
+        <div class="photo">T</div>
+        <h3 style="font-size:12px;text-transform:uppercase;color:#1a3a8f;margin:0 0 4px;">Quote</h3>
+        <div class="quote">"I don't want my feed to just tell me I'm right."</div>
+      </div>
+      <div>
+        <div class="field"><h3>Motivation</h3><p>Wants a genuinely balanced view of current events and to avoid being manipulated by an algorithm.</p></div>
+        <div class="field"><h3>Goals</h3><p>Actively break out of his filter bubble; understand other perspectives without having to dig for them manually.</p></div>
+        <div class="field"><h3>Pain points / Frustration</h3><p>Actively searches for other viewpoints, but the algorithm keeps pulling him back to similar content. Manual searching feels tedious.</p></div>
+        <div class="field"><h3>Short bio</h3><p>More media-literate than average, follows a handful of accounts on purpose to diversify his feed, but feels like he's fighting the algorithm rather than being helped by it.</p></div>
+      </div>
+      <div>
+        <div class="sidehead">Personality</div>
+        <div class="slider-row"><div class="slider-labels"><span>Introverted</span><span>Extroverted</span></div><div class="slider-track"><div class="slider-fill" style="left:70%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Thinking</span><span>Feeling</span></div><div class="slider-track"><div class="slider-fill" style="left:35%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Free</span><span>Dependent</span></div><div class="slider-track"><div class="slider-fill" style="left:20%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Social</span><span>Ego</span></div><div class="slider-track"><div class="slider-fill" style="left:50%"></div></div></div>
+
+        <div class="sidehead">Technology</div>
+        <div class="slider-row"><div class="slider-labels"><span>IT &amp; Internet</span></div><div class="slider-track"><div class="slider-fill" style="left:90%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Software</span></div><div class="slider-track"><div class="slider-fill" style="left:60%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Mobile Apps</span></div><div class="slider-track"><div class="slider-fill" style="left:70%"></div></div></div>
+        <div class="slider-row"><div class="slider-labels"><span>Social Networks</span></div><div class="slider-track"><div class="slider-fill" style="left:70%"></div></div></div>
+
+        <div class="brands"><b>Brands:</b> X (Twitter), Reddit, RSS readers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    Draft — the personas and slider positions are based on desk research and the team's Tuesday notes, not on real interviews.
+    Confirm/adjust with the team before using on the Team Board or in the final presentation.
+  </div>
+</body>
+</html>

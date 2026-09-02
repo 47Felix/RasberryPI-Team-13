@@ -71,9 +71,13 @@ Fertiger Text für die Team-13-Karte im Teams-Übersicht-Board (Workshop-Sprache
 > [!note] Tech-Stack ist ein Vorschlag
 > Basiert auf dem, was im Team schon erfolgreich genutzt wurde (Python/Flask, Tresor-Pi-Dashboard) und passt zu Lasses Empfehlung "basierend auf existierenden Frameworks". Bei Bedarf im Team anpassen/bestätigen.
 
+## Präsentations-/Abgabe-Version
+Ausgefülltes `persona-template.pdf` als Markdown+HTML (Mia & Tom) liegt außerhalb des Vaults unter [`DTEW-Workshop/personas-mia-tom.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/personas-mia-tom.md) (+ `.html`) – siehe [[Doku-Regeln]] zur Konvention. Nach echten Interviews dort aktualisieren.
+
 ## Verwandte Notizen
 - [[DTEW Hamburg - Übersicht]]
 - [[Team 13 - Digitale Demokratie]]
 - [[TaskCards Board]]
+- [[Doku-Regeln]]
 
 #dtew #workshop #digitale-demokratie
