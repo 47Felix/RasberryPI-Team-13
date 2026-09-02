@@ -93,7 +93,7 @@ Startpunkt für die echte 3er-Runde (Dreamer/Realist/Critic, siehe [[DTEW 0109 -
 - [ ] Beispiel-Datensatz für die Recommender-Demo festlegen
 
 ## Präsentations-/Abgabe-Version
-Englische Fassung der obigen Punkte zum direkten Reinkopieren/Präsentieren liegt außerhalb des Vaults unter [`DTEW-Workshop/critical-issues-and-problem-statements.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/critical-issues-and-problem-statements.md) (+ `.html`) – siehe [[Doku-Regeln]] zur Konvention. Nach der Live-Session dort den "Still Open"-Abschnitt mit den echten Ergebnissen ersetzen.
+Englische Fassung der obigen Punkte zum direkten Reinkopieren/Präsentieren liegt außerhalb des Vaults unter [`DTEW-Workshop/critical-issues-and-problem-statements/`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/critical-issues-and-problem-statements/critical-issues-and-problem-statements.md) (`.md` + `.html` + `.pdf`) – siehe [[Doku-Regeln]] zur Konvention. Nach der Live-Session dort den "Still Open"-Abschnitt mit den echten Ergebnissen ersetzen.
 
 ## Verwandte Notizen
 - [[DTEW Hamburg - Übersicht]]

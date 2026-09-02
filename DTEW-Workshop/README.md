@@ -2,12 +2,14 @@
 
 Deliverables für den zusätzlichen "2026 International Design Thinking and Entrepreneurship Workshop Hamburg" (31.08.–12.09.2026), separat vom eigentlichen Smart-Systems-Pi-Projekt. Hintergrund und laufende Doku dazu stehen im Vault unter [`ObsidianGehirn/10 DTEW Workshop/`](../ObsidianGehirn/10%20DTEW%20Workshop) ([[DTEW Hamburg - Übersicht]], [[Team 13 - Digitale Demokratie]]).
 
-- **`case-analysis-worksheet.md`** – Quelldatei (Markdown), die bei Änderungen bearbeitet werden sollte. **Auf Englisch**, wie der Workshop (internationales Team, Original-Worksheet ist auch Englisch).
-- **`case-analysis-worksheet.html`** – fertig gerenderte Version zum direkten Anzeigen im Browser (eigenständig, kein Marp/Build-Schritt nötig).
-- **`case-analysis-worksheet.pdf`** – PDF-Version im Layout des Original-Worksheets vom DTEW-Haupt-Board, ausgefüllt mit unseren 3 Cases – das ist das eigentliche Abgabe-Dokument für den Workshop.
-- **`templates/`** – unausgefüllte Original-Vorlagen vom DTEW-Haupt-Board (Empathy Map, Persona-Template, Persona-Empathy-Map, Observation AEIOU, Problem Tree, Fiedler-Disney-Methode, Tutorial-Übersicht Design-Thinking-Methoden). Referenzmaterial, keine eigenen Deliverables – siehe [[Team 13 - Digitale Demokratie]] und [[DTEW 0109 - Teampathy Map und Empathize]] für unsere ausgefüllten Versionen.
-- **`critical-issues-and-problem-statements.md`/`.html`/`.pdf`** – Mittwochs-Aufgabe (02.09.): kritische Punkte, Problem Statements, Walt-Disney-Ideation-Entwurf, Pitch-Stichpunkte fürs Peer Feedback. Entwurf zum Reinkopieren/Anpassen im Team, danach ins offizielle `Critical_Issues.pdf` vom Haupt-Board übertragen (liegt uns noch nicht lokal vor) – siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]].
-- **`personas-mia-tom.md`/`.html`/`.pdf`** – ausgefülltes `persona-template.pdf` für die beiden Proto-Personas (Mia, Tom) von Case 3, auf Desk-Research + Dienstags-Notizen basierend, **noch nicht durch echte Interviews validiert** – siehe [[DTEW 0109 - Teampathy Map und Empathize]].
+Jedes Deliverable liegt in einem eigenen Unterordner mit `.md` (Quelldatei) + `.html` (gerendert) + ggf. `.pdf` (finale Abgabeversion), damit die vielen Formatvarianten nicht alle lose im Wurzelverzeichnis liegen:
+
+- **[`case-analysis-worksheet/`](case-analysis-worksheet)** – ausgefülltes `case_analysis_worksheet.pdf` vom Haupt-Board (Montags-Aufgabe "First Brainstorming"), unsere 3 Cases rund um digi&demo e.V.
+- **[`critical-issues-and-problem-statements/`](critical-issues-and-problem-statements)** – Mittwochs-Aufgabe (02.09.): kritische Punkte, Problem Statements, Walt-Disney-Ideation-Entwurf, Pitch-Stichpunkte fürs Peer Feedback – siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]].
+- **[`personas-mia-tom/`](personas-mia-tom)** – ausgefülltes `persona-template.pdf` für die beiden Proto-Personas (Mia, Tom) von Case 3, auf Desk-Research + Dienstags-Notizen basierend, **noch nicht durch echte Interviews validiert** – siehe [[DTEW 0109 - Teampathy Map und Empathize]].
+- **`templates/`** – unausgefüllte Original-Vorlagen vom DTEW-Haupt-Board (Empathy Map, Persona-Template, Persona-Empathy-Map, Observation AEIOU, Problem Tree, Fiedler-Disney-Methode, Tutorial-Übersicht Design-Thinking-Methoden). Referenzmaterial, keine eigenen Deliverables.
+
+Innerhalb jedes Deliverable-Ordners heißen die drei Dateien immer gleich wie der Ordner selbst (z. B. `personas-mia-tom/personas-mia-tom.md`), damit man beim Öffnen sofort weiß, wo man ist.
 
 ## Worum geht's
 
@@ -17,24 +19,26 @@ Ausgefülltes `case_analysis_worksheet.pdf` vom Haupt-Board (Case *"The Internet
 2. **digi&demo – Desinformation**
 3. **digi&demo – Polarisierung**
 
-## Neu rendern nach Änderungen an der `.md`/`.html`
+## Neu rendern nach Änderungen an einer `.md`/`.html`
 
-Die `.html` ist von Hand geschrieben (kein Marp, da Formular-Layout statt Folien) – bei Textänderungen `.md` **und** `.html` beide anpassen. PDF danach neu rendern:
+Die `.html`-Dateien sind von Hand geschrieben (kein Marp, da Formular-/Worksheet-Layout statt Folien) – bei Textänderungen `.md` **und** `.html` im jeweiligen Unterordner beide anpassen. PDF danach neu rendern, `<ordner>` durch den jeweiligen Deliverable-Ordner ersetzen:
 
 ```bash
-cd DTEW-Workshop
+cd DTEW-Workshop/<ordner>
 npx --yes playwright install chromium   # einmalig, falls noch nicht vorhanden
 node -e "
 const { chromium } = require('playwright');
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.goto('file://' + process.cwd() + '/case-analysis-worksheet.html', { waitUntil: 'networkidle' });
-  await page.pdf({ path: 'case-analysis-worksheet.pdf', format: 'A4', printBackground: true, margin: { top: '0', bottom: '0', left: '0', right: '0' } });
+  await page.goto('file://' + process.cwd() + '/<ordner>.html', { waitUntil: 'networkidle' });
+  await page.pdf({ path: '<ordner>.pdf', format: 'A4', printBackground: true, margin: { top: '0', bottom: '0', left: '0', right: '0' } });
   await browser.close();
 })();
 "
 ```
+
+Beispiel für `personas-mia-tom`: `<ordner>` → `personas-mia-tom`, zusätzlich `landscape: true` in der `page.pdf(...)`-Option (Querformat, da drei Spalten pro Persona).
 
 ## Nächster Schritt
 
