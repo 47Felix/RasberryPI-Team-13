@@ -1,3 +1,5 @@
+https://itech-bs14.taskcards.app/#/board/d71b077a-e21f-4ea3-9956-c6c9978a7ef3/view?token=2aa3eebe-8bfb-4841-a21a-913ce131b77a
+
 # RasberryPI-Team-13 – Smart Systems Projekt (BH4ab)
 
 Projekt-Repository für das Lernfeld **Smart Systems 2026** (ITECH), Team 13.
