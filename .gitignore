@@ -19,3 +19,8 @@ ObsidianGehirn/.obsidian/plugins/*/data.json
 Code/pi-dashboard/venv/
 Code/pi-dashboard/tresor.db
 Code/pi-dashboard/.env
+
+# Feed-Diversity-Prototyp: lokale venv/Cache, nie committen
+Code/feed-diversity-prototype/venv/
+Code/feed-diversity-prototype/**/__pycache__/
+Code/feed-diversity-prototype/.pytest_cache/

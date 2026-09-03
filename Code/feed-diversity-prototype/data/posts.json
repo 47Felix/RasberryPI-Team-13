@@ -1,0 +1,107 @@
+[
+  {
+    "id": "klima-1",
+    "title": "Erneuerbare-Energien-Ausbau beschleunigen",
+    "text": "Der Ausbau von Windkraft und Solar muss deutlich schneller gehen, damit die Klimaziele im geplanten Zeitraum erreichbar bleiben.",
+    "topic": "klima",
+    "perspective": "pro"
+  },
+  {
+    "id": "klima-2",
+    "title": "Kohleausstieg vorziehen",
+    "text": "Ein frühzeitiger Kohleausstieg beschleunigt die Energiewende und reduziert die Emissionen schneller als der aktuelle Zeitplan.",
+    "topic": "klima",
+    "perspective": "pro"
+  },
+  {
+    "id": "klima-3",
+    "title": "Bürgerenergie stärken",
+    "text": "Genossenschaftsmodelle für lokale Solar- und Windprojekte machen den Ausbau der Erneuerbaren breiter akzeptiert und die Energiewende sichtbarer vor Ort.",
+    "topic": "klima",
+    "perspective": "pro"
+  },
+  {
+    "id": "klima-4",
+    "title": "Strompreise im Blick behalten",
+    "text": "Beim Ausbau der Erneuerbaren dürfen die Strompreise für Haushalte und kleine Betriebe nicht aus dem Blick geraten.",
+    "topic": "klima",
+    "perspective": "contra"
+  },
+  {
+    "id": "klima-5",
+    "title": "Versorgungssicherheit zuerst",
+    "text": "Ohne ausreichenden Netzausbau kann ein zu schneller Zubau von Wind- und Solarenergie die Versorgungssicherheit gefährden.",
+    "topic": "klima",
+    "perspective": "contra"
+  },
+  {
+    "id": "verkehr-1",
+    "title": "Tempolimit auf Autobahnen",
+    "text": "Ein generelles Tempolimit auf Autobahnen senkt nachweislich CO2-Ausstoß und die Zahl schwerer Unfälle.",
+    "topic": "verkehr",
+    "perspective": "pro"
+  },
+  {
+    "id": "verkehr-2",
+    "title": "Ausbau des ÖPNV",
+    "text": "Mehr Investitionen in Busse und Bahnen statt neue Autobahnen entlasten Straßen und senken den CO2-Ausstoß im Verkehr.",
+    "topic": "verkehr",
+    "perspective": "pro"
+  },
+  {
+    "id": "verkehr-3",
+    "title": "Radwege ausbauen",
+    "text": "Sichere, durchgehende Radwege reduzieren den Autoverkehr in Städten spürbar und machen das Rad zur echten Alternative.",
+    "topic": "verkehr",
+    "perspective": "pro"
+  },
+  {
+    "id": "verkehr-4",
+    "title": "Mobilität bleibt Grundbedürfnis",
+    "text": "Ein Tempolimit schränkt individuelle Mobilität ein, ohne dass der Nutzen für das Klima die Einschränkung wirklich rechtfertigt.",
+    "topic": "verkehr",
+    "perspective": "contra"
+  },
+  {
+    "id": "verkehr-5",
+    "title": "Ländlicher Raum braucht das Auto",
+    "text": "Ohne eigenes Auto ist Mobilität auf dem Land kaum realistisch organisierbar, solange der ÖPNV dort so dünn ausgebaut ist.",
+    "topic": "verkehr",
+    "perspective": "contra"
+  },
+  {
+    "id": "wirtschaft-1",
+    "title": "Mindestlohn erhöhen",
+    "text": "Ein höherer Mindestlohn sichert die Existenz von Geringverdienenden und stärkt gleichzeitig die Kaufkraft in der Breite.",
+    "topic": "wirtschaft",
+    "perspective": "pro"
+  },
+  {
+    "id": "wirtschaft-2",
+    "title": "Vier-Tage-Woche testen",
+    "text": "Modellprojekte zur Vier-Tage-Woche zeigen, dass Produktivität und Mitarbeiterzufriedenheit bei gleichem Lohn stabil bleiben können.",
+    "topic": "wirtschaft",
+    "perspective": "pro"
+  },
+  {
+    "id": "wirtschaft-3",
+    "title": "Belastung für kleine Betriebe",
+    "text": "Höhere Lohnkosten durch einen steigenden Mindestlohn treffen kleine Betriebe mit knappen Margen besonders hart.",
+    "topic": "wirtschaft",
+    "perspective": "contra"
+  },
+  {
+    "id": "wirtschaft-4",
+    "title": "Wettbewerbsfähigkeit sichern",
+    "text": "Zu hohe Arbeitskosten im Vergleich zum Ausland gefährden auf Dauer die Wettbewerbsfähigkeit heimischer Unternehmen.",
+    "topic": "wirtschaft",
+    "perspective": "contra"
+  },
+  {
+    "id": "wirtschaft-5",
+    "title": "Fachkräftemangel zuerst lösen",
+    "text": "Statt über den Mindestlohn zu streiten, sollte der Fachkräftemangel durch bessere Aus- und Weiterbildung gemeinsam angegangen werden.",
+    "topic": "wirtschaft",
+    "perspective": "contra"
+  }
+]
