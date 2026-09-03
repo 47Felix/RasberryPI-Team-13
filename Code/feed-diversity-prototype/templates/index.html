@@ -7,7 +7,7 @@
     body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2rem auto; padding: 0 1rem; color: #222; }
     h1 { font-size: 1.4rem; }
     p.intro { color: #555; }
-    .personas, .seed-picker { margin-bottom: 1.5rem; }
+    .personas, .seed-picker, .mix-picker { margin-bottom: 1.5rem; }
     .personas a {
       display: inline-block; margin-right: 0.5rem; padding: 0.4rem 0.8rem;
       border: 1px solid #888; border-radius: 6px; text-decoration: none; color: #222;
@@ -36,11 +36,12 @@
 
   <div class="personas">
     <strong>Persona:</strong>
-    <a href="{{ url_for('index', persona='mia') }}" class="{{ 'active' if persona == 'mia' }}">Mia (merkt die Bubble nicht)</a>
-    <a href="{{ url_for('index', persona='tom') }}" class="{{ 'active' if persona == 'tom' }}">Tom (will raus)</a>
+    <a href="{{ url_for('index', persona='mia', mix=mix) }}" class="{{ 'active' if persona == 'mia' }}">Mia (merkt die Bubble nicht)</a>
+    <a href="{{ url_for('index', persona='tom', mix=mix) }}" class="{{ 'active' if persona == 'tom' }}">Tom (will raus)</a>
   </div>
 
   <form class="seed-picker" method="get">
+    <input type="hidden" name="mix" value="{{ mix }}">
     <label for="seed_id">Oder eigenen Ausgangs-Post wählen:</label>
     <select name="seed_id" id="seed_id" onchange="this.form.submit()">
       {% for post in posts %}
@@ -52,9 +53,24 @@
     <noscript><button type="submit">Anzeigen</button></noscript>
   </form>
 
+  <form class="mix-picker" method="get">
+    {% if persona %}
+      <input type="hidden" name="persona" value="{{ persona }}">
+    {% else %}
+      <input type="hidden" name="seed_id" value="{{ seed_id }}">
+    {% endif %}
+    <label for="mix">Vielfalt-Stärke im Diversity-aware Feed:</label>
+    <select name="mix" id="mix" onchange="this.form.submit()">
+      <option value="6" {{ 'selected' if mix == 6 }}>Niedrig (jeder 6. Post)</option>
+      <option value="3" {{ 'selected' if mix == 3 }}>Mittel (jeder 3. Post)</option>
+      <option value="2" {{ 'selected' if mix == 2 }}>Hoch (jeder 2. Post)</option>
+    </select>
+    <noscript><button type="submit">Anzeigen</button></noscript>
+  </form>
+
   <div class="columns">
     <div class="column">
-      <h2>Standard-Feed</h2>
+      <h2>Standard-Feed <small>(Vielfalts-Score: {{ standard_score }}%)</small></h2>
       {% for item in standard_feed %}
         <div class="post {{ item.post.perspective }}">
           <h3>{{ item.post.title }}</h3>
@@ -64,7 +80,7 @@
       {% endfor %}
     </div>
     <div class="column">
-      <h2>Diversity-aware Feed</h2>
+      <h2>Diversity-aware Feed <small>(Vielfalts-Score: {{ diverse_score }}%)</small></h2>
       {% for item in diverse_feed %}
         <div class="post {{ item.post.perspective }}">
           <h3>{{ item.post.title }}{% if item.is_diverse_pick %}<span class="badge">Gegenperspektive</span>{% endif %}</h3>
