@@ -76,3 +76,15 @@ def diversity_aware_feed(
         feed.append({"post": post, "score": score, "is_diverse_pick": is_diverse_pick})
 
     return feed
+
+
+def diversity_score(feed: list[dict], seed_post: Post) -> float:
+    """Share (0-100) of shown posts whose perspective differs from the seed
+    post's perspective. A crude but visible stand-in for the "how do we
+    measure perspective diversity" gap called out as critical point 6 in
+    DTEW 0209 - Kritische Punkte, Problem Statements und Ideation.md.
+    """
+    if not feed:
+        return 0.0
+    differing = sum(1 for item in feed if item["post"].perspective != seed_post.perspective)
+    return round(100 * differing / len(feed), 1)

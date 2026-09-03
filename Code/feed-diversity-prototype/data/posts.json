@@ -103,5 +103,40 @@
     "text": "Statt über den Mindestlohn zu streiten, sollte der Fachkräftemangel durch bessere Aus- und Weiterbildung gemeinsam angegangen werden.",
     "topic": "wirtschaft",
     "perspective": "contra"
+  },
+  {
+    "id": "digital-1",
+    "title": "Datenschutz konsequent stärken",
+    "text": "Persönliche Daten brauchen strengeren Schutz, gerade weil Plattformen immer mehr über Nutzer:innen sammeln und auswerten.",
+    "topic": "digital",
+    "perspective": "pro"
+  },
+  {
+    "id": "digital-2",
+    "title": "Transparenzpflicht für Algorithmen",
+    "text": "Plattformen sollten offenlegen müssen, nach welchen Kriterien ihre Feed-Algorithmen Inhalte auswählen und ranken.",
+    "topic": "digital",
+    "perspective": "pro"
+  },
+  {
+    "id": "digital-3",
+    "title": "Recht auf Verschlüsselung sichern",
+    "text": "Ende-zu-Ende-Verschlüsselung muss gesetzlich geschützt bleiben, statt für Überwachungszwecke aufgeweicht zu werden.",
+    "topic": "digital",
+    "perspective": "pro"
+  },
+  {
+    "id": "digital-4",
+    "title": "Innovationsbremse vermeiden",
+    "text": "Zu strenge Datenschutzregeln bremsen kleine Start-ups aus, während große Konzerne sich die Compliance-Kosten leisten können.",
+    "topic": "digital",
+    "perspective": "contra"
+  },
+  {
+    "id": "digital-5",
+    "title": "Überregulierung gefährdet den Standort",
+    "text": "Wenn neue Digitalgesetze schneller kommen als Unternehmen sie umsetzen können, wandert Innovation einfach ins Ausland ab.",
+    "topic": "digital",
+    "perspective": "contra"
   }
 ]

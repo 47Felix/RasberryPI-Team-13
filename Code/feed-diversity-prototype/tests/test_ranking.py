@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ranking import Post, diversity_aware_feed, standard_feed
+from ranking import Post, diversity_aware_feed, diversity_score, standard_feed
 
 POSTS = [
     Post(
@@ -62,3 +62,44 @@ def test_diversity_feed_injects_a_counter_perspective_post():
 def test_diversity_feed_still_returns_requested_amount_when_possible():
     feed = diversity_aware_feed(POSTS, seed_id="seed", limit=3)
     assert len(feed) == 3
+
+
+def test_diversity_score_is_zero_when_no_perspective_differs():
+    seed_post = POSTS[0]
+    same_perspective_feed = [
+        {"post": POSTS[1], "score": 0.9, "is_diverse_pick": False},
+    ]
+    assert diversity_score(same_perspective_feed, seed_post) == 0.0
+
+
+def test_diversity_score_reflects_share_of_differing_posts():
+    seed_post = POSTS[0]
+    mixed_feed = [
+        {"post": POSTS[1], "score": 0.9, "is_diverse_pick": False},  # same perspective
+        {"post": POSTS[2], "score": 0.7, "is_diverse_pick": True},  # differing
+    ]
+    assert diversity_score(mixed_feed, seed_post) == 50.0
+
+
+def test_diversity_score_of_empty_feed_is_zero():
+    assert diversity_score([], POSTS[0]) == 0.0
+
+
+def test_diversity_aware_feed_scores_higher_than_standard_feed():
+    # Enough same-perspective posts that the single counter-perspective post
+    # (lowest similarity) would fall outside a limit=3 standard feed entirely,
+    # so this only passes if diversity-aware ranking actually forces it in.
+    posts = [
+        Post("seed", "Windkraft-Ausbau", "Windkraft Energiewende Klimaschutz Ausbau", "klima", "pro"),
+        Post("pro-1", "Solar-Ausbau", "Windkraft Energiewende Klimaschutz Solar Ausbau", "klima", "pro"),
+        Post("pro-2", "Netzausbau", "Windkraft Energiewende Klimaschutz Netz Ausbau", "klima", "pro"),
+        Post("pro-3", "Speicher-Ausbau", "Windkraft Energiewende Klimaschutz Speicher Ausbau", "klima", "pro"),
+        Post("contra-1", "Kosten des Ausbaus", "Windkraft Kosten Landschaft teuer", "klima", "contra"),
+    ]
+    seed_post = posts[0]
+
+    standard = standard_feed(posts, seed_id="seed", limit=3)
+    diverse = diversity_aware_feed(posts, seed_id="seed", limit=3, diversity_every=2)
+
+    assert diversity_score(standard, seed_post) == 0.0
+    assert diversity_score(diverse, seed_post) > 0.0

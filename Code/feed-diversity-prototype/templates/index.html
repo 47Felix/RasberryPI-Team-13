@@ -2,77 +2,132 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Feed-Diversity-Prototyp – Case 3 DTEW</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2rem auto; padding: 0 1rem; color: #222; }
-    h1 { font-size: 1.4rem; }
-    p.intro { color: #555; }
-    .personas, .seed-picker { margin-bottom: 1.5rem; }
-    .personas a {
-      display: inline-block; margin-right: 0.5rem; padding: 0.4rem 0.8rem;
-      border: 1px solid #888; border-radius: 6px; text-decoration: none; color: #222;
-    }
-    .personas a.active { background: #222; color: #fff; }
-    select { padding: 0.3rem; }
-    .columns { display: flex; gap: 1.5rem; }
-    .column { flex: 1; }
-    .column h2 { font-size: 1.1rem; border-bottom: 2px solid #ccc; padding-bottom: 0.3rem; }
-    .post { border: 1px solid #ddd; border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.6rem; }
-    .post h3 { margin: 0 0 0.3rem 0; font-size: 1rem; }
-    .post .meta { font-size: 0.75rem; color: #777; }
-    .post.pro { border-left: 4px solid #2a7; }
-    .post.contra { border-left: 4px solid #c53; }
-    .badge { display: inline-block; background: #fdd835; color: #333; font-size: 0.7rem;
-             padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.4rem; }
-  </style>
+  <title>Feed Diversity Lab – Case 3 DTEW</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Standard- vs. Diversity-aware Feed</h1>
-  <p class="intro">
-    Case 3 (digi&amp;demo e.V.): Recommender-Testumgebung gegen Bubble-Verstärkung.
-    Links zeigt der Feed reine Ähnlichkeit (bubble-verstärkend), rechts mischt er bewusst
-    thematisch relevante Gegenperspektiven ein (<span class="badge">Gegenperspektive</span>).
-  </p>
+  {% macro render_post(item) %}
+    <article class="post {{ item.post.perspective }}">
+      <div class="post-title-row">
+        <h3>{{ item.post.title }}</h3>
+        {% if item.is_diverse_pick %}<span class="badge">Gegenperspektive</span>{% endif %}
+      </div>
+      <p>{{ item.post.text }}</p>
+      <div class="meta">
+        <span class="chip">{{ item.post.topic }}</span>
+        <span class="chip {{ item.post.perspective }}">{{ item.post.perspective }}</span>
+        <span class="sim-score">Ähnlichkeit {{ "%.2f"|format(item.score) }}</span>
+      </div>
+    </article>
+  {% endmacro %}
 
-  <div class="personas">
-    <strong>Persona:</strong>
-    <a href="{{ url_for('index', persona='mia') }}" class="{{ 'active' if persona == 'mia' }}">Mia (merkt die Bubble nicht)</a>
-    <a href="{{ url_for('index', persona='tom') }}" class="{{ 'active' if persona == 'tom' }}">Tom (will raus)</a>
-  </div>
-
-  <form class="seed-picker" method="get">
-    <label for="seed_id">Oder eigenen Ausgangs-Post wählen:</label>
-    <select name="seed_id" id="seed_id" onchange="this.form.submit()">
-      {% for post in posts %}
-        <option value="{{ post.id }}" {{ 'selected' if post.id == seed_id }}>
-          [{{ post.topic }}/{{ post.perspective }}] {{ post.title }}
-        </option>
-      {% endfor %}
-    </select>
-    <noscript><button type="submit">Anzeigen</button></noscript>
-  </form>
-
-  <div class="columns">
-    <div class="column">
-      <h2>Standard-Feed</h2>
-      {% for item in standard_feed %}
-        <div class="post {{ item.post.perspective }}">
-          <h3>{{ item.post.title }}</h3>
-          <p>{{ item.post.text }}</p>
-          <div class="meta">{{ item.post.topic }} · {{ item.post.perspective }} · Ähnlichkeit {{ "%.2f"|format(item.score) }}</div>
-        </div>
-      {% endfor %}
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Feed Diversity Lab</span>
+      <span class="brand-tag">Case 3 · DTEW Hamburg · digi&amp;demo e.V.</span>
     </div>
-    <div class="column">
-      <h2>Diversity-aware Feed</h2>
-      {% for item in diverse_feed %}
-        <div class="post {{ item.post.perspective }}">
-          <h3>{{ item.post.title }}{% if item.is_diverse_pick %}<span class="badge">Gegenperspektive</span>{% endif %}</h3>
-          <p>{{ item.post.text }}</p>
-          <div class="meta">{{ item.post.topic }} · {{ item.post.perspective }} · Ähnlichkeit {{ "%.2f"|format(item.score) }}</div>
+  </header>
+
+  <main class="wrap">
+    <p class="intro">
+      Recommender-Testumgebung gegen Bubble-Verstärkung: Links zeigt der Feed reine
+      inhaltliche Ähnlichkeit zum Ausgangs-Post (bubble-verstärkend), rechts mischt er
+      bewusst thematisch relevante Gegenperspektiven ein
+      (<span class="badge gegenbadge-inline">Gegenperspektive</span>).
+    </p>
+
+    <div class="control-panel">
+      <div class="control-block">
+        <span class="control-label">Persona</span>
+        <div class="segmented">
+          <a href="{{ url_for('index', persona='mia', mix=mix) }}"
+             class="{{ 'active' if persona == 'mia' }}">Mia (merkt die Bubble nicht)</a>
+          <a href="{{ url_for('index', persona='tom', mix=mix) }}"
+             class="{{ 'active' if persona == 'tom' }}">Tom (will raus)</a>
         </div>
-      {% endfor %}
+      </div>
+
+      <form class="control-block" method="get">
+        <input type="hidden" name="mix" value="{{ mix }}">
+        <label for="seed_id">Eigener Ausgangs-Post</label>
+        <select name="seed_id" id="seed_id" onchange="this.form.submit()">
+          {% for post in posts %}
+            <option value="{{ post.id }}" {{ 'selected' if post.id == seed_id }}>
+              [{{ post.topic }}/{{ post.perspective }}] {{ post.title }}
+            </option>
+          {% endfor %}
+        </select>
+        <noscript><button type="submit">Anzeigen</button></noscript>
+      </form>
+
+      <form class="control-block mix-block" method="get">
+        {% if persona %}
+          <input type="hidden" name="persona" value="{{ persona }}">
+        {% else %}
+          <input type="hidden" name="seed_id" value="{{ seed_id }}">
+        {% endif %}
+        <label for="mix">Vielfalt-Stärke im Diversity-aware Feed</label>
+        <div class="mix-row">
+          <input
+            type="range" name="mix" id="mix"
+            min="2" max="6" step="1" value="{{ mix }}"
+            oninput="updateMixLabel(this.value)"
+            onchange="this.form.submit()">
+          <span class="mix-value" id="mix-label"></span>
+        </div>
+        <noscript><button type="submit">Anzeigen</button></noscript>
+      </form>
     </div>
-  </div>
+
+    <div class="columns">
+      <section class="column standard">
+        <div class="column-head">
+          <div>
+            <h2>Standard-Feed</h2>
+            <p class="column-sub">Reine Ähnlichkeits-Rangfolge</p>
+          </div>
+          <span class="score-pill" style="--score: {{ standard_score }}">
+            {{ standard_score }}%<span class="score-label">Vielfalts-Score</span>
+          </span>
+        </div>
+        {% for item in standard_feed %}
+          {{ render_post(item) }}
+        {% else %}
+          <div class="empty-state">Keine Posts gefunden.</div>
+        {% endfor %}
+      </section>
+
+      <section class="column diverse">
+        <div class="column-head">
+          <div>
+            <h2>Diversity-aware Feed</h2>
+            <p class="column-sub">Ähnlichkeit + bewusste Gegenperspektiven</p>
+          </div>
+          <span class="score-pill" style="--score: {{ diverse_score }}">
+            {{ diverse_score }}%<span class="score-label">Vielfalts-Score</span>
+          </span>
+        </div>
+        {% for item in diverse_feed %}
+          {{ render_post(item) }}
+        {% else %}
+          <div class="empty-state">Keine Posts gefunden.</div>
+        {% endfor %}
+      </section>
+    </div>
+  </main>
+
+  <script>
+    var MIX_LABELS = {
+      2: "Hoch (jeder 2. Post)",
+      3: "Mittel-hoch (jeder 3. Post)",
+      4: "Mittel (jeder 4. Post)",
+      5: "Mittel-niedrig (jeder 5. Post)",
+      6: "Niedrig (jeder 6. Post)"
+    };
+    function updateMixLabel(value) {
+      document.getElementById("mix-label").textContent = MIX_LABELS[value] || value;
+    }
+    updateMixLabel(document.getElementById("mix").value);
+  </script>
 </body>
 </html>
