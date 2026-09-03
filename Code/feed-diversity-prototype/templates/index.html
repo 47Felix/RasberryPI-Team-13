@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Feed-Diversity-Prototyp – Case 3 DTEW</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    h1 { font-size: 1.4rem; }
+    p.intro { color: #555; }
+    .personas, .seed-picker { margin-bottom: 1.5rem; }
+    .personas a {
+      display: inline-block; margin-right: 0.5rem; padding: 0.4rem 0.8rem;
+      border: 1px solid #888; border-radius: 6px; text-decoration: none; color: #222;
+    }
+    .personas a.active { background: #222; color: #fff; }
+    select { padding: 0.3rem; }
+    .columns { display: flex; gap: 1.5rem; }
+    .column { flex: 1; }
+    .column h2 { font-size: 1.1rem; border-bottom: 2px solid #ccc; padding-bottom: 0.3rem; }
+    .post { border: 1px solid #ddd; border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.6rem; }
+    .post h3 { margin: 0 0 0.3rem 0; font-size: 1rem; }
+    .post .meta { font-size: 0.75rem; color: #777; }
+    .post.pro { border-left: 4px solid #2a7; }
+    .post.contra { border-left: 4px solid #c53; }
+    .badge { display: inline-block; background: #fdd835; color: #333; font-size: 0.7rem;
+             padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.4rem; }
+  </style>
+</head>
+<body>
+  <h1>Standard- vs. Diversity-aware Feed</h1>
+  <p class="intro">
+    Case 3 (digi&amp;demo e.V.): Recommender-Testumgebung gegen Bubble-Verstärkung.
+    Links zeigt der Feed reine Ähnlichkeit (bubble-verstärkend), rechts mischt er bewusst
+    thematisch relevante Gegenperspektiven ein (<span class="badge">Gegenperspektive</span>).
+  </p>
+
+  <div class="personas">
+    <strong>Persona:</strong>
+    <a href="{{ url_for('index', persona='mia') }}" class="{{ 'active' if persona == 'mia' }}">Mia (merkt die Bubble nicht)</a>
+    <a href="{{ url_for('index', persona='tom') }}" class="{{ 'active' if persona == 'tom' }}">Tom (will raus)</a>
+  </div>
+
+  <form class="seed-picker" method="get">
+    <label for="seed_id">Oder eigenen Ausgangs-Post wählen:</label>
+    <select name="seed_id" id="seed_id" onchange="this.form.submit()">
+      {% for post in posts %}
+        <option value="{{ post.id }}" {{ 'selected' if post.id == seed_id }}>
+          [{{ post.topic }}/{{ post.perspective }}] {{ post.title }}
+        </option>
+      {% endfor %}
+    </select>
+    <noscript><button type="submit">Anzeigen</button></noscript>
+  </form>
+
+  <div class="columns">
+    <div class="column">
+      <h2>Standard-Feed</h2>
+      {% for item in standard_feed %}
+        <div class="post {{ item.post.perspective }}">
+          <h3>{{ item.post.title }}</h3>
+          <p>{{ item.post.text }}</p>
+          <div class="meta">{{ item.post.topic }} · {{ item.post.perspective }} · Ähnlichkeit {{ "%.2f"|format(item.score) }}</div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="column">
+      <h2>Diversity-aware Feed</h2>
+      {% for item in diverse_feed %}
+        <div class="post {{ item.post.perspective }}">
+          <h3>{{ item.post.title }}{% if item.is_diverse_pick %}<span class="badge">Gegenperspektive</span>{% endif %}</h3>
+          <p>{{ item.post.text }}</p>
+          <div class="meta">{{ item.post.topic }} · {{ item.post.perspective }} · Ähnlichkeit {{ "%.2f"|format(item.score) }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>
