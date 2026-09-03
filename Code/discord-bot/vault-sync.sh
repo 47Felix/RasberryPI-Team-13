@@ -41,10 +41,29 @@ cd "$REPO_PATH"
 # rotiert bei jedem Refresh unabhaengig vom Original weiter und faellt nach ein
 # paar Tagen still auseinander ("OAuth session expired and could not be
 # refreshed", passiert am 27./28.08.2026 - siehe Claude Discord Bot Setup.md).
+#
+# Retry mit Validierung, weil die Quelldatei nicht atomar geschrieben wird: Erwischt
+# der cp die Datei genau waehrend eines Token-Refreshs, ist accessToken kurzzeitig
+# leer und expiresAt 0 - live beobachtet am 03.09.2026, fuehrte zu einem sofortigen,
+# fast lautlosen Auth-Fehler von "claude" (Abbruch nach <1s, kaum Fehlertext im Log).
 SOURCE_CREDS="$HOME/sessions/amogus_911/.credentials.json"
 if [ -f "$SOURCE_CREDS" ]; then
-  cp "$SOURCE_CREDS" "$CONFIG_DIR/.credentials.json"
-  chmod 600 "$CONFIG_DIR/.credentials.json"
+  CREDS_OK=0
+  for attempt in 1 2 3 4 5; do
+    cp "$SOURCE_CREDS" "$CONFIG_DIR/.credentials.json"
+    chmod 600 "$CONFIG_DIR/.credentials.json"
+    if python3 -c "
+import json, sys
+d = json.load(open('$CONFIG_DIR/.credentials.json'))['claudeAiOauth']
+sys.exit(0 if d.get('accessToken') and d.get('expiresAt') else 1)
+" 2>>"$LOG_FILE"; then
+      CREDS_OK=1
+      break
+    fi
+    log "Kopierte Credentials sehen unvollstaendig aus (vermutlich mitten in einem Token-Refresh erwischt), warte kurz und versuche erneut ($attempt/5)..."
+    sleep 3
+  done
+  [ "$CREDS_OK" = "1" ] || log "WARNUNG: Nach 5 Versuchen weiterhin unvollstaendige Credentials kopiert - naechster Schritt wird vermutlich mit Auth-Fehler fehlschlagen."
 fi
 
 # GitHub-Token aus der bereits konfigurierten Remote-URL ziehen (gleiches Fine-Grained-Token
