@@ -114,6 +114,12 @@ Frage kam beim Pitch-Test auf: wie würde man das auf TikTok o.ä. integrieren? 
 
 Für geschlossene Plattformen wie TikTok/Instagram gilt ehrlich: ohne Kooperation der Plattform (API-Zugriff, Ranking-Hooks) geht technisch sauber nicht viel außer Weg 3 mit den genannten Einschränkungen. Empfehlung: Demo wie geplant standalone bauen (Weg 1), Weg 2 (Bluesky/Mastodon) als realistischen Adoptionspfad in der Doku/Präsentation nennen statt zu behaupten, man würde direkt in TikTok integrieren.
 
+## ✅ Prototyp gebaut (03.09.2026)
+
+Realist-Vorschlag von oben umgesetzt: Flask-Prototyp im Repo unter [`Code/feed-diversity-prototype/`](https://github.com/47Felix/RasberryPI-Team-13/tree/main/Code/feed-diversity-prototype) (PR [#81](https://github.com/47Felix/RasberryPI-Team-13/pull/81), [#83](https://github.com/47Felix/RasberryPI-Team-13/pull/83)). Content-Based Filtering per TF-IDF/Cosine Similarity (scikit-learn, kein eigenes ML-Modell), Standard-Feed vs. Diversity-aware-Feed mit gekennzeichneten Gegenperspektiven, 15 Beispiel-Posts über 3 Themen (später ein viertes: Datenschutz pro/contra), Persona-Schnellauswahl für Mia/Tom. Acht Tests, alle grün.
+
+Zwei der kritischen Punkte oben direkt adressiert: **Punkt 6 (fehlende Metrik)** durch einen Vielfalts-Score (Anteil Posts mit abweichender Perspektive im Feed), **Punkt 3 (Balance "varied but still relevant")** durch einen interaktiven Mix-Regler im UI. UI eigenständig gestaltet statt Standardlook: Segmented Control für Mia/Tom, echter Range-Slider für die Vielfalt-Stärke, Vielfalts-Score als farbige Pille (rot-grün je nach Wert).
+
 ## ✅ Vorbereitet: Daily-Gerüst
 
 - **Gestern (01.09.):** Teampathy Map/Team Canvas bearbeitet, Case 3 final entschieden, Proto-Personas Mia/Tom erstellt, Team-Board-Karte (Problem/Solution/Target Group/Tech Stack) vorbereitet.
@@ -128,7 +134,7 @@ Für geschlossene Plattformen wie TikTok/Instagram gilt ehrlich: ohne Kooperatio
 - [ ] Raum fuer Peer Feedback vor Ort geklaert (217 vs. 127)
 - [ ] Team-Board-Karte mit heutigem Stand aktualisieren
 - [ ] Facilitator-Rolle (offen seit Dienstag) endgültig klären
-- [ ] Beispiel-Datensatz für die Recommender-Demo festlegen
+- [x] Beispiel-Datensatz für die Recommender-Demo festlegen (15 Posts, 3 Themen, siehe "Prototyp gebaut" oben)
 - [ ] Team-13-Karte nach dem Peer Feedback final abstimmen (mehrere Personen haben heute Vormittag parallel daran editiert)
 
 ## Präsentations-/Abgabe-Version
