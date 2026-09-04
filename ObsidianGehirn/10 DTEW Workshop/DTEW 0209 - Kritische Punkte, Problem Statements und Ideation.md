@@ -120,6 +120,13 @@ Realist-Vorschlag von oben umgesetzt: Flask-Prototyp im Repo unter [`Code/feed-d
 
 Zwei der kritischen Punkte oben direkt adressiert: **Punkt 6 (fehlende Metrik)** durch einen Vielfalts-Score (Anteil Posts mit abweichender Perspektive im Feed), **Punkt 3 (Balance "varied but still relevant")** durch einen interaktiven Mix-Regler im UI. UI eigenständig gestaltet statt Standardlook: Segmented Control für Mia/Tom, echter Range-Slider für die Vielfalt-Stärke, Vielfalts-Score als farbige Pille (rot-grün je nach Wert).
 
+> [!note] UI seither überarbeitet (siehe Abschnitt unten)
+> Die Zwei-Spalten-UI (Segmented Control/Regler/Score-Pille) wurde am 04.09. durch eine Feed-Struktur ersetzt, siehe "✅ UI-Redesign" weiter unten.
+
+## ✅ UI-Redesign: Feed-Struktur statt Zwei-Spalten-Vergleich (04.09.2026)
+
+Nutzer-Feedback zur Zwei-Spalten-UI oben (Segmented Control, Regler, Score-Pille) war eindeutig: wirkte nach Demo-/Tool-Design statt nach echtem Feed. In PR [#86](https://github.com/47Felix/RasberryPI-Team-13/pull/86) ersetzt durch einen einzelnen, vertikal scrollenden Feed mit Standard-/Diversity-aware-Tabs (`?mode=`), feed-typischer Post-Kopfzeile (Avatar, Account, Handle, Zeit) und einem fiktiven Account pro Thema/Perspektive, damit sich Bubble vs. Vielfalt beim Scrollen zeigt statt nur an einer Zahl. Regler und Post-Auswahl wandern in ein eingeklapptes Einstellungen-Element. `ranking.py` (die eigentliche Diversity-Logik) blieb unverändert.
+
 ## ✅ Vorbereitet: Daily-Gerüst
 
 - **Gestern (01.09.):** Teampathy Map/Team Canvas bearbeitet, Case 3 final entschieden, Proto-Personas Mia/Tom erstellt, Team-Board-Karte (Problem/Solution/Target Group/Tech Stack) vorbereitet.
