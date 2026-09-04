@@ -342,12 +342,34 @@ a {
   color: var(--faint);
 }
 
-.settings-row select {
+.settings-row select,
+.settings-row input[type="text"],
+.settings-row textarea {
   padding: 0.5rem 0.6rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   background: var(--surface);
   font-size: 0.88rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.settings-row button[type="submit"] {
+  margin-top: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.settings-row button[type="submit"]:disabled {
+  background: var(--faint);
+  border-color: var(--faint);
+  cursor: not-allowed;
 }
 
 .mix-row {

@@ -9,13 +9,19 @@ import hashlib
 import json
 from pathlib import Path
 
-from flask import Flask, render_template, request
+from flask import Flask, redirect, render_template, request, url_for
 
+import db
 from ranking import Post, diversity_aware_feed, diversity_score, standard_feed
 
 app = Flask(__name__)
 
 DATA_PATH = Path(__file__).parent / "data" / "posts.json"
+
+# Known (topic, perspective) pairs so the "new post" form offers a dropdown
+# instead of free-text topics fragmenting the feed into one-off categories.
+KNOWN_TOPICS = ["klima", "verkehr", "wirtschaft", "digital"]
+KNOWN_PERSPECTIVES = ["pro", "contra"]
 
 # Quick persona presets so the demo directly maps back to Mia/Tom instead of
 # requiring visitors to guess a meaningful seed post from the dropdown.
@@ -90,7 +96,12 @@ def _decorate_feed(feed: list[dict]) -> list[dict]:
 def load_posts() -> list[Post]:
     with open(DATA_PATH, encoding="utf-8") as f:
         raw = json.load(f)
-    return [Post(**item) for item in raw]
+    posts = [Post(**item) for item in raw]
+    # User-submitted posts from Supabase, appended after the curated dataset.
+    # fetch_posts() returns [] if Supabase isn't configured/reachable, so the
+    # demo keeps working off the static dataset alone in that case.
+    posts.extend(db.fetch_posts())
+    return posts
 
 
 def _parse_diversity_every(raw: str | None) -> int:
@@ -131,7 +142,23 @@ def index():
         mode=mode,
         feed_items=_decorate_feed(active_feed),
         feed_score=diversity_score(active_feed, seed_post),
+        known_topics=KNOWN_TOPICS,
+        known_perspectives=KNOWN_PERSPECTIVES,
+        db_configured=db.is_configured(),
     )
+
+
+@app.route("/posts", methods=["POST"])
+def create_post():
+    title = request.form.get("title", "").strip()
+    content = request.form.get("content", "").strip()
+    topic = request.form.get("topic", "")
+    perspective = request.form.get("perspective", "")
+
+    if title and content and topic in KNOWN_TOPICS and perspective in KNOWN_PERSPECTIVES:
+        db.insert_post(title, content, topic, perspective)
+
+    return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
 
 
 if __name__ == "__main__":

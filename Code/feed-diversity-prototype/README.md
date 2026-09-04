@@ -49,6 +49,32 @@ Problem-Statements einzahlen:
 - **Tom** (PS2): steckt in "contra"-Wirtschaftspolitik-Posts fest, will
   bewusst raus.
 
+## Neue Posts speichern (Supabase)
+
+Der statische Datensatz (`data/posts.json`) lässt sich zur Laufzeit um
+Nutzer-Posts (Titel, Text, Kategorie, Perspektive) erweitern, die über das
+Formular "Neuen Post erstellen" auf der Seite angelegt werden. Storage ist
+Supabase Postgres, angebunden über `db.py`:
+
+- `.env` (nicht committet, siehe `.gitignore`) mit `SUPABASE_URL`,
+  `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
+- Backend nutzt ausschließlich den **Secret Key** (server-seitig, umgeht
+  Row Level Security) – der Publishable Key wird aktuell vom Code gar nicht
+  gebraucht, liegt nur für ein mögliches späteres Client-seitiges Feature mit
+  in der `.env`
+- Tabelle `posts` (Schema in `supabase_schema.sql`) hat RLS aktiv **ohne**
+  Policies – nur der Secret Key kommt ran, direkter Zugriff über den
+  Publishable Key ist absichtlich blockiert
+- Tabelle einmalig anlegen: SQL aus `supabase_schema.sql` im Supabase
+  Dashboard unter *SQL Editor* ausführen, **oder** `apply_schema.py` laufen
+  lassen (braucht `SUPABASE_MANAGEMENT_TOKEN`, ein Account-weites Personal
+  Access Token aus den Supabase-Kontoeinstellungen – direkter Postgres-Port
+  5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar, das Skript geht
+  deshalb über die Management-API per HTTPS)
+- Fällt Supabase aus/ist nicht konfiguriert, degradiert die App sauber auf
+  den statischen Datensatz (`db.fetch_posts()` gibt dann `[]` zurück, das
+  Formular zeigt einen Hinweis statt eines Fehlers)
+
 ## Lokal starten
 
 ```bash
@@ -72,6 +98,10 @@ pytest tests/
 - [x] Datensatz mit 15 Posts, 3 Themen, je pro/contra
 - [x] Standard- und Diversity-aware-Ranking mit Tests
 - [x] Minimale Flask-UI mit Persona-Schnellauswahl
+- [x] Supabase-Anbindung für nutzergenerierte Posts (Code steht, siehe oben)
+- [ ] `posts`-Tabelle in Supabase tatsächlich anlegen (`supabase_schema.sql`
+      ausführen, siehe oben) – ohne Tabelle läuft die App weiter, nur ohne
+      neue Posts
 - [ ] Datensatz ggf. um weitere Themen/Posts erweitern, sobald das Team echten
       Beispiel-Content hat
 - [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
