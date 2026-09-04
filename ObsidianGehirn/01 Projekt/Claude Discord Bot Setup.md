@@ -112,6 +112,7 @@ Damit der Bot nicht bei jedem `Strg+C` oder Terminal-Schließen stirbt, läuft e
 - Der `CLAUDE_CONFIG_DIR`-Ordnername ist frei wählbar – muss **nicht** mit dem Discord-Usernamen oder Chatnamen übereinstimmen, nur exakt mit dem Argument bei `!register` matchen.
 - Discord-Threads haben eigene Channel-IDs, unabhängig vom übergeordneten Kanal – ohne den `parent_id`-Check reagiert der Bot dort nicht.
 - Der Bot-Prozess stirbt bei `Strg+C` oder geschlossenem Terminal → für Dauerbetrieb systemd nutzen.
+- **Timeout bei längeren Coding-Sessions (Fix 03.09.2026, PR [#82](https://github.com/47Felix/RasberryPI-Team-13/pull/82)):** `CLAUDE_TIMEOUT_SECONDS` in `bot.py` war auf 300s (5 Min) gesetzt, killte den `claude`-Subprozess bei längeren Aufgaben (Tests laufen lassen, committen, PR über die GitHub-API öffnen) mit nur "Timeout: Claude hat zu lange gebraucht." Auf 1800s (30 Min) erhöht, kein Discord-eigenes Limit betroffen (Bot nutzt normale Nachrichten, keine Slash-Command-Interactions).
 
 ## Direkter VM-Zugriff für Claude (Cowork-Session) – geprüft, verworfen
 
