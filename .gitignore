@@ -20,6 +20,10 @@ Code/pi-dashboard/venv/
 Code/pi-dashboard/tresor.db
 Code/pi-dashboard/.env
 
+# Feed-Diversity-Prototyp: .env mit Supabase-Keys, nie committen
+Code/feed-diversity-prototype/.env
+Code/feed-diversity-prototype/venv/
+
 # Feed-Diversity-Prototyp: lokale venv/Cache, nie committen
 Code/feed-diversity-prototype/venv/
 Code/feed-diversity-prototype/**/__pycache__/

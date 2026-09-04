@@ -113,6 +113,41 @@
         <noscript><button type="submit">Anzeigen</button></noscript>
       </form>
     </details>
+
+    <details class="settings">
+      <summary>Neuen Post erstellen</summary>
+
+      {% if not db_configured %}
+        <p class="tab-caption">Supabase ist nicht konfiguriert – neue Posts können aktuell nicht gespeichert werden.</p>
+      {% endif %}
+
+      <form class="settings-row" method="post" action="{{ url_for('create_post') }}">
+        <input type="hidden" name="mode" value="{{ mode }}">
+        <input type="hidden" name="mix" value="{{ mix }}">
+
+        <label for="title">Titel</label>
+        <input type="text" name="title" id="title" required maxlength="120">
+
+        <label for="content">Text</label>
+        <textarea name="content" id="content" required maxlength="600" rows="3"></textarea>
+
+        <label for="topic">Kategorie</label>
+        <select name="topic" id="topic">
+          {% for topic in known_topics %}
+            <option value="{{ topic }}">{{ topic }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="perspective">Perspektive</label>
+        <select name="perspective" id="perspective">
+          {% for perspective in known_perspectives %}
+            <option value="{{ perspective }}">{{ perspective }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit" {{ 'disabled' if not db_configured }}>Post veröffentlichen</button>
+      </form>
+    </details>
   </main>
 
   <script>
