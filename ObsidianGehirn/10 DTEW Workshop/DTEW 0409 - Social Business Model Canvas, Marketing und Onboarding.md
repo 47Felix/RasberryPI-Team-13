@@ -76,7 +76,20 @@ Kein fertiges visuelles Logo (das ist Teamarbeit/Design-Aufgabe vor Ort), sonder
 - **Heute (04.09.):** Social Business Model Canvas, Marketing-Strategie und Onboarding-Konzept schärfen, 13:30 Austausch, Team-Board aktualisieren.
 - **Blocker:** *(vor Ort ausfüllen – z.B. offene Facilitator-Frage, fehlender Beispiel-Datensatz für den Prototyp, Board-Zugriffsproblem der Automation siehe Warnkasten oben)*
 
+## ✅ Prototyp-Erweiterung: Nutzergenerierte Posts über Supabase (04.09.2026)
+
+Auf Felix' Wunsch hin bekommt der Feed-Diversity-Prototyp eine echte Datenbank für nutzergenerierte Posts (Titel, Text, Kategorie, Perspektive) statt nur des statischen Beispiel-Datensatzes – ein Schritt in Richtung MVP statt Wegwerf-Prototyp. Umgesetzt in PR [#87](https://github.com/47Felix/RasberryPI-Team-13/pull/87):
+
+- Neues Formular "Neuen Post erstellen" auf der Startseite
+- Backend (`Code/feed-diversity-prototype/db.py`) speichert über Supabase (PostgREST), Zugriff ausschließlich über den Secret Key server-seitig – Row Level Security bleibt aktiv ohne Policies, der Publishable Key kommt an die Tabelle nicht ran
+- Fällt Supabase aus/ist nicht erreichbar, läuft die App unverändert mit dem statischen Datensatz weiter (kein Absturz)
+- Zugangsdaten liegen in einer lokalen `.env` im Worktree (nicht committet, siehe `.gitignore`) – **nie** im Vault oder Git, siehe [[⚠️ Zugangsdaten - Hinweis]]
+
+> [!warning] Tabelle noch nicht angelegt
+> Die `posts`-Tabelle selbst existiert in Supabase noch nicht (Schema liegt in `supabase_schema.sql` bereit). Grund: direkter Postgres-Zugriff (Port 5432) ist aus der Cloud-Sandbox dieser Session nicht erreichbar (siehe [[TaskCards Board]] für einen ähnlichen Netzwerk-Fall). Zwei Wege, das nachzuholen (Details in `Code/feed-diversity-prototype/README.md`): das SQL einmal im Supabase-Dashboard unter *SQL Editor* einfügen, oder `apply_schema.py` mit einem Supabase-Management-API-Token laufen lassen.
+
 ## Was noch fehlt
+- [ ] `posts`-Tabelle in Supabase anlegen (siehe Warnkasten oben, PR [#87](https://github.com/47Felix/RasberryPI-Team-13/pull/87))
 - [ ] Echtes Freitags-Board morgens live prüfen (Zugriff heute Nacht gescheitert, siehe Warnkasten oben) und diese Notiz bei Abweichungen ergänzen
 - [ ] Team-13-Karte auf dem Gruppenboard mit dem Stand oben aktualisieren (heute Nacht nicht möglich)
 - [ ] Social Business Model Canvas im Team durchsprechen, kürzen/anpassen, insbesondere Cost Structure/Revenue realistisch einschätzen
