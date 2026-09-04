@@ -66,7 +66,18 @@
                 <div class="engagement">
                   <span>💬 {{ item.comments }}</span>
                   <span>🔁 {{ item.reposts }}</span>
-                  <span>♥ {{ item.likes }}</span>
+                  {% if item.is_db_post %}
+                    <button
+                      type="button"
+                      class="like-button {{ 'liked' if item.liked }}"
+                      data-post-id="{{ item.post.id }}"
+                      onclick="toggleLike(this)">
+                      <span class="like-icon">{{ '♥' if item.liked else '♡' }}</span>
+                      <span class="like-count">{{ item.likes }}</span>
+                    </button>
+                  {% else %}
+                    <span>♥ {{ item.likes }}</span>
+                  {% endif %}
                 </div>
               </div>
             </div>
@@ -131,7 +142,11 @@
         <label for="content">Text</label>
         <textarea name="content" id="content" required maxlength="600" rows="3"></textarea>
 
-        <label for="topic">Kategorie</label>
+        <label for="topic">
+          Kategorie
+          <button type="button" class="suggest-button" onclick="suggestCategory()">Vorschlagen</button>
+          <span id="suggest-hint" class="suggest-hint"></span>
+        </label>
         <select name="topic" id="topic">
           {% for topic in known_topics %}
             <option value="{{ topic }}">{{ topic }}</option>
@@ -164,6 +179,42 @@
     }
     var mixInput = document.getElementById("mix");
     if (mixInput) updateMixLabel(mixInput.value);
+
+    function toggleLike(button) {
+      var postId = button.getAttribute("data-post-id");
+      fetch("/posts/" + encodeURIComponent(postId) + "/like", { method: "POST" })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data.error) return;
+          var icon = button.querySelector(".like-icon");
+          var count = button.querySelector(".like-count");
+          var delta = data.liked ? 1 : -1;
+          icon.textContent = data.liked ? "♥" : "♡";
+          button.classList.toggle("liked", data.liked);
+          count.textContent = parseInt(count.textContent, 10) + delta;
+        });
+    }
+
+    function suggestCategory() {
+      var title = document.getElementById("title").value;
+      var content = document.getElementById("content").value;
+      var hint = document.getElementById("suggest-hint");
+      hint.textContent = "…";
+      fetch("/posts/suggest-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title, content: content }),
+      })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (!data.topic) {
+            hint.textContent = "Kein Vorschlag (Titel/Text eingeben)";
+            return;
+          }
+          document.getElementById("topic").value = data.topic;
+          hint.textContent = "Vorschlag: " + data.topic;
+        });
+    }
   </script>
 </body>
 </html>

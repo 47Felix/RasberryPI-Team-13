@@ -7,14 +7,20 @@ full problem statements (PS1 for persona "Mia", PS2 for persona "Tom").
 
 import hashlib
 import json
+import os
+import uuid
 from pathlib import Path
 
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
 import db
-from ranking import Post, diversity_aware_feed, diversity_score, standard_feed
+from ranking import Post, diversity_aware_feed, diversity_score, standard_feed, suggest_category
 
 app = Flask(__name__)
+# Only guards the session cookie (an anonymous per-browser id for likes), not
+# any real auth - a fixed dev fallback is fine for a workshop prototype, but
+# set FLASK_SECRET_KEY in .env for anything longer-lived than a demo.
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-not-secret")
 
 DATA_PATH = Path(__file__).parent / "data" / "posts.json"
 
@@ -42,6 +48,9 @@ VALID_MODES = {"standard", "diversity"}
 # database rows. This is what makes a bubble *visible* while scrolling: in
 # the standard feed the same one or two accounts repeat over and over, in
 # the diversity-aware feed different accounts interrupt that pattern.
+# User-submitted posts get their author/handle/avatar straight from the DB
+# (db.fetch_posts(), same values, see supabase/migrations/0001_init.sql
+# seed data) instead of this dict - it only covers the static dataset.
 AUTHOR_META = {
     ("klima", "pro"): {"avatar": "🌱", "name": "Klimaschutz Jetzt", "handle": "@klimajetzt"},
     ("klima", "contra"): {"avatar": "⚡", "name": "Energie Realistisch", "handle": "@energierealistisch"},
@@ -63,9 +72,11 @@ DEFAULT_AUTHOR_META = {"avatar": "📰", "name": "Feed-Beitrag", "handle": "@per
 
 
 def _fake_engagement(post_id: str) -> dict:
-    """Deterministic, stable-looking like/reply/repost counts per post so the
-    feed doesn't look like an empty developer fixture. Not randomized per
+    """Deterministic, stable-looking comment/repost counts per static post so
+    the feed doesn't look like an empty developer fixture. Not randomized per
     request (hashlib, not random) so the numbers don't jump on every reload.
+    Only comments/reposts - likes for static posts are fake same as before,
+    DB posts get a real count from db.fetch_posts() instead.
     """
     digest = int(hashlib.sha256(post_id.encode()).hexdigest(), 16)
     return {
@@ -75,33 +86,55 @@ def _fake_engagement(post_id: str) -> dict:
     }
 
 
-def _decorate_feed(feed: list[dict]) -> list[dict]:
+def _session_id() -> str:
+    if "session_id" not in session:
+        session["session_id"] = uuid.uuid4().hex
+    return session["session_id"]
+
+
+def _decorate_feed(feed: list[dict], extra_meta: dict) -> list[dict]:
     decorated = []
     for index, item in enumerate(feed):
         post = item["post"]
-        meta = AUTHOR_META.get((post.topic, post.perspective), DEFAULT_AUTHOR_META)
+        meta = extra_meta.get(post.id)
+        if meta:
+            engagement = {"likes": meta["likes"], "comments": 0, "reposts": 0}
+            author = meta["author"]
+            is_db_post = True
+        else:
+            engagement = _fake_engagement(post.id)
+            author = AUTHOR_META.get((post.topic, post.perspective), DEFAULT_AUTHOR_META)
+            is_db_post = False
         decorated.append(
             {
                 **item,
-                "avatar": meta["avatar"],
-                "author": meta["name"],
-                "handle": meta["handle"],
+                "avatar": author["avatar"],
+                "author": author["name"],
+                "handle": author["handle"],
                 "time_label": TIME_LABELS[min(index, len(TIME_LABELS) - 1)],
-                **_fake_engagement(post.id),
+                "is_db_post": is_db_post,
+                **engagement,
             }
         )
     return decorated
 
 
-def load_posts() -> list[Post]:
+def load_posts() -> tuple[list[Post], dict]:
+    """Returns (all posts, extra metadata for DB-backed posts keyed by id).
+
+    User-submitted posts from Supabase are appended after the curated
+    dataset. db.fetch_posts() returns [] if Supabase isn't configured or
+    unreachable, so the demo keeps working off the static dataset alone.
+    """
     with open(DATA_PATH, encoding="utf-8") as f:
         raw = json.load(f)
-    posts = [Post(**item) for item in raw]
-    # User-submitted posts from Supabase, appended after the curated dataset.
-    # fetch_posts() returns [] if Supabase isn't configured/reachable, so the
-    # demo keeps working off the static dataset alone in that case.
-    posts.extend(db.fetch_posts())
-    return posts
+    static_posts = [Post(**item) for item in raw]
+
+    db_rows = db.fetch_posts()
+    db_posts = [row["post"] for row in db_rows]
+    extra_meta = {row["post"].id: {"author": row["author"], "likes": row["likes"]} for row in db_rows}
+
+    return static_posts + db_posts, extra_meta
 
 
 def _parse_diversity_every(raw: str | None) -> int:
@@ -114,7 +147,7 @@ def _parse_diversity_every(raw: str | None) -> int:
 
 @app.route("/")
 def index():
-    posts = load_posts()
+    posts, extra_meta = load_posts()
 
     persona = request.args.get("persona")
     seed_id = PERSONA_SEEDS.get(persona, request.args.get("seed_id", posts[0].id))
@@ -133,6 +166,13 @@ def index():
     else:
         active_feed = standard_feed(posts, seed_id)
 
+    feed_items = _decorate_feed(active_feed, extra_meta)
+
+    db_post_ids = [item["post"].id for item in feed_items if item["is_db_post"]]
+    liked_ids = db.fetch_liked_post_ids(_session_id(), db_post_ids) if db_post_ids else set()
+    for item in feed_items:
+        item["liked"] = item["post"].id in liked_ids
+
     return render_template(
         "index.html",
         posts=posts,
@@ -140,7 +180,7 @@ def index():
         persona=persona,
         mix=diversity_every,
         mode=mode,
-        feed_items=_decorate_feed(active_feed),
+        feed_items=feed_items,
         feed_score=diversity_score(active_feed, seed_post),
         known_topics=KNOWN_TOPICS,
         known_perspectives=KNOWN_PERSPECTIVES,
@@ -159,6 +199,30 @@ def create_post():
         db.insert_post(title, content, topic, perspective)
 
     return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
+
+
+@app.route("/posts/suggest-category", methods=["POST"])
+def suggest_category_endpoint():
+    """Called via fetch() while typing in the "new post" form (see
+    templates/index.html) to pre-select a category. Purely a suggestion -
+    the dropdown stays editable, this never blocks post creation.
+    """
+    payload = request.get_json(silent=True) or {}
+    title = (payload.get("title") or "").strip()
+    content = (payload.get("content") or "").strip()
+    if not title and not content:
+        return jsonify({"topic": None})
+
+    posts, _ = load_posts()
+    return jsonify({"topic": suggest_category(title, content, posts)})
+
+
+@app.route("/posts/<post_id>/like", methods=["POST"])
+def like_post(post_id):
+    liked = db.toggle_like(post_id, _session_id())
+    if liked is None:
+        return jsonify({"error": "Supabase nicht erreichbar"}), 503
+    return jsonify({"liked": liked})
 
 
 if __name__ == "__main__":

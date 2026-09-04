@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ranking import Post, diversity_aware_feed, diversity_score, standard_feed
+from ranking import Post, diversity_aware_feed, diversity_score, standard_feed, suggest_category
 
 POSTS = [
     Post(
@@ -103,3 +103,16 @@ def test_diversity_aware_feed_scores_higher_than_standard_feed():
 
     assert diversity_score(standard, seed_post) == 0.0
     assert diversity_score(diverse, seed_post) > 0.0
+
+
+def test_suggest_category_picks_the_most_similar_existing_post_topic():
+    topic = suggest_category(
+        "Windkraft-Debatte",
+        "Windkraft und die Energiewende sind zentral fuer den Klimaschutz.",
+        POSTS,
+    )
+    assert topic == "klima"
+
+
+def test_suggest_category_returns_none_without_any_posts_to_compare():
+    assert suggest_category("Titel", "Text", []) is None

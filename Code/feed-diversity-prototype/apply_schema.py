@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PROJECT_REF = "oblighpdvoefwkkyttja"
-SCHEMA_FILE = Path(__file__).parent / "supabase_schema.sql"
+SCHEMA_FILE = Path(__file__).parent / "supabase" / "migrations" / "0001_init.sql"
 
 
 def main() -> None:
