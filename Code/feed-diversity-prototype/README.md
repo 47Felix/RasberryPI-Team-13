@@ -121,9 +121,9 @@ pytest tests/
       (Code steht, siehe oben)
 - [x] Kategorie-Vorschlag per TF-IDF beim Post-Erstellen
 - [x] Like-Toggle pro Browser-Session für DB-Posts
-- [ ] Tabellen in Supabase tatsächlich anlegen (`supabase/migrations/0001_init.sql`
-      ausführen, siehe oben) – ohne Tabellen läuft die App weiter, nur ohne
-      neue Posts/Likes
+- [x] Tabellen in Supabase angelegt (04.09.2026, über die Management-API) und
+      end-to-end verifiziert (Post erstellen, Like togglen, beides über die
+      echte DB, siehe PR #88)
 - [ ] Likes als Ranking-Signal berücksichtigen (aktuell nur Anzeige, siehe oben)
 - [ ] Datensatz ggf. um weitere Themen/Posts erweitern, sobald das Team echten
       Beispiel-Content hat
