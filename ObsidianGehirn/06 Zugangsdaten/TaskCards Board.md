@@ -18,6 +18,9 @@ Der nächtliche Scheduled-Task (bereitet jeweils den Folgetag vor, siehe [[DTEW 
 > [!warning] Für künftige Nächte
 > Dieses Netzwerk-Limit betrifft die Sandbox-Umgebung, nicht den Token/Link selbst – ein erneuter Versuch in derselben Umgebung wird vermutlich wieder scheitern. Die Board-Schritte der nächtlichen Automation (Teamboard lesen, Gruppenboard-Karte aktualisieren) müssen bis auf Weiteres **morgens live von einem Teammitglied** nachgeholt werden. Vorbereitete Inhalte (Kritische Punkte, Pitch-Stichpunkte, Canvas-Entwürfe etc.) landen weiterhin zuverlässig hier im Vault.
 
+> [!failure] Erneut bestätigt (Nacht 04.→05.09.2026)
+> Dritte Nacht in Folge derselbe Befund: `curl` an den Proxy-Status-Endpoint zeigt einen frischen `recentRelayFailures`-Eintrag `connect_rejected` / `403` für `itech-bs14.taskcards.app:443`, laut Proxy-Doku eine Richtlinien-Ablehnung der Sandbox-Umgebung ("Organisationsrichtlinie" – nicht durch Wiederholen oder Umgehen lösbar). Es handelt sich also nicht um einen einmaligen Ausfall, sondern um eine dauerhafte Eigenschaft dieser Cloud-Sandbox. Solange sich das nicht ändert, sollte die Automation diesen Schritt nicht mehr jede Nacht neu versuchen, sondern gleich auf die Übersicht ausweichen (wie unten dokumentiert) und den Board-Abgleich dem Team am Morgen überlassen.
+
 ## Verwandte Notizen
 - [[⚠️ Zugangsdaten - Hinweis]]
 
