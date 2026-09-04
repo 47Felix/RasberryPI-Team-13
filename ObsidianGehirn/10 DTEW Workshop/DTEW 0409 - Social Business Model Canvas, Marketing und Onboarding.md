@@ -85,11 +85,15 @@ Auf Felix' Wunsch hin bekommt der Feed-Diversity-Prototyp eine echte Datenbank f
 - Fällt Supabase aus/ist nicht erreichbar, läuft die App unverändert mit dem statischen Datensatz weiter (kein Absturz)
 - Zugangsdaten liegen in einer lokalen `.env` im Worktree (nicht committet, siehe `.gitignore`) – **nie** im Vault oder Git, siehe [[⚠️ Zugangsdaten - Hinweis]]
 
-> [!warning] Tabelle noch nicht angelegt
-> Die `posts`-Tabelle selbst existiert in Supabase noch nicht (Schema liegt in `supabase_schema.sql` bereit). Grund: direkter Postgres-Zugriff (Port 5432) ist aus der Cloud-Sandbox dieser Session nicht erreichbar (siehe [[TaskCards Board]] für einen ähnlichen Netzwerk-Fall). Zwei Wege, das nachzuholen (Details in `Code/feed-diversity-prototype/README.md`): das SQL einmal im Supabase-Dashboard unter *SQL Editor* einfügen, oder `apply_schema.py` mit einem Supabase-Management-API-Token laufen lassen.
+> [!success] Tabellen angelegt (04.09.2026)
+> `categories`/`authors`/`posts`/`likes` (siehe `supabase/migrations/0001_init.sql`, PR [#88](https://github.com/47Felix/RasberryPI-Team-13/pull/88)) sind live in Supabase angelegt. Ein erster Management-Token wurde von der API mit `401 Unauthorized` abgelehnt (vermutlich durch GitHubs Secret-Scanning automatisch widerrufen, nachdem er versehentlich committet wurde, siehe Sicherheitsvorfall-Kasten unten), ein zweiter, per Chat geschickter Token hat funktioniert. Angewendet über die Supabase-Management-API per HTTPS (direkter Postgres-Port 5432 ist aus der Cloud-Sandbox dieser Session nicht erreichbar). End-to-End verifiziert: Post erstellen, Like togglen, beides erfolgreich gegen die echte DB getestet, Test-Post danach wieder gelöscht.
+
+> [!warning] Sicherheitsvorfall (04.09.2026): Token im Klartext committet
+> Über den GitHub-Web-Upload wurde eine Datei mit einem Supabase-Personal-Access-Token im Klartext in den Branch `47Felix-patch-1` hochgeladen (samt einer irreführenden Angabe, der Token "lösche sich automatisch" – das stimmt nicht, PATs löschen sich nicht selbst). Die Datei wurde in einem Folgecommit wieder entfernt, bleibt aber im Git-Verlauf auf GitHub sichtbar. **Empfehlung: den Token im Supabase-Dashboard (Account → Access Tokens) widerrufen**, unabhängig davon dass er bei der Verwendung bereits mit 401 abgelehnt wurde. Siehe [[⚠️ Zugangsdaten - Hinweis]] zur Grundregel "nie Zugangsdaten ins Repo".
 
 ## Was noch fehlt
-- [ ] `posts`-Tabelle in Supabase anlegen (siehe Warnkasten oben, PR [#87](https://github.com/47Felix/RasberryPI-Team-13/pull/87))
+- [ ] Geleakten (ersten) Supabase-Token vorsorglich widerrufen (siehe Sicherheitsvorfall-Warnkasten oben) – wurde von der API zwar schon mit 401 abgelehnt, war aber im Klartext im Git-Verlauf sichtbar
+- [ ] Zweiten, per Chat verwendeten Management-Token ebenfalls nicht dauerhaft liegen lassen (nur einmalig fürs Schema-Anlegen genutzt, nicht gespeichert)
 - [ ] Echtes Freitags-Board morgens live prüfen (Zugriff heute Nacht gescheitert, siehe Warnkasten oben) und diese Notiz bei Abweichungen ergänzen
 - [ ] Team-13-Karte auf dem Gruppenboard mit dem Stand oben aktualisieren (heute Nacht nicht möglich)
 - [ ] Social Business Model Canvas im Team durchsprechen, kürzen/anpassen, insbesondere Cost Structure/Revenue realistisch einschätzen

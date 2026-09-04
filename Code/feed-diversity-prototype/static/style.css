@@ -372,6 +372,46 @@ a {
   cursor: not-allowed;
 }
 
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: none;
+  background: none;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.like-button.liked {
+  color: var(--brand-ink);
+  font-weight: 600;
+}
+
+.suggest-button {
+  margin-left: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.68rem;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.suggest-hint {
+  margin-left: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--faint);
+}
+
 .mix-row {
   display: flex;
   align-items: center;

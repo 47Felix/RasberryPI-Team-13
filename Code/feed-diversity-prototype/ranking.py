@@ -78,6 +78,22 @@ def diversity_aware_feed(
     return feed
 
 
+def suggest_category(title: str, content: str, posts: list[Post]) -> str | None:
+    """Suggests a topic for a not-yet-saved post by TF-IDF similarity against
+    the existing posts, so the "new post" form can pre-select a category
+    instead of asking users to categorize their own text from scratch. Users
+    can still override the suggestion. Returns None if there's nothing to
+    compare against yet.
+    """
+    if not posts:
+        return None
+    vectorizer = TfidfVectorizer()
+    corpus = [f"{p.title} {p.text}" for p in posts] + [f"{title} {content}"]
+    matrix = vectorizer.fit_transform(corpus)
+    similarities = cosine_similarity(matrix[-1], matrix[:-1]).flatten()
+    return posts[similarities.argmax()].topic
+
+
 def diversity_score(feed: list[dict], seed_post: Post) -> float:
     """Share (0-100) of shown posts whose perspective differs from the seed
     post's perspective. A crude but visible stand-in for the "how do we

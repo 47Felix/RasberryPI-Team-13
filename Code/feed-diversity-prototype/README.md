@@ -49,12 +49,17 @@ Problem-Statements einzahlen:
 - **Tom** (PS2): steckt in "contra"-Wirtschaftspolitik-Posts fest, will
   bewusst raus.
 
-## Neue Posts speichern (Supabase)
+## Neue Posts, Kategorie-Vorschlag & Likes (Supabase)
 
 Der statische Datensatz (`data/posts.json`) lässt sich zur Laufzeit um
-Nutzer-Posts (Titel, Text, Kategorie, Perspektive) erweitern, die über das
-Formular "Neuen Post erstellen" auf der Seite angelegt werden. Storage ist
-Supabase Postgres, angebunden über `db.py`:
+Nutzer-Posts erweitern, die über das Formular "Neuen Post erstellen"
+angelegt werden. Storage ist Supabase Postgres, angebunden über `db.py`.
+
+**Schema** (`supabase/migrations/0001_init.sql`): `categories`, `authors`,
+`posts` (verweist auf beide), `likes` (Post + anonyme Session-Cookie-ID als
+Composite Key). `authors`/`categories` sind mit denselben Werten vorbefüllt
+wie `app.py:AUTHOR_META`, damit ein Nutzer-Post ins selbe "wirkt wie ein
+echter Account pro Thema/Perspektive"-Design passt wie die statischen Posts.
 
 - `.env` (nicht committet, siehe `.gitignore`) mit `SUPABASE_URL`,
   `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
@@ -62,18 +67,32 @@ Supabase Postgres, angebunden über `db.py`:
   Row Level Security) – der Publishable Key wird aktuell vom Code gar nicht
   gebraucht, liegt nur für ein mögliches späteres Client-seitiges Feature mit
   in der `.env`
-- Tabelle `posts` (Schema in `supabase_schema.sql`) hat RLS aktiv **ohne**
-  Policies – nur der Secret Key kommt ran, direkter Zugriff über den
-  Publishable Key ist absichtlich blockiert
-- Tabelle einmalig anlegen: SQL aus `supabase_schema.sql` im Supabase
-  Dashboard unter *SQL Editor* ausführen, **oder** `apply_schema.py` laufen
-  lassen (braucht `SUPABASE_MANAGEMENT_TOKEN`, ein Account-weites Personal
-  Access Token aus den Supabase-Kontoeinstellungen – direkter Postgres-Port
-  5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar, das Skript geht
-  deshalb über die Management-API per HTTPS)
+- Alle vier Tabellen haben RLS aktiv **ohne** Policies – nur der Secret Key
+  kommt ran, direkter Zugriff über den Publishable Key ist absichtlich
+  blockiert
+- Tabellen einmalig anlegen: SQL aus `supabase/migrations/0001_init.sql` im
+  Supabase Dashboard unter *SQL Editor* ausführen, **oder** `apply_schema.py`
+  laufen lassen (braucht `SUPABASE_MANAGEMENT_TOKEN`, ein Account-weites
+  Personal Access Token aus den Supabase-Kontoeinstellungen – direkter
+  Postgres-Port 5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar,
+  das Skript geht deshalb über die Management-API per HTTPS)
 - Fällt Supabase aus/ist nicht konfiguriert, degradiert die App sauber auf
   den statischen Datensatz (`db.fetch_posts()` gibt dann `[]` zurück, das
-  Formular zeigt einen Hinweis statt eines Fehlers)
+  Formular zeigt einen Hinweis statt eines Fehlers, Like-Buttons erscheinen
+  nur bei Posts mit echten DB-Metadaten)
+
+**Kategorie-Vorschlag:** `ranking.suggest_category()` (reine, netzwerkfreie
+Funktion, per Unit-Test abgedeckt) vergleicht Titel+Text des Entwurfs per
+TF-IDF gegen alle vorhandenen Posts und schlägt das Thema des ähnlichsten
+Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
+angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
+
+**Likes:** anonymer Toggle pro Browser über einen signierten Flask-Session-
+Cookie (`FLASK_SECRET_KEY` in `.env`, Fallback-Wert nur für lokale Demos).
+Nur für DB-Posts sichtbar, da `likes.post_id` auf `posts.id` (uuid)
+verweist und die statischen JSON-Posts keine echten IDs dafür haben. Fließt
+aktuell **nicht** ins Ranking ein (bewusst nicht gemacht, um die getestete
+Diversity-Logik nicht anzufassen) – reine Anzeige/Interaktion bisher.
 
 ## Lokal starten
 
@@ -98,10 +117,14 @@ pytest tests/
 - [x] Datensatz mit 15 Posts, 3 Themen, je pro/contra
 - [x] Standard- und Diversity-aware-Ranking mit Tests
 - [x] Minimale Flask-UI mit Persona-Schnellauswahl
-- [x] Supabase-Anbindung für nutzergenerierte Posts (Code steht, siehe oben)
-- [ ] `posts`-Tabelle in Supabase tatsächlich anlegen (`supabase_schema.sql`
-      ausführen, siehe oben) – ohne Tabelle läuft die App weiter, nur ohne
-      neue Posts
+- [x] Supabase-Anbindung für nutzergenerierte Posts, Kategorien, Autoren
+      (Code steht, siehe oben)
+- [x] Kategorie-Vorschlag per TF-IDF beim Post-Erstellen
+- [x] Like-Toggle pro Browser-Session für DB-Posts
+- [x] Tabellen in Supabase angelegt (04.09.2026, über die Management-API) und
+      end-to-end verifiziert (Post erstellen, Like togglen, beides über die
+      echte DB, siehe PR #88)
+- [ ] Likes als Ranking-Signal berücksichtigen (aktuell nur Anzeige, siehe oben)
 - [ ] Datensatz ggf. um weitere Themen/Posts erweitern, sobald das Team echten
       Beispiel-Content hat
 - [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
