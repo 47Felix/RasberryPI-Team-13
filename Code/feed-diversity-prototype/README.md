@@ -18,9 +18,30 @@ sondern klassisches Content-Based Filtering über TF-IDF + Cosine Similarity
   mischt aber alle `diversity_every` Plätze bewusst den ähnlichsten Post mit
   **gleichem Thema, aber Gegenperspektive** ein und kennzeichnet ihn.
 
+## UI: ein Feed, zwei Modi (`templates/index.html`, `static/style.css`)
+
+Nach Nutzer-Feedback ("sieht nach Claude Design aus", "kein richtiger Feed")
+verworfen: zwei nebeneinanderliegende Spalten mit Segmented Control, Regler
+und Score-Pille. Stattdessen ein **einzelner, vertikal scrollender Feed** mit
+einem Tab-Umschalter oben ("Standard" / "Diversity-aware", `?mode=`), wie ein
+echter Wechsel zwischen zwei Feeds in einer App:
+
+- Jeder Post hat eine feed-typische Kopfzeile (Avatar, Account-Name, Handle,
+  relative Zeitangabe) statt einer nackten Karte.
+- Jedes Thema/Perspektive-Paar ist ein eigener fiktiver Account
+  (`app.py:AUTHOR_META`) – im Standard-Feed taucht praktisch nur ein Account
+  wieder und wieder auf (die Bubble), im Diversity-aware-Feed unterbrechen
+  andere Accounts das Muster. Der Unterschied soll beim Scrollen auffallen,
+  nicht nur an einer Prozentzahl.
+- Gegenperspektiven-Posts bekommen ein kleines "Vorgeschlagen"-Label statt
+  eines auffälligen Badges.
+- Eigener Ausgangs-Post und Vielfalt-Regler sind in ein eingeklapptes
+  "Feed-Einstellungen"-Element verschoben – sichtbar/bedienbar, aber nicht
+  mehr die Hauptfläche der Seite.
+
 ## Personas
 
-Die Startseite hat zwei Schnellauswahl-Links, die direkt auf die
+Die Seite hat zwei Schnellauswahl-Chips ("Ansicht als"), die direkt auf die
 Problem-Statements einzahlen:
 
 - **Mia** (PS1): sieht ausschließlich "pro"-Klimapolitik-Posts, merkt die

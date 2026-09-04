@@ -2,52 +2,86 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Feed Diversity Lab – Case 3 DTEW</title>
+  <title>Perspektiv – Feed Diversity Lab (Case 3 DTEW)</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  {% macro render_post(item) %}
-    <article class="post {{ item.post.perspective }}">
-      <div class="post-title-row">
-        <h3>{{ item.post.title }}</h3>
-        {% if item.is_diverse_pick %}<span class="badge">Gegenperspektive</span>{% endif %}
-      </div>
-      <p>{{ item.post.text }}</p>
-      <div class="meta">
-        <span class="chip">{{ item.post.topic }}</span>
-        <span class="chip {{ item.post.perspective }}">{{ item.post.perspective }}</span>
-        <span class="sim-score">Ähnlichkeit {{ "%.2f"|format(item.score) }}</span>
-      </div>
-    </article>
-  {% endmacro %}
-
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark">Feed Diversity Lab</span>
+      <span class="brand-mark">Perspektiv</span>
       <span class="brand-tag">Case 3 · DTEW Hamburg · digi&amp;demo e.V.</span>
     </div>
   </header>
 
-  <main class="wrap">
+  <main class="app">
     <p class="intro">
-      Recommender-Testumgebung gegen Bubble-Verstärkung: Links zeigt der Feed reine
-      inhaltliche Ähnlichkeit zum Ausgangs-Post (bubble-verstärkend), rechts mischt er
-      bewusst thematisch relevante Gegenperspektiven ein
-      (<span class="badge gegenbadge-inline">Gegenperspektive</span>).
+      Ein Feed, zwei Ranking-Modi für denselben Ausgangs-Post: <strong>Standard</strong>
+      sortiert rein nach inhaltlicher Ähnlichkeit – bubble-verstärkend, wie ein
+      typischer „For You“-Feed. <strong>Diversity-aware</strong> mischt bewusst
+      thematisch verwandte Gegenperspektiven ein. Zwischen beiden wechseln und den
+      Unterschied beim Scrollen spüren, nicht nur an einer Zahl ablesen.
     </p>
 
-    <div class="control-panel">
-      <div class="control-block">
-        <span class="control-label">Persona</span>
-        <div class="segmented">
-          <a href="{{ url_for('index', persona='mia', mix=mix) }}"
-             class="{{ 'active' if persona == 'mia' }}">Mia (merkt die Bubble nicht)</a>
-          <a href="{{ url_for('index', persona='tom', mix=mix) }}"
-             class="{{ 'active' if persona == 'tom' }}">Tom (will raus)</a>
-        </div>
-      </div>
+    <div class="account-switcher">
+      <span class="account-switcher-label">Ansicht als</span>
+      <a href="{{ url_for('index', persona='mia', mix=mix, mode=mode) }}"
+         class="account-chip {{ 'active' if persona == 'mia' }}">🙂 Mia</a>
+      <a href="{{ url_for('index', persona='tom', mix=mix, mode=mode) }}"
+         class="account-chip {{ 'active' if persona == 'tom' }}">🧐 Tom</a>
+    </div>
 
-      <form class="control-block" method="get">
+    <nav class="tabs" aria-label="Feed-Modus">
+      <a href="{{ url_for('index', persona=persona, seed_id=seed_id, mix=mix, mode='standard') }}"
+         class="tab {{ 'active' if mode == 'standard' }}">Standard</a>
+      <a href="{{ url_for('index', persona=persona, seed_id=seed_id, mix=mix, mode='diversity') }}"
+         class="tab {{ 'active' if mode == 'diversity' }}">Diversity-aware</a>
+    </nav>
+    <p class="tab-caption">
+      {% if mode == 'diversity' %}
+        {{ feed_score }}% der gezeigten Posts sind bewusst eingemischte Gegenperspektiven.
+      {% else %}
+        {{ feed_score }}% Gegenperspektiven – reine Ähnlichkeits-Rangfolge, kein Eingriff.
+      {% endif %}
+    </p>
+
+    <div class="feed">
+      {% for item in feed_items %}
+        <article class="feed-item {{ item.post.perspective }} {{ 'is-diverse' if item.is_diverse_pick }}">
+          {% if item.is_diverse_pick %}
+            <p class="suggested-label">✨ Vorgeschlagen · andere Perspektive zu „{{ item.post.topic }}“</p>
+          {% endif %}
+          <div class="feed-row">
+            <div class="avatar avatar-{{ item.post.perspective }}">{{ item.avatar }}</div>
+            <div class="feed-body">
+              <div class="post-header">
+                <span class="author">{{ item.author }}</span>
+                <span class="handle">{{ item.handle }}</span>
+                <span class="dot">·</span>
+                <span class="time">{{ item.time_label }}</span>
+              </div>
+              <h3 class="post-title">{{ item.post.title }}</h3>
+              <p class="post-text">{{ item.post.text }}</p>
+              <div class="post-footer">
+                <span class="chip {{ item.post.perspective }}">{{ item.post.topic }} · {{ item.post.perspective }}</span>
+                <div class="engagement">
+                  <span>💬 {{ item.comments }}</span>
+                  <span>🔁 {{ item.reposts }}</span>
+                  <span>♥ {{ item.likes }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      {% else %}
+        <div class="empty-state">Keine Posts gefunden.</div>
+      {% endfor %}
+    </div>
+
+    <details class="settings">
+      <summary>Feed-Einstellungen</summary>
+
+      <form class="settings-row" method="get">
+        <input type="hidden" name="mode" value="{{ mode }}">
         <input type="hidden" name="mix" value="{{ mix }}">
         <label for="seed_id">Eigener Ausgangs-Post</label>
         <select name="seed_id" id="seed_id" onchange="this.form.submit()">
@@ -60,7 +94,8 @@
         <noscript><button type="submit">Anzeigen</button></noscript>
       </form>
 
-      <form class="control-block mix-block" method="get">
+      <form class="settings-row mix-block" method="get">
+        <input type="hidden" name="mode" value="{{ mode }}">
         {% if persona %}
           <input type="hidden" name="persona" value="{{ persona }}">
         {% else %}
@@ -77,43 +112,7 @@
         </div>
         <noscript><button type="submit">Anzeigen</button></noscript>
       </form>
-    </div>
-
-    <div class="columns">
-      <section class="column standard">
-        <div class="column-head">
-          <div>
-            <h2>Standard-Feed</h2>
-            <p class="column-sub">Reine Ähnlichkeits-Rangfolge</p>
-          </div>
-          <span class="score-pill" style="--score: {{ standard_score }}">
-            {{ standard_score }}%<span class="score-label">Vielfalts-Score</span>
-          </span>
-        </div>
-        {% for item in standard_feed %}
-          {{ render_post(item) }}
-        {% else %}
-          <div class="empty-state">Keine Posts gefunden.</div>
-        {% endfor %}
-      </section>
-
-      <section class="column diverse">
-        <div class="column-head">
-          <div>
-            <h2>Diversity-aware Feed</h2>
-            <p class="column-sub">Ähnlichkeit + bewusste Gegenperspektiven</p>
-          </div>
-          <span class="score-pill" style="--score: {{ diverse_score }}">
-            {{ diverse_score }}%<span class="score-label">Vielfalts-Score</span>
-          </span>
-        </div>
-        {% for item in diverse_feed %}
-          {{ render_post(item) }}
-        {% else %}
-          <div class="empty-state">Keine Posts gefunden.</div>
-        {% endfor %}
-      </section>
-    </div>
+    </details>
   </main>
 
   <script>
@@ -125,9 +124,11 @@
       6: "Niedrig (jeder 6. Post)"
     };
     function updateMixLabel(value) {
-      document.getElementById("mix-label").textContent = MIX_LABELS[value] || value;
+      var el = document.getElementById("mix-label");
+      if (el) el.textContent = MIX_LABELS[value] || value;
     }
-    updateMixLabel(document.getElementById("mix").value);
+    var mixInput = document.getElementById("mix");
+    if (mixInput) updateMixLabel(mixInput.value);
   </script>
 </body>
 </html>
