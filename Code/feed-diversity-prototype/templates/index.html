@@ -9,18 +9,22 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">Perspektiv</span>
-      <span class="brand-tag">Case 3 · DTEW Hamburg · digi&amp;demo e.V.</span>
+      <span class="brand-tag">Dein Feed</span>
     </div>
   </header>
 
   <main class="app">
-    <p class="intro">
-      Ein Feed, zwei Ranking-Modi für denselben Ausgangs-Post: <strong>Standard</strong>
-      sortiert rein nach inhaltlicher Ähnlichkeit – bubble-verstärkend, wie ein
-      typischer „For You“-Feed. <strong>Diversity-aware</strong> mischt bewusst
-      thematisch verwandte Gegenperspektiven ein. Zwischen beiden wechseln und den
-      Unterschied beim Scrollen spüren, nicht nur an einer Zahl ablesen.
-    </p>
+    <details class="disclosure about">
+      <summary>ⓘ Was ist das hier?</summary>
+      <p class="about-text">
+        Ein Feed, zwei Ranking-Modi für denselben Ausgangs-Post: <strong>Standard</strong>
+        sortiert rein nach inhaltlicher Ähnlichkeit – bubble-verstärkend, wie ein
+        typischer „For You“-Feed. <strong>Diversity-aware</strong> mischt bewusst
+        thematisch verwandte Gegenperspektiven ein. Zwischen beiden wechseln und den
+        Unterschied beim Scrollen spüren, nicht nur an einer Zahl ablesen.
+        Prototyp für Case 3 (DTEW Hamburg 2026, digi&amp;demo e.V.).
+      </p>
+    </details>
 
     <div class="account-switcher">
       <span class="account-switcher-label">Ansicht als</span>
@@ -88,7 +92,7 @@
       {% endfor %}
     </div>
 
-    <details class="settings">
+    <details class="disclosure settings">
       <summary>Feed-Einstellungen</summary>
 
       <form class="settings-row" method="get">
@@ -125,7 +129,7 @@
       </form>
     </details>
 
-    <details class="settings">
+    <details class="disclosure settings">
       <summary>Neuen Post erstellen</summary>
 
       {% if not db_configured %}
