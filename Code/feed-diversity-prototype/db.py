@@ -184,7 +184,7 @@ def fetch_posts() -> list[dict]:
                 # (post_id + user_id both link the two), and refuses to guess
                 # which relationship "profiles(...)" should mean.
                 "select": (
-                    "id,title,content,perspective,categories(name),"
+                    "id,title,content,perspective,political_label,categories(name),"
                     "authors(name,handle,avatar),profiles!posts_user_id_fkey(display_name,handle,avatar),"
                     "likes(count),comments(count)"
                 ),
@@ -221,6 +221,7 @@ def fetch_posts() -> list[dict]:
                     text=row["content"],
                     topic=category.get("name", "sonstiges"),
                     perspective=row["perspective"],
+                    political_label=row.get("political_label"),
                 ),
                 "author": author,
                 "likes": like_rows[0]["count"] if like_rows else 0,
@@ -230,7 +231,7 @@ def fetch_posts() -> list[dict]:
     return result
 
 
-def insert_post(title: str, content: str, topic: str, perspective: str, user_id: str) -> bool:
+def insert_post(title: str, content: str, topic: str, perspective: str, user_id: str, political_label: str | None = None) -> bool:
     if not is_configured():
         return False
     try:
@@ -239,6 +240,7 @@ def insert_post(title: str, content: str, topic: str, perspective: str, user_id:
             "content": content,
             "category_id": _category_id(topic),
             "perspective": perspective,
+            "political_label": political_label,
             "user_id": user_id,
         }
         response = requests.post(f"{SUPABASE_URL}/rest/v1/posts", headers=_headers(), json=payload, timeout=5)
@@ -260,6 +262,21 @@ def fetch_liked_perspectives(user_id: str) -> list[str]:
     except requests.RequestException:
         return []
     return [row["posts"]["perspective"] for row in rows if row.get("posts")]
+
+
+def fetch_liked_political_labels(user_id: str) -> list[str]:
+    """Same idea as fetch_liked_perspectives(), for the independent
+    political_label axis - feeds ranking.dominant_political_label(). Posts
+    liked before this field existed (or where the author left it unset)
+    have political_label=None and are simply skipped, same as
+    dominant_political_label() already does for any None entries."""
+    if not is_configured():
+        return []
+    try:
+        rows = _get("likes", {"user_id": f"eq.{user_id}", "select": "posts(political_label)"})
+    except requests.RequestException:
+        return []
+    return [row["posts"]["political_label"] for row in rows if row.get("posts")]
 
 
 def fetch_liked_post_ids(user_id: str, post_ids: list[str]) -> set[str]:
