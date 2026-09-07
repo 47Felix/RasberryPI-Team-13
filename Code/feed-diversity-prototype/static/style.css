@@ -71,6 +71,30 @@ a {
   margin: 0 auto;
 }
 
+.topbar-inner {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.topbar-inner .brand {
+  max-width: none;
+  margin: 0;
+}
+
+.auth-status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.auth-status a {
+  text-decoration: underline;
+}
+
 .topbar .brand-mark {
   font-family: var(--font-display);
   font-size: 1.4rem;
@@ -340,6 +364,63 @@ a {
   color: var(--faint);
 }
 
+.comments {
+  margin-top: 0.6rem;
+}
+
+.comments-toggle {
+  border: none;
+  background: none;
+  font-size: 0.78rem;
+  color: var(--faint);
+  cursor: pointer;
+  padding: 0;
+}
+
+.comments-list {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.7rem;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.comment {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.comment strong {
+  margin-right: 0.3rem;
+}
+
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.comment-form input[type="text"] {
+  flex: 1;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.comment-form button {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .empty-state {
   color: var(--muted);
   font-size: 0.9rem;
@@ -376,6 +457,8 @@ a {
 
 .settings-row select,
 .settings-row input[type="text"],
+.settings-row input[type="email"],
+.settings-row input[type="password"],
 .settings-row textarea {
   padding: 0.5rem 0.6rem;
   border-radius: var(--radius-sm);
