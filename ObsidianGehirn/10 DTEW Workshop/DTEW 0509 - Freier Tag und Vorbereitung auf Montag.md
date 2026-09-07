@@ -50,20 +50,25 @@ Die Übersicht verlangt für Montag konkret vier Punkte (Zielgruppe/Personas, Be
 > [!tip] Für die Live-Runde
 > Der Abschnitt oben ist bewusst so geschrieben, dass er sich fast direkt als 1-Minuten-Vorstellung sprechen lässt (Zielgruppe → Bedürfnis → Feature → Grenze). Vor der eigentlichen Präsentation am Montag unbedingt gegen den dann tatsächlich aktuellen Code-/Datenstand prüfen, falls übers Wochenende noch etwas geändert wurde.
 
+> [!success] Nachtrag 07.09. (Montag früh): Board-Zugriff repariert, Kanban-Board angelegt
+> Der Board-Zugriff der Automation lief 3 Nächte am Cloud-Sandbox-Netzwerk (`403`), wurde aber auf einen lokalen Cronjob (`board-sync.sh` auf der VM, analog `vault-sync.sh`) umgestellt und funktioniert jetzt. Da für Donnerstag nie ein echtes Kanban-Board angelegt wurde (weder im Repo noch auf dem Teams-Board – anders als z.B. Team 1/5/12), wurde eines nachträglich als [`DTEW-Workshop/kanban-board/kanban-board.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/kanban-board/kanban-board.md) plus GitHub Issues (#92-#102) angelegt, damit für die 11-Uhr-Präsentation ("Show your planning board") etwas Konkretes da ist. Rollen (Scrum Master/Product Owner) sind darin bewusst als Platzhalter gelassen – das ist eine echte Team-Entscheidung.
+
 ## Was noch fehlt
-- [ ] Board-Zugriffsproblem bleibt (3. Nacht in Folge) – siehe [[TaskCards Board]]; Team-13-Karte hat jetzt 2 Tage Rückstand (Freitag + Samstag), sollte am Montagmorgen als Erstes nachgeholt werden
-- [ ] Geleakten (ersten) Supabase-Token weiterhin vorsorglich widerrufen (siehe [[DTEW 0409 - Social Business Model Canvas, Marketing und Onboarding]]) – noch offen laut letzter Notiz
-- [ ] Social Business Model Canvas vom Freitag im Team durchsprechen, kürzen/anpassen (noch nicht als erledigt vermerkt)
-- [ ] Prototyp-Arbeitstitel/Namen entscheiden (Vorschlag "Perspektivenkompass" nur Diskussionsgrundlage)
-- [ ] Business Model Canvas Vorlage für Montag (`the-society-model-canvas.pdf` / `Business-Model-Canvas-Size-A4_2-2.pdf`) vom Haupt-Board laden und Freitags-Entwurf ins offizielle Formularlayout übertragen
-- [ ] Retrospektive (Montag, Sprint-Ende) vorbereiten: kurze Sammlung "was lief gut/schlecht in Woche 1" wäre hilfreich, ist hier aber bewusst nicht vorweggenommen, da es echte Team-Reflexion braucht
-- [ ] Vault-Notiz für Donnerstag (03.09., AI-Workshop-Entscheidung/Kanban-Board/Prototyping-Start) weiterhin offen, falls noch nicht nachgetragen
+- [x] Board-Zugriffsproblem – behoben 07.09. (siehe Nachtrag oben und [[TaskCards Board]])
+- [ ] Geleakten (ersten) Supabase-Token weiterhin vorsorglich widerrufen (siehe [[DTEW 0409 - Social Business Model Canvas, Marketing und Onboarding]] und Issue [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92))
+- [ ] Social Business Model Canvas vom Freitag im Team durchsprechen, kürzen/anpassen (Issue [#94](https://github.com/47Felix/RasberryPI-Team-13/issues/94))
+- [ ] Prototyp-Arbeitstitel/Namen entscheiden (Vorschlag "Perspektivenkompass" nur Diskussionsgrundlage, Issue [#93](https://github.com/47Felix/RasberryPI-Team-13/issues/93))
+- [ ] Business Model Canvas Vorlage für Montag (`the-society-model-canvas.pdf` / `Business-Model-Canvas-Size-A4_2-2.pdf`) vom Haupt-Board laden und Freitags-Entwurf ins offizielle Formularlayout übertragen (Issue [#94](https://github.com/47Felix/RasberryPI-Team-13/issues/94))
+- [ ] Retrospektive (Montag, Sprint-Ende) vorbereiten: kurze Sammlung "was lief gut/schlecht in Woche 1" wäre hilfreich, ist hier aber bewusst nicht vorweggenommen, da es echte Team-Reflexion braucht (Issue [#98](https://github.com/47Felix/RasberryPI-Team-13/issues/98))
+- [ ] Vault-Notiz für Donnerstag (03.09., AI-Workshop-Entscheidung/Kanban-Board/Prototyping-Start) weiterhin offen, falls noch nicht nachgetragen (Issue [#97](https://github.com/47Felix/RasberryPI-Team-13/issues/97))
 - [ ] Beispiel-Datensatz für die Recommender-Demo ggf. erweitern (offen seit Mittwoch, siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]])
+- [ ] Rollen im Team festlegen (Scrum Master/Product Owner), auf Teams-Übersicht-Board eintragen (Issue [#99](https://github.com/47Felix/RasberryPI-Team-13/issues/99))
 
 ## Verwandte Notizen
 - [[DTEW Hamburg - Übersicht]]
 - [[Team 13 - Digitale Demokratie]]
 - [[DTEW 0409 - Social Business Model Canvas, Marketing und Onboarding]]
+- [`DTEW-Workshop/kanban-board/kanban-board.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/DTEW-Workshop/kanban-board/kanban-board.md) – Sprint-Kanban-Board (nachträglich für Donnerstag angelegt)
 - [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]]
 - [[TaskCards Board]] – Board-Zugriff & technische Einschränkungen (inkl. drittem Ausfall in Folge)
 - [[Doku-Regeln]]
