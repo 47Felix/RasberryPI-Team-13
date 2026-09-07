@@ -51,6 +51,25 @@ def test_standard_feed_reinforces_the_bubble():
     assert all(item["is_diverse_pick"] is False for item in feed)
 
 
+def test_standard_feed_stays_within_seed_perspective_even_when_the_topic_runs_out():
+    # Only one other same-topic/same-perspective post exists, so a naive
+    # global similarity ranking would have to pad the rest of the feed with
+    # whatever scores next-highest - which, on a small dataset, is often a
+    # same-topic counter-perspective post rather than an unrelated topic
+    # (shared topic vocabulary outweighs perspective). That defeats the
+    # entire premise of a "bubble-reinforcing" feed, so perspective match
+    # must win over raw similarity.
+    posts = [
+        Post("seed", "Windkraft-Ausbau", "Windkraft Energiewende Klimaschutz Ausbau", "klima", "pro"),
+        Post("pro-1", "Solar-Ausbau", "Windkraft Energiewende Klimaschutz Solar Ausbau", "klima", "pro"),
+        Post("contra-1", "Kosten des Ausbaus", "Windkraft Energiewende Klimaschutz Kosten Ausbau", "klima", "contra"),
+        Post("other-pro-1", "Mindestlohn erhoehen", "Mindestlohn stuetzt Kaufkraft", "wirtschaft", "pro"),
+        Post("other-pro-2", "Vier-Tage-Woche", "Vier Tage Woche Produktivitaet", "wirtschaft", "pro"),
+    ]
+    feed = standard_feed(posts, seed_id="seed", limit=3)
+    assert all(item["post"].perspective == "pro" for item in feed)
+
+
 def test_diversity_feed_injects_a_counter_perspective_post():
     feed = diversity_aware_feed(POSTS, seed_id="seed", limit=3, diversity_every=2)
     diverse_items = [item for item in feed if item["is_diverse_pick"]]
