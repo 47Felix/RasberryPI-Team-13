@@ -145,42 +145,6 @@ a {
   margin: 0 0 0.9rem;
 }
 
-/* ---------- Account switcher ---------- */
-
-.account-switcher {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.account-switcher-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--faint);
-  margin-right: 0.15rem;
-}
-
-.account-chip {
-  display: inline-block;
-  padding: 0.35rem 0.8rem;
-  border-radius: var(--radius-round);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--ink);
-}
-
-.account-chip.active {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: var(--brand-contrast);
-}
-
 /* ---------- Mode tabs ---------- */
 
 .tabs {
@@ -394,6 +358,16 @@ a {
 
 .comment strong {
   margin-right: 0.3rem;
+}
+
+.comment-delete {
+  margin-left: 0.5rem;
+  border: none;
+  background: none;
+  font-size: 0.72rem;
+  color: var(--contra);
+  cursor: pointer;
+  padding: 0;
 }
 
 .comment-form {

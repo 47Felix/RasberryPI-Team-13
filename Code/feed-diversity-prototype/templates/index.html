@@ -37,18 +37,10 @@
       </p>
     </details>
 
-    <div class="account-switcher">
-      <span class="account-switcher-label">Ansicht als</span>
-      <a href="{{ url_for('index', persona='mia', mix=mix, mode=mode) }}"
-         class="account-chip {{ 'active' if persona == 'mia' }}">🙂 Mia</a>
-      <a href="{{ url_for('index', persona='tom', mix=mix, mode=mode) }}"
-         class="account-chip {{ 'active' if persona == 'tom' }}">🧐 Tom</a>
-    </div>
-
     <nav class="tabs" aria-label="Feed-Modus">
-      <a href="{{ url_for('index', persona=persona, seed_id=seed_id, mix=mix, mode='standard') }}"
+      <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='standard') }}"
          class="tab {{ 'active' if mode == 'standard' }}">Standard</a>
-      <a href="{{ url_for('index', persona=persona, seed_id=seed_id, mix=mix, mode='diversity') }}"
+      <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='diversity') }}"
          class="tab {{ 'active' if mode == 'diversity' }}">Diversity-aware</a>
     </nav>
     <p class="tab-caption">
@@ -83,37 +75,27 @@
                   <span class="sr-only">, Perspektive: {{ item.post.perspective }}</span>
                 </span>
                 <div class="engagement">
-                  {% if not item.is_db_post %}
-                    <span>💬 {{ item.comments }}</span>
-                  {% endif %}
-                  <span>🔁 {{ item.reposts }}</span>
-                  {% if item.is_db_post %}
-                    <button
-                      type="button"
-                      class="like-button {{ 'liked' if item.liked }}"
-                      data-post-id="{{ item.post.id }}"
-                      onclick="toggleLike(this)">
-                      <span class="like-icon">{{ '♥' if item.liked else '♡' }}</span>
-                      <span class="like-count">{{ item.likes }}</span>
-                    </button>
-                  {% else %}
-                    <span>♥ {{ item.likes }}</span>
-                  {% endif %}
+                  <button
+                    type="button"
+                    class="like-button {{ 'liked' if item.liked }}"
+                    data-post-id="{{ item.post.id }}"
+                    onclick="toggleLike(this)">
+                    <span class="like-icon">{{ '♥' if item.liked else '♡' }}</span>
+                    <span class="like-count">{{ item.likes }}</span>
+                  </button>
                 </div>
               </div>
 
-              {% if item.is_db_post %}
-                <div class="comments" data-post-id="{{ item.post.id }}">
-                  <button type="button" class="comments-toggle" onclick="toggleComments(this)">💬 {{ item.comments }} Kommentare</button>
-                  <div class="comments-list" hidden></div>
-                  {% if current_user %}
-                    <form class="comment-form" hidden onsubmit="return submitComment(event, this)">
-                      <input type="text" name="content" maxlength="300" placeholder="Kommentieren als {{ current_user.handle }}…" required>
-                      <button type="submit">Senden</button>
-                    </form>
-                  {% endif %}
-                </div>
-              {% endif %}
+              <div class="comments" data-post-id="{{ item.post.id }}">
+                <button type="button" class="comments-toggle" onclick="toggleComments(this)">💬 {{ item.comments }} Kommentare</button>
+                <div class="comments-list" hidden></div>
+                {% if current_user %}
+                  <form class="comment-form" hidden onsubmit="return submitComment(event, this)">
+                    <input type="text" name="content" maxlength="300" placeholder="Kommentieren als {{ current_user.handle }}…" required>
+                    <button type="submit">Senden</button>
+                  </form>
+                {% endif %}
+              </div>
             </div>
           </div>
         </article>
@@ -141,11 +123,7 @@
 
       <form class="settings-row mix-block" method="get">
         <input type="hidden" name="mode" value="{{ mode }}">
-        {% if persona %}
-          <input type="hidden" name="persona" value="{{ persona }}">
-        {% else %}
-          <input type="hidden" name="seed_id" value="{{ seed_id }}">
-        {% endif %}
+        <input type="hidden" name="seed_id" value="{{ seed_id }}">
         <label for="mix">Vielfalt-Stärke im Diversity-aware Feed</label>
         <div class="mix-row">
           <input
@@ -203,6 +181,8 @@
   </main>
 
   <script>
+    var CURRENT_USER_ID = {{ current_user.id | tojson if current_user else 'null' }};
+
     var MIX_LABELS = {
       2: "Hoch (jeder 2. Post)",
       3: "Mittel-hoch (jeder 3. Post)",
@@ -267,6 +247,14 @@
         strong.textContent = comment.author;
         el.appendChild(strong);
         el.appendChild(document.createTextNode(comment.handle + ": " + comment.content));
+        if (CURRENT_USER_ID && comment.user_id === CURRENT_USER_ID) {
+          var del = document.createElement("button");
+          del.type = "button";
+          del.className = "comment-delete";
+          del.textContent = "Löschen";
+          del.onclick = function () { deleteComment(comment.id, list); };
+          el.appendChild(del);
+        }
         list.appendChild(el);
       });
     }
@@ -276,6 +264,23 @@
       fetch("/posts/" + encodeURIComponent(postId) + "/comments")
         .then(function (response) { return response.json(); })
         .then(function (data) { renderComments(list, data.comments || []); });
+    }
+
+    function deleteComment(commentId, list) {
+      fetch("/comments/" + encodeURIComponent(commentId), { method: "DELETE" })
+        .then(function (response) {
+          if (!response.ok) return null;
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || !data.ok) return;
+          var container = list.closest(".comments");
+          var postId = container.getAttribute("data-post-id");
+          loadComments(postId, list);
+          var toggle = container.querySelector(".comments-toggle");
+          var current = parseInt((toggle.textContent.match(/\d+/) || ["0"])[0], 10) || 0;
+          toggle.textContent = "💬 " + Math.max(current - 1, 0) + " Kommentare";
+        });
     }
 
     function submitComment(event, form) {

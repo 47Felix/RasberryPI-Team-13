@@ -32,45 +32,38 @@ einem Tab-Umschalter oben ("Standard" / "Diversity-aware", `?mode=`), wie ein
 echter Wechsel zwischen zwei Feeds in einer App:
 
 - Jeder Post hat eine feed-typische Kopfzeile (Avatar, Account-Name, Handle,
-  relative Zeitangabe) statt einer nackten Karte.
-- Jedes Thema/Perspektive-Paar ist ein eigener fiktiver Account
-  (`app.py:AUTHOR_META`) – im Standard-Feed taucht praktisch nur ein Account
-  wieder und wieder auf (die Bubble), im Diversity-aware-Feed unterbrechen
-  andere Accounts das Muster. Der Unterschied soll beim Scrollen auffallen,
-  nicht nur an einer Prozentzahl.
+  relative Zeitangabe) statt einer nackten Karte – Avatar/Name/Handle kommen
+  vom echten Account, der den Post erstellt hat.
 - Gegenperspektiven-Posts bekommen ein kleines "Vorgeschlagen"-Label statt
   eines auffälligen Badges.
 - Eigener Ausgangs-Post und Vielfalt-Regler sind in ein eingeklapptes
   "Feed-Einstellungen"-Element verschoben – sichtbar/bedienbar, aber nicht
   mehr die Hauptfläche der Seite.
 
-## Personas
+## Accounts, Posts, Kommentare, Likes & Kategorie-Vorschlag (Supabase)
 
-Die Seite hat zwei Schnellauswahl-Chips ("Ansicht als"), die direkt auf die
-Problem-Statements einzahlen:
-
-- **Mia** (PS1): sieht ausschließlich "pro"-Klimapolitik-Posts, merkt die
-  Bubble nicht.
-- **Tom** (PS2): steckt in "contra"-Wirtschaftspolitik-Posts fest, will
-  bewusst raus.
-
-## Accounts, neue Posts, Kommentare, Likes & Kategorie-Vorschlag (Supabase)
-
-Der statische Datensatz (`data/posts.json`) lässt sich zur Laufzeit um
-Nutzer-Posts erweitern, die über das Formular "Neuen Post erstellen"
-angelegt werden. Storage ist Supabase Postgres, angebunden über `db.py`.
-Posten, Liken und Kommentieren setzt einen **echten, eingeloggten Account**
-voraus (Supabase Auth) – keine anonymen Interaktionen mehr.
+Es gibt keinen statischen/hartcodierten Datensatz mehr – **alle** Posts im
+Feed kommen aus Supabase, angelegt von echten Accounts über das Formular
+"Neuen Post erstellen". Ist Supabase nicht konfiguriert/erreichbar oder die
+Tabelle leer, zeigt die Seite einen expliziten leeren Zustand statt
+irgendwelcher Platzhalter-Inhalte. Storage ist Supabase Postgres, angebunden
+über `db.py`. Posten, Liken und Kommentieren setzt einen **echten,
+eingeloggten Account** voraus (Supabase Auth) – keine anonymen Interaktionen.
 
 **Schema** (`supabase/migrations/0001_init.sql` + `0002_accounts.sql`):
-`categories`, `authors` (fiktive Accounts für den statischen Datensatz),
-`posts` (verweist auf beide + optional `user_id`), `profiles` (Anzeigename/
-Handle/Avatar pro Supabase-Auth-Account, `id` = `auth.users.id`), `likes`
-(Post + `user_id`, Composite Key – ein Like pro Account und Post), `comments`
-(Post + `user_id` + Text). `posts.user_id`/`likes.user_id`/`comments.user_id`
-zeigen bewusst auf `profiles(id)` statt direkt auf `auth.users(id)` – nur so
-kann PostgREST die Relation beim Abfragen einbetten (`auth`-Schema ist für
-PostgREST nicht sichtbar).
+`categories`, `authors` (Fallback-Anzeige für Posts von vor der Account-
+Einführung, siehe unten), `posts` (verweist auf beide + `user_id`),
+`profiles` (Anzeigename/Handle/Avatar pro Supabase-Auth-Account, `id` =
+`auth.users.id`), `likes` (Post + `user_id`, Composite Key – ein Like pro
+Account und Post), `comments` (Post + `user_id` + Text, per Account
+löschbar). `posts.user_id`/`likes.user_id`/`comments.user_id` zeigen bewusst
+auf `profiles(id)` statt direkt auf `auth.users(id)` – nur so kann PostgREST
+die Relation beim Abfragen einbetten (`auth`-Schema ist für PostgREST nicht
+sichtbar). Bei der Einbettung von `profiles` in `fetch_posts()` ist zusätzlich
+der explizite Hint `profiles!posts_user_id_fkey` nötig, weil `likes` (mit
+`post_id` *und* `user_id`) aus PostgREST-Sicht eine zweite, many-to-many-
+Beziehung zwischen `posts` und `profiles` bildet – ohne den Hint verweigert
+PostgREST die Anfrage als mehrdeutig.
 
 - `.env` (nicht committet, siehe `.gitignore`) mit `SUPABASE_URL`,
   `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
@@ -94,16 +87,13 @@ PostgREST nicht sichtbar).
   Access Token aus den Supabase-Kontoeinstellungen – direkter Postgres-Port
   5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar, das Skript geht
   deshalb über die Management-API per HTTPS)
-- ⚠️ **Breaking Change durch `0002_accounts.sql`:** Likes waren bisher an
-  eine anonyme Session-Cookie-ID gebunden, das lässt sich keinem Account
-  zuordnen – die Migration löscht deshalb alle bestehenden Like-Zeilen und
-  stellt danach auf `(post_id, user_id)` um. Bestehende Posts ohne
-  `user_id` (vor dieser Änderung angelegt) zeigen weiterhin den fiktiven
+- Likes sind an `(post_id, user_id)` gebunden (durch `0002_accounts.sql`
+  bereits umgestellt, angewendet gegen die echte Instanz). Posts von vor der
+  Account-Einführung ohne `user_id` zeigen weiterhin den fiktiven
   `authors`-Eintrag als Autor, neue Posts zeigen den echten Account
-- Fällt Supabase aus/ist nicht konfiguriert, degradiert die App sauber auf
-  den statischen Datensatz (`db.fetch_posts()` gibt dann `[]` zurück, das
-  Formular zeigt einen Hinweis statt eines Fehlers, Like-/Kommentar-UI
-  erscheint nur bei Posts mit echten DB-Metadaten)
+- Fällt Supabase aus/ist nicht konfiguriert oder sind noch keine Posts
+  angelegt, zeigt die Seite einen leeren Zustand ("Keine Posts gefunden")
+  statt eines Fehlers oder erfundener Inhalte
 
 **Accounts:** `/register` (E-Mail, Passwort, Anzeigename) legt einen
 Supabase-Auth-Account plus `profiles`-Zeile an (Handle wird aus dem
@@ -114,10 +104,13 @@ Passwort). Ohne Account: Feed lesen geht weiterhin, Posten/Liken/
 Kommentieren verlangt Login (Redirect zu `/login`, bei den fetch()-Aktionen
 über einen 401).
 
-**Kommentare:** pro DB-Post über "💬 N Kommentare" aufklappbar (lädt per
+**Kommentare:** pro Post über "💬 N Kommentare" aufklappbar (lädt per
 `GET /posts/<id>/comments`), neuer Kommentar via Formular
-(`POST /posts/<id>/comments`, JSON, verlangt Login). Nur für DB-Posts, aus
-demselben Grund wie Likes (siehe unten).
+(`POST /posts/<id>/comments`, JSON, verlangt Login). Eigene Kommentare
+lassen sich über einen "Löschen"-Link wieder entfernen
+(`DELETE /comments/<id>`) – die Berechtigung wird serverseitig geprüft
+(`db.delete_comment` filtert zusätzlich auf `user_id`), nicht nur durch das
+Verstecken des Buttons in der UI.
 
 **Kategorie-Vorschlag:** `ranking.suggest_category()` (reine, netzwerkfreie
 Funktion, per Unit-Test abgedeckt) vergleicht Titel+Text des Entwurfs per
@@ -126,10 +119,9 @@ Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
 angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
 
 **Likes:** Toggle pro Account (`(post_id, user_id)` in der DB, verlangt
-Login). Nur für DB-Posts sichtbar, da `likes.post_id` auf `posts.id` (uuid)
-verweist und die statischen JSON-Posts keine echten IDs dafür haben. Fließt
-aktuell **nicht** ins Ranking ein (bewusst nicht gemacht, um die getestete
-Diversity-Logik nicht anzufassen) – reine Anzeige/Interaktion bisher.
+Login). Fließt aktuell **nicht** ins Ranking ein (bewusst nicht gemacht, um
+die getestete Diversity-Logik nicht anzufassen) – reine Anzeige/Interaktion
+bisher.
 
 ## Lokal starten
 
@@ -151,25 +143,21 @@ pytest tests/
 
 ## Aktueller Stand / offen
 
-- [x] Datensatz mit 15 Posts, 3 Themen, je pro/contra
-- [x] Standard- und Diversity-aware-Ranking mit Tests
-- [x] Minimale Flask-UI mit Persona-Schnellauswahl
-- [x] Supabase-Anbindung für nutzergenerierte Posts, Kategorien, Autoren
-      (Code steht, siehe oben)
+- [x] Standard- und Diversity-aware-Ranking mit Tests (`ranking.py`, dataset-
+      unabhängig – funktioniert mit beliebigen Posts, egal ob früher aus
+      `data/posts.json` oder jetzt aus Supabase)
+- [x] Supabase-Anbindung für alle Posts, Kategorien, Autoren
 - [x] Kategorie-Vorschlag per TF-IDF beim Post-Erstellen
-- [x] Tabellen in Supabase angelegt (04.09.2026, über die Management-API) und
-      end-to-end verifiziert (Post erstellen, Like togglen, beides über die
-      echte DB, siehe PR #88)
 - [x] Echte Accounts (Supabase Auth: Registrierung/Login/Logout), Profile
       mit Anzeigename/Handle, Likes und Kommentare pro Account statt
-      anonymer Session-Cookies (`0002_accounts.sql`)
-- [ ] `0002_accounts.sql` muss noch gegen die echte Supabase-Instanz
-      angewendet werden (siehe oben, `apply_schema.py` oder SQL Editor) und
-      "Confirm email" im Dashboard deaktiviert werden – bis dahin bleiben
-      Login/Registrierung ohne Effekt (`db.sign_up`/`db.sign_in` liefern
-      dann `None`)
+      anonymer Session-Cookies (`0002_accounts.sql`, gegen die echte Instanz
+      angewendet und end-to-end verifiziert)
+- [x] Eigene Kommentare löschbar (`DELETE /comments/<id>`, serverseitig auf
+      Eigentümerschaft geprüft)
+- [x] Statischer Datensatz (`data/posts.json`) sowie die darauf aufbauende
+      Persona-Schnellauswahl ("Mia"/"Tom") entfernt – der Feed zeigt
+      ausschließlich echte Supabase-Posts, leerer Zustand statt Platzhalter
+      wenn noch keine welche existieren
 - [ ] Likes als Ranking-Signal berücksichtigen (aktuell nur Anzeige, siehe oben)
-- [ ] Datensatz ggf. um weitere Themen/Posts erweitern, sobald das Team echten
-      Beispiel-Content hat
 - [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
       Punkt 6 in der DTEW-0209-Notiz)

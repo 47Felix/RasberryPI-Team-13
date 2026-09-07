@@ -306,7 +306,9 @@ def insert_comment(post_id: str, user_id: str, content: str) -> bool:
 
 
 def fetch_comments(post_id: str) -> list[dict]:
-    """Each item: {"content", "created_at", "author", "handle", "avatar"}."""
+    """Each item: {"id", "user_id", "content", "created_at", "author",
+    "handle", "avatar"}. user_id lets the frontend show a delete button only
+    on the viewer's own comments (see templates/index.html:renderComments)."""
     if not is_configured():
         return []
     try:
@@ -314,7 +316,7 @@ def fetch_comments(post_id: str) -> list[dict]:
             "comments",
             {
                 "post_id": f"eq.{post_id}",
-                "select": "content,created_at,profiles(display_name,handle,avatar)",
+                "select": "id,user_id,content,created_at,profiles(display_name,handle,avatar)",
                 "order": "created_at.asc",
             },
         )
@@ -325,6 +327,8 @@ def fetch_comments(post_id: str) -> list[dict]:
         profile = row.get("profiles") or {}
         result.append(
             {
+                "id": row["id"],
+                "user_id": row["user_id"],
                 "content": row["content"],
                 "created_at": row["created_at"],
                 "author": profile.get("display_name", "Unbekannt"),
@@ -333,3 +337,22 @@ def fetch_comments(post_id: str) -> list[dict]:
             }
         )
     return result
+
+
+def delete_comment(comment_id: str, user_id: str) -> bool:
+    """Deletes the comment only if it belongs to user_id - returns whether a
+    row was actually removed (False for "not found" and "not the owner"
+    alike, so the caller can't distinguish the two, which is the point)."""
+    if not is_configured():
+        return False
+    try:
+        response = requests.delete(
+            f"{SUPABASE_URL}/rest/v1/comments",
+            headers={**_headers(), "Prefer": "return=representation"},
+            params={"id": f"eq.{comment_id}", "user_id": f"eq.{user_id}"},
+            timeout=5,
+        )
+        response.raise_for_status()
+    except requests.RequestException:
+        return False
+    return bool(response.json())
