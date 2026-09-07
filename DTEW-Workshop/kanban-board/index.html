@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Team 13 – Sprint Kanban (Case 3 DTEW)</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --ink: #172b4d;
+    --muted: #5e6c84;
+    --line: #dfe1e6;
+    --todo: #6b778c;
+    --progress: #0052cc;
+    --done: #00875a;
+    --accent: #ff5630;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 0 0 3rem;
+  }
+  header {
+    background: #0b1f3a;
+    color: #fff;
+    padding: 1.5rem 2rem 1.2rem;
+  }
+  header h1 { margin: 0 0 0.2rem; font-size: 1.4rem; }
+  header p { margin: 0; color: #b6c2d9; font-size: 0.9rem; }
+
+  .timeline-wrap { padding: 1.5rem 2rem 0.5rem; }
+  .timeline {
+    display: flex;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .day {
+    flex: 1;
+    padding: 0.8rem 0.6rem;
+    border-right: 1px solid var(--line);
+    position: relative;
+    font-size: 0.8rem;
+  }
+  .day:first-child { border-radius: 10px 0 0 10px; }
+  .day:last-child { border-right: none; border-radius: 0 10px 10px 0; }
+  .day .date { font-weight: 700; display: block; margin-bottom: 0.2rem; }
+  .day .label { color: var(--muted); }
+  .day.today { background: #e9f2ff; }
+  .day.today .date::after {
+    content: "Heute";
+    display: inline-block; margin-left: 0.4rem;
+    background: var(--progress); color: #fff;
+    font-size: 0.62rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 6px;
+    vertical-align: middle;
+  }
+  .day .milestone {
+    margin-top: 0.4rem; font-size: 0.72rem; color: var(--ink);
+    background: #f4f5f7; border-radius: 6px; padding: 0.2rem 0.4rem;
+  }
+
+  .board {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    align-items: flex-start;
+  }
+  .column {
+    flex: 1;
+    background: #ebecf0;
+    border-radius: 10px;
+    padding: 0.8rem;
+    min-height: 300px;
+  }
+  .column h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0.2rem 0.3rem 0.8rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .column h2 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  #todo h2 .dot { background: var(--todo); }
+  #progress h2 .dot { background: var(--progress); }
+  #done h2 .dot { background: var(--done); }
+  .column.dragover { outline: 2px dashed var(--progress); outline-offset: -4px; }
+
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(9,30,66,0.25);
+    padding: 0.7rem 0.8rem;
+    margin-bottom: 0.6rem;
+    cursor: grab;
+    font-size: 0.88rem;
+    line-height: 1.35;
+  }
+  .card:active { cursor: grabbing; }
+  .card.security { border-left: 3px solid var(--accent); }
+  .card a { color: var(--progress); text-decoration: none; font-size: 0.78rem; }
+  .card a:hover { text-decoration: underline; }
+  .card .issue { display: block; margin-top: 0.35rem; color: var(--muted); }
+
+  footer {
+    padding: 0 2rem; color: var(--muted); font-size: 0.8rem;
+  }
+  footer a { color: var(--progress); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Team 13 – Sprint Kanban</h1>
+  <p>Case 3 · Feed-Diversity-Prototyp gegen Bubble-Verstärkung · Sprint 03.09.–07.09.2026</p>
+</header>
+
+<div class="timeline-wrap">
+  <div class="timeline">
+    <div class="day">
+      <span class="date">Do 03.09.</span>
+      <span class="label">Sprint-Kickoff</span>
+      <div class="milestone">Rollen + Kanban (nachgeholt)</div>
+    </div>
+    <div class="day">
+      <span class="date">Fr 04.09.</span>
+      <span class="label">Prototyp/MVP</span>
+      <div class="milestone">BMC, Marketing, Onboarding</div>
+    </div>
+    <div class="day">
+      <span class="date">Sa–So 05.–06.09.</span>
+      <span class="label">frei</span>
+      <div class="milestone">Prototyp-Weiterbau</div>
+    </div>
+    <div class="day today">
+      <span class="date">Mo 07.09.</span>
+      <span class="label">Sprint-Ende</span>
+      <div class="milestone">11:00 Prototyp + Planning zeigen</div>
+    </div>
+  </div>
+</div>
+
+<div class="board">
+  <div class="column" id="todo">
+    <h2><span class="dot"></span>To Do</h2>
+  </div>
+  <div class="column" id="progress">
+    <h2><span class="dot"></span>In Progress</h2>
+  </div>
+  <div class="column" id="done">
+    <h2><span class="dot"></span>Done</h2>
+  </div>
+</div>
+
+<footer>
+  Karten per Drag &amp; Drop verschiebbar (Speicherung nur lokal in diesem Browser, kein Sync). Offizieller Backlog als
+  <a href="https://github.com/47Felix/RasberryPI-Team-13/issues?q=is%3Aissue+92..102+in%3Anumber" target="_blank">GitHub Issues #92–#102</a>.
+  Rollen: Scrum Master ______ · Product Owner ______
+</footer>
+
+<script>
+const STORAGE_KEY = "dtew-team13-kanban-v1";
+
+const seedCards = [
+  { id: 92, title: "Supabase-Token widerrufen (Sicherheitsvorfall)", col: "todo", security: true, issue: 92 },
+  { id: 99, title: "Rollen festlegen (Scrum Master / Product Owner)", col: "todo", issue: 99 },
+  { id: 93, title: "Prototyp-Namen entscheiden", col: "todo", issue: 93 },
+  { id: 94, title: "Social Business Model Canvas abstimmen", col: "todo", issue: 94 },
+  { id: 95, title: "Onboarding-Entwurf gegen Code-Stand abgleichen", col: "todo", issue: 95 },
+  { id: 96, title: "Logo visuell gestalten", col: "todo", issue: 96 },
+  { id: 97, title: "Donnerstag rückwirkend dokumentieren", col: "todo", issue: 97 },
+  { id: 98, title: "Retrospektive vorbereiten", col: "todo", issue: 98 },
+  { id: 100, title: "Board-Zugriff der Nacht-Automation repariert", col: "done", issue: 100 },
+  { id: 101, title: "Vielfalts-Score im Feed-Prototyp umgesetzt", col: "done", issue: 101 },
+  { id: 102, title: "Feed-UI auf Single-Feed-Layout umgebaut", col: "done", issue: 102 },
+];
+
+function loadCards() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return seedCards;
+  try {
+    const saved = JSON.parse(raw);
+    // merge: keep saved column positions, but fall back to seed if a new card was added later
+    const byId = Object.fromEntries(saved.map(c => [c.id, c]));
+    return seedCards.map(c => byId[c.id] ? { ...c, col: byId[c.id].col } : c);
+  } catch (e) {
+    return seedCards;
+  }
+}
+
+function saveCards(cards) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+}
+
+function render() {
+  const cards = loadCards();
+  ["todo", "progress", "done"].forEach(colId => {
+    document.querySelectorAll(`#${colId} .card`).forEach(el => el.remove());
+  });
+  cards.forEach(card => {
+    const el = document.createElement("div");
+    el.className = "card" + (card.security ? " security" : "");
+    el.draggable = true;
+    el.dataset.id = card.id;
+    el.innerHTML = `${card.title}` +
+      (card.issue ? `<a class="issue" href="https://github.com/47Felix/RasberryPI-Team-13/issues/${card.issue}" target="_blank">#${card.issue} auf GitHub →</a>` : "");
+    el.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text/plain", card.id);
+    });
+    document.getElementById(card.col).appendChild(el);
+  });
+}
+
+["todo", "progress", "done"].forEach(colId => {
+  const col = document.getElementById(colId);
+  col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("dragover"); });
+  col.addEventListener("dragleave", () => col.classList.remove("dragover"));
+  col.addEventListener("drop", e => {
+    e.preventDefault();
+    col.classList.remove("dragover");
+    const id = Number(e.dataTransfer.getData("text/plain"));
+    const cards = loadCards();
+    const card = cards.find(c => c.id === id);
+    if (card) { card.col = colId; saveCards(cards); render(); }
+  });
+});
+
+render();
+</script>
+
+</body>
+</html>
