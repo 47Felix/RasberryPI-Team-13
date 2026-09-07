@@ -3,7 +3,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ranking import Post, diversity_aware_feed, diversity_score, standard_feed, suggest_category
+from ranking import (
+    Post,
+    diversity_aware_feed,
+    diversity_score,
+    dominant_perspective,
+    standard_feed,
+    suggest_category,
+)
 
 POSTS = [
     Post(
@@ -135,3 +142,28 @@ def test_suggest_category_picks_the_most_similar_existing_post_topic():
 
 def test_suggest_category_returns_none_without_any_posts_to_compare():
     assert suggest_category("Titel", "Text", []) is None
+
+
+def test_dominant_perspective_picks_the_majority():
+    assert dominant_perspective(["contra", "contra", "pro"]) == "contra"
+    assert dominant_perspective(["pro", "pro", "pro", "contra"]) == "pro"
+
+
+def test_dominant_perspective_is_none_without_signal_or_on_a_tie():
+    assert dominant_perspective([]) is None
+    assert dominant_perspective(["pro", "contra"]) is None
+
+
+def test_standard_feed_follows_preferred_perspective_over_the_seed_posts_own():
+    # Seed post is "pro", but the account's like history leans "contra" -
+    # the feed must reinforce the account's history, not just this one post,
+    # otherwise the bubble wouldn't be self-sustaining across seed posts.
+    feed = standard_feed(POSTS, seed_id="seed", preferred_perspective="contra")
+    assert feed[0]["post"].perspective == "contra"
+
+
+def test_diversity_aware_feed_interrupts_the_preferred_perspective_not_just_the_seed():
+    feed = diversity_aware_feed(POSTS, seed_id="seed", limit=3, diversity_every=2, preferred_perspective="contra")
+    diverse_items = [item for item in feed if item["is_diverse_pick"]]
+    assert diverse_items
+    assert all(item["post"].perspective == "pro" for item in diverse_items)

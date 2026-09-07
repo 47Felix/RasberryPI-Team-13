@@ -23,6 +23,21 @@ sondern klassisches Content-Based Filtering über TF-IDF + Cosine Similarity
   mischt aber alle `diversity_every` Plätze bewusst den ähnlichsten Post mit
   **gleichem Thema, aber Gegenperspektive** ein und kennzeichnet ihn.
 
+**Account-Bias aus der Like-Historie:** Für eingeloggte Accounts entscheidet
+nicht mehr nur der gerade gewählte Ausgangs-Post, welche Perspektive
+"gewinnt" – `ranking.dominant_perspective()` wertet aus, ob ein Account über
+alle bisherigen Likes hinweg mehrheitlich "pro" oder "contra" geliket hat,
+und dieser `preferred_perspective`-Wert übersteuert dann in `standard_feed`/
+`diversity_aware_feed` die Perspektive des Ausgangs-Posts. Ergebnis: der
+Standard-Feed verstärkt sich mit jedem weiteren Like in eine Richtung selbst
+und reinforct das *über jeden beliebigen Ausgangs-Post hinweg*, nicht nur
+für den einen, der gerade geliket wurde – ganz bewusst ohne eingebauten
+Ausweg (das ist der Punkt der Demo). Der Diversity-aware-Feed nutzt denselben
+`preferred_perspective`-Wert, um gezielt die *tatsächliche* Account-Neigung
+zu durchbrechen statt nur die des aktuellen Ausgangs-Posts. Ohne Account
+oder ohne bisherige Likes (bzw. bei einem exakten Unentschieden) bleibt das
+alte Verhalten erhalten: Perspektive des Ausgangs-Posts entscheidet.
+
 ## UI: ein Feed, zwei Modi (`templates/index.html`, `static/style.css`)
 
 Nach Nutzer-Feedback ("sieht nach Claude Design aus", "kein richtiger Feed")
@@ -158,6 +173,9 @@ pytest tests/
       Persona-Schnellauswahl ("Mia"/"Tom") entfernt – der Feed zeigt
       ausschließlich echte Supabase-Posts, leerer Zustand statt Platzhalter
       wenn noch keine welche existieren
-- [ ] Likes als Ranking-Signal berücksichtigen (aktuell nur Anzeige, siehe oben)
+- [x] Likes als Ranking-Signal: Standard-Feed reinforct jetzt die
+      Mehrheits-Perspektive der eigenen Like-Historie statt nur die des
+      gerade gewählten Ausgangs-Posts (`dominant_perspective`)
 - [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
-      Punkt 6 in der DTEW-0209-Notiz)
+      Punkt 6 in der DTEW-0209-Notiz) – der Diversity-Score existiert schon
+      pro Feed-Aufruf, aber es gibt noch keine Verlaufsansicht über die Zeit
