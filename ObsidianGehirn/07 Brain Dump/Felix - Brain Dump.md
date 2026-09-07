@@ -18,6 +18,7 @@ hatten grade usnere präsentation und dakam folgendes rasu:
 
 wir wollen usn daauf fokusiieren ein forum zu mahcne uimemrnoch mit dem diversity algorithmy to make this two poliitical parties come togehtheer and see diffrent opinions on their feed.
 
+we should lokki nto fediversean activity pub and look how we can connect these things with each other. can you take a look at this claude pls
 ## Verwandte Notizen
 - [[🧠 Brain Dump - Übersicht]]
 
