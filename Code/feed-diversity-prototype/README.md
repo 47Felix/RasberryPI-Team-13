@@ -150,6 +150,14 @@ python app.py
 
 Dann `http://localhost:5050` öffnen.
 
+## Deployment (öffentlich erreichbar machen)
+
+`deploy/` enthält eine fertig vorbereitete systemd-Unit (Gunicorn statt
+Flask-Dev-Server) und ein Caddyfile (automatisches HTTPS per Reverse-Proxy),
+plus eine Schritt-für-Schritt-Anleitung inkl. Azure-NSG-Firewall-Hinweis und
+Tailscale-only-Alternative - siehe `deploy/README.md`. Noch nicht angewendet,
+nur vorbereitet (siehe dortige Anleitung, warum).
+
 ## Tests
 
 ```bash
