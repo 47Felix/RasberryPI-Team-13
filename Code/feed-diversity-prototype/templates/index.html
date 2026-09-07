@@ -49,6 +49,11 @@
       {% else %}
         {{ feed_score }}% Gegenperspektiven – reine Ähnlichkeits-Rangfolge, kein Eingriff.
       {% endif %}
+      {% if preferred_perspective %}
+        Basierend auf deinen bisherigen Likes bevorzugt dein Feed aktuell
+        <strong>{{ preferred_perspective }}</strong>-Posts – das verstärkt sich mit jedem
+        weiteren Like in diese Richtung. Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
+      {% endif %}
     </p>
 
     <div class="feed">

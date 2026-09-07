@@ -33,11 +33,35 @@ def _sorted_by_similarity(candidates, pred):
     return sorted((c for c in candidates if pred(c[0])), key=lambda pair: pair[1], reverse=True)
 
 
-def standard_feed(posts: list[Post], seed_id: str, limit: int = 8):
-    """Bubble-reinforcing ranking, like a typical 'For You' feed: same
-    perspective as the seed post first, regardless of topic, before anything
-    that would introduce a counter-perspective. Within each tier, still
-    ordered by similarity.
+def dominant_perspective(perspectives: list[str]) -> str | None:
+    """Returns whichever perspective ('pro'/'contra') occurs more often in
+    the given list - meant to be every liked post's perspective for one
+    account, so the feed can learn "this account leans contra" the same way
+    a real engagement-based recommender would. None if there's no signal yet
+    (no likes) or it's an exact tie, in which case standard_feed()/
+    diversity_aware_feed() fall back to the seed post's own perspective.
+    """
+    if not perspectives:
+        return None
+    pro = perspectives.count("pro")
+    contra = perspectives.count("contra")
+    if pro == contra:
+        return None
+    return "pro" if pro > contra else "contra"
+
+
+def standard_feed(posts: list[Post], seed_id: str, limit: int = 8, preferred_perspective: str | None = None):
+    """Bubble-reinforcing ranking, like a typical 'For You' feed: one
+    perspective first, regardless of topic, before anything that would
+    introduce a counter-perspective. Within each tier, still ordered by
+    similarity.
+
+    Which perspective that is comes from `preferred_perspective` (the
+    account's own like history, see dominant_perspective()) when given,
+    otherwise from the seed post - so once an account has liked enough
+    posts one way, the feed reinforces *that* lean on every seed post, not
+    just whichever one happens to be selected. This is what makes the
+    reinforcement self-sustaining instead of a one-off per seed post.
 
     Raw cosine similarity alone isn't a reliable stand-in for "reinforces the
     bubble": on a small dataset, a counter-perspective post on the same topic
@@ -49,10 +73,11 @@ def standard_feed(posts: list[Post], seed_id: str, limit: int = 8):
     orders within it.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
+    bias_perspective = preferred_perspective or seed_post.perspective
     candidates = _similarities_to_seed(posts, seed_id)
 
-    same_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective == seed_post.perspective)
-    other_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective != seed_post.perspective)
+    same_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective == bias_perspective)
+    other_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective != bias_perspective)
     ranked = same_perspective + other_perspective
 
     return [
@@ -62,20 +87,30 @@ def standard_feed(posts: list[Post], seed_id: str, limit: int = 8):
 
 
 def diversity_aware_feed(
-    posts: list[Post], seed_id: str, limit: int = 8, diversity_every: int = 3
+    posts: list[Post],
+    seed_id: str,
+    limit: int = 8,
+    diversity_every: int = 3,
+    preferred_perspective: str | None = None,
 ):
     """Same similarity base, but deliberately mixes in topically-related
     counter-perspective posts every `diversity_every`-th slot, so the feed
     stays relevant (same topic) while avoiding pure echo-chamber reinforcement.
+
+    Uses the same `preferred_perspective` (account like history) as
+    standard_feed() to decide which side counts as "home" vs. "counter" -
+    so this interrupts the account's actual reinforced lean, not just the
+    current seed post's perspective.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
+    bias_perspective = preferred_perspective or seed_post.perspective
     candidates = _similarities_to_seed(posts, seed_id)
 
     same_perspective = iter(
-        _sorted_by_similarity(candidates, lambda p: p.topic == seed_post.topic and p.perspective == seed_post.perspective)
+        _sorted_by_similarity(candidates, lambda p: p.topic == seed_post.topic and p.perspective == bias_perspective)
     )
     counter_perspective = iter(
-        _sorted_by_similarity(candidates, lambda p: p.topic == seed_post.topic and p.perspective != seed_post.perspective)
+        _sorted_by_similarity(candidates, lambda p: p.topic == seed_post.topic and p.perspective != bias_perspective)
     )
     other_topics = iter(_sorted_by_similarity(candidates, lambda p: p.topic != seed_post.topic))
 
@@ -91,7 +126,7 @@ def diversity_aware_feed(
             break
 
         post, score = picked
-        is_diverse_pick = post.topic == seed_post.topic and post.perspective != seed_post.perspective
+        is_diverse_pick = post.topic == seed_post.topic and post.perspective != bias_perspective
         feed.append({"post": post, "score": score, "is_diverse_pick": is_diverse_pick})
 
     return feed
@@ -113,13 +148,20 @@ def suggest_category(title: str, content: str, posts: list[Post]) -> str | None:
     return posts[similarities.argmax()].topic
 
 
-def diversity_score(feed: list[dict], seed_post: Post) -> float:
-    """Share (0-100) of shown posts whose perspective differs from the seed
-    post's perspective. A crude but visible stand-in for the "how do we
-    measure perspective diversity" gap called out as critical point 6 in
-    DTEW 0209 - Kritische Punkte, Problem Statements und Ideation.md.
+def diversity_score_for_perspective(feed: list[dict], perspective: str) -> float:
+    """Share (0-100) of shown posts whose perspective differs from
+    `perspective`. A crude but visible stand-in for the "how do we measure
+    perspective diversity" gap called out as critical point 6 in DTEW 0209 -
+    Kritische Punkte, Problem Statements und Ideation.md.
     """
     if not feed:
         return 0.0
-    differing = sum(1 for item in feed if item["post"].perspective != seed_post.perspective)
+    differing = sum(1 for item in feed if item["post"].perspective != perspective)
     return round(100 * differing / len(feed), 1)
+
+
+def diversity_score(feed: list[dict], seed_post: Post) -> float:
+    """Same as diversity_score_for_perspective(), measured against the seed
+    post's own perspective - kept as a convenience wrapper for callers that
+    don't track an account-level bias_perspective (see standard_feed())."""
+    return diversity_score_for_perspective(feed, seed_post.perspective)

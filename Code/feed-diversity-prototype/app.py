@@ -11,7 +11,14 @@ from functools import wraps
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
 import db
-from ranking import Post, diversity_aware_feed, diversity_score, standard_feed, suggest_category
+from ranking import (
+    Post,
+    diversity_aware_feed,
+    diversity_score_for_perspective,
+    dominant_perspective,
+    standard_feed,
+    suggest_category,
+)
 
 app = Flask(__name__)
 # Signs the session cookie that now holds the logged-in account's user_id -
@@ -107,6 +114,7 @@ def index():
     seed_id = None
     feed_items = []
     feed_score = 0
+    preferred_perspective = None
 
     if posts:
         seed_id = request.args.get("seed_id")
@@ -114,13 +122,19 @@ def index():
             seed_id = posts[0].id
         seed_post = next(p for p in posts if p.id == seed_id)
 
+        if current_user:
+            preferred_perspective = dominant_perspective(db.fetch_liked_perspectives(current_user["id"]))
+        bias_perspective = preferred_perspective or seed_post.perspective
+
         if mode == "diversity":
-            active_feed = diversity_aware_feed(posts, seed_id, diversity_every=diversity_every)
+            active_feed = diversity_aware_feed(
+                posts, seed_id, diversity_every=diversity_every, preferred_perspective=preferred_perspective
+            )
         else:
-            active_feed = standard_feed(posts, seed_id)
+            active_feed = standard_feed(posts, seed_id, preferred_perspective=preferred_perspective)
 
         feed_items = _decorate_feed(active_feed, extra_meta)
-        feed_score = diversity_score(active_feed, seed_post)
+        feed_score = diversity_score_for_perspective(active_feed, bias_perspective)
 
         db_post_ids = [item["post"].id for item in feed_items]
         liked_ids = db.fetch_liked_post_ids(current_user["id"], db_post_ids) if current_user else set()
@@ -139,6 +153,7 @@ def index():
         known_perspectives=KNOWN_PERSPECTIVES,
         db_configured=db.is_configured(),
         current_user=current_user,
+        preferred_perspective=preferred_perspective,
     )
 
 
