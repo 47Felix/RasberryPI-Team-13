@@ -55,7 +55,14 @@ def _auth_headers() -> dict:
 def _get(path: str, params: dict) -> list[dict]:
     response = requests.get(f"{SUPABASE_URL}/rest/v1/{path}", headers=_headers(), params=params, timeout=5)
     response.raise_for_status()
-    return response.json()
+    data = response.json()
+    if not isinstance(data, list):
+        # PostgREST answers an ambiguous embed (e.g. two relationships
+        # between the same tables) with HTTP 300 and an error object
+        # instead of rows - raise_for_status() doesn't treat 300 as an
+        # error, so this would otherwise silently iterate over dict keys.
+        raise requests.RequestException(f"Unexpected PostgREST response for {path}: {data}")
+    return data
 
 
 def _category_id(name: str) -> str | None:
@@ -172,9 +179,13 @@ def fetch_posts() -> list[dict]:
         rows = _get(
             "posts",
             {
+                # profiles needs the explicit !posts_user_id_fkey hint: PostgREST
+                # also sees posts<->profiles as many-to-many through likes
+                # (post_id + user_id both link the two), and refuses to guess
+                # which relationship "profiles(...)" should mean.
                 "select": (
                     "id,title,content,perspective,categories(name),"
-                    "authors(name,handle,avatar),profiles(display_name,handle,avatar),"
+                    "authors(name,handle,avatar),profiles!posts_user_id_fkey(display_name,handle,avatar),"
                     "likes(count),comments(count)"
                 ),
                 "order": "created_at.desc",
