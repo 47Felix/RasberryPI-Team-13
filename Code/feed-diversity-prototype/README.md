@@ -12,8 +12,13 @@ sondern klassisches Content-Based Filtering über TF-IDF + Cosine Similarity
 
 ## Zwei Feed-Modi (`ranking.py`)
 
-- **Standard** (`standard_feed`): reine Ähnlichkeit zum zuletzt gesehenen
-  Post – bubble-verstärkend, wie ein typischer "For You"-Feed.
+- **Standard** (`standard_feed`): gleiche Perspektive wie der Ausgangs-Post
+  zuerst (Ähnlichkeit nur zum Sortieren innerhalb dieser Gruppe) – bubble-
+  verstärkend, wie ein typischer "For You"-Feed. Reine globale Ähnlichkeit
+  reicht dafür nicht: auf dem kleinen Datensatz teilen Gegenperspektiven-Posts
+  zum selben Thema oft genauso viel Vokabular wie Posts mit gleicher
+  Perspektive, sodass eine reine Similarity-Rangfolge die Bubble gar nicht
+  zuverlässig zeigt (siehe Docstring in `ranking.py`).
 - **Diversity-aware** (`diversity_aware_feed`): gleiche Ähnlichkeitsbasis,
   mischt aber alle `diversity_every` Plätze bewusst den ähnlichsten Post mit
   **gleichem Thema, aber Gegenperspektive** ein und kennzeichnet ihn.

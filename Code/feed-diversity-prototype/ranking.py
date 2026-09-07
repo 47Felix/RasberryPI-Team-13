@@ -29,10 +29,32 @@ def _similarities_to_seed(posts: list[Post], seed_id: str):
     return [(posts[i], sims[i]) for i in range(len(posts)) if posts[i].id != seed_id]
 
 
+def _sorted_by_similarity(candidates, pred):
+    return sorted((c for c in candidates if pred(c[0])), key=lambda pair: pair[1], reverse=True)
+
+
 def standard_feed(posts: list[Post], seed_id: str, limit: int = 8):
-    """Pure-similarity ranking: bubble-reinforcing, like a typical 'For You' feed."""
+    """Bubble-reinforcing ranking, like a typical 'For You' feed: same
+    perspective as the seed post first, regardless of topic, before anything
+    that would introduce a counter-perspective. Within each tier, still
+    ordered by similarity.
+
+    Raw cosine similarity alone isn't a reliable stand-in for "reinforces the
+    bubble": on a small dataset, a counter-perspective post on the same topic
+    often shares just as much vocabulary as a same-perspective one (both
+    posts about "Windkraft-Ausbau" score similarly regardless of stance), so
+    ranking by similarity alone let counter-perspective and unrelated-topic
+    posts crowd out a feed that's supposed to look one-sided. Perspective
+    match is the actual signal being demonstrated here, similarity only
+    orders within it.
+    """
+    seed_post = next(p for p in posts if p.id == seed_id)
     candidates = _similarities_to_seed(posts, seed_id)
-    ranked = sorted(candidates, key=lambda pair: pair[1], reverse=True)
+
+    same_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective == seed_post.perspective)
+    other_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective != seed_post.perspective)
+    ranked = same_perspective + other_perspective
+
     return [
         {"post": post, "score": score, "is_diverse_pick": False}
         for post, score in ranked[:limit]
@@ -49,16 +71,13 @@ def diversity_aware_feed(
     seed_post = next(p for p in posts if p.id == seed_id)
     candidates = _similarities_to_seed(posts, seed_id)
 
-    def _sorted(pred):
-        return sorted((c for c in candidates if pred(c[0])), key=lambda pair: pair[1], reverse=True)
-
     same_perspective = iter(
-        _sorted(lambda p: p.topic == seed_post.topic and p.perspective == seed_post.perspective)
+        _sorted_by_similarity(candidates, lambda p: p.topic == seed_post.topic and p.perspective == seed_post.perspective)
     )
     counter_perspective = iter(
-        _sorted(lambda p: p.topic == seed_post.topic and p.perspective != seed_post.perspective)
+        _sorted_by_similarity(candidates, lambda p: p.topic == seed_post.topic and p.perspective != seed_post.perspective)
     )
-    other_topics = iter(_sorted(lambda p: p.topic != seed_post.topic))
+    other_topics = iter(_sorted_by_similarity(candidates, lambda p: p.topic != seed_post.topic))
 
     feed = []
     while len(feed) < limit:
