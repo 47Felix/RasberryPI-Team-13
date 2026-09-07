@@ -242,6 +242,39 @@ Dann `http://localhost:5050` öffnen.
 pytest tests/
 ```
 
+## Fediverse-Anzeige (`fediverse.py`, rein lesend)
+
+Auf Wunsch aus dem Brain Dump ("look into fediverse and activity pub and
+look how we can connect these things with each other", siehe
+`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`) zeigt der Feed unten
+einen zusätzlichen, klar als extern gekennzeichneten Abschnitt "Aus dem
+Fediverse zu [Thema]" mit öffentlichen Mastodon-Posts zum aktuell
+gewählten Thema.
+
+**Bewusst keine ActivityPub-Implementierung.** Ein vollständiger
+ActivityPub-Client/-Server (eigener Actor, WebFinger, HTTP Signatures,
+Inbox/Outbox) ist ein eigener Protokoll-Stack mit realistisch mehreren
+Wochen Aufwand, siehe die ausführliche Machbarkeits-Einschätzung im Vault
+(`ObsidianGehirn/10 DTEW Workshop/Fediverse ActivityPub -
+Machbarkeitseinschaetzung.md`). Stattdessen nutzt `fediverse.py` Mastodons
+**öffentliche, unauthentifizierte REST-API** (`GET
+/api/v1/timelines/tag/{hashtag}`) – braucht keinen Account, kein Token,
+funktioniert rein lesend gegen jede Mastodon-Instanz. Fehlschläge (Instanz
+nicht erreichbar, Timeout, unerwartetes Antwortformat) liefern eine leere
+Liste statt eines Fehlers, genau wie `db.py` bei einem nicht erreichbaren
+Supabase. Externe Post-Inhalte kommen als HTML von der API zurück und
+werden vor der Anzeige zu Klartext reduziert (`fediverse._strip_html`),
+statt sie ungefiltert ins Template zu rendern – sonst wäre das ein
+XSS-Risiko über fremde, nicht moderierte Inhalte.
+
+> [!warning] Nicht live gegen Mastodon getestet
+> Die Cloud-Sandbox dieser Session erlaubt nur ausgehende Verbindungen zu
+> einer festen Domain-Allowlist – ein Aufruf gegen `mastodon.social` wurde
+> vom sandboxeigenen Proxy mit `403` blockiert. Mit gemockten Requests
+> unit-getestet (`tests/test_fediverse.py`), aber noch nicht gegen die
+> echte API verifiziert – vor dem Vorführen einmal in einer Umgebung mit
+> normalem Internetzugriff prüfen.
+
 ## Aktueller Stand / offen
 
 - [x] Standard- und Diversity-aware-Ranking mit Tests (`ranking.py`, dataset-
@@ -277,5 +310,10 @@ pytest tests/
 - [ ] Beispiel-Accounts mit gegensätzlicher Like-Historie für die Demo
       (Skript vorbereitet, noch nicht ausgeführt – siehe `seed_demo_accounts.py`
       und NIGHTLY_TASK.md)
-- [ ] Fediverse/ActivityPub-Anbindung (siehe eigene Machbarkeits-Notiz im
-      Vault unter "10 DTEW Workshop")
+- [x] Erster, risikoarmer Fediverse-Schritt: öffentliche Mastodon-Posts zu
+      einem themenabhängigen Hashtag rein lesend im Feed anzeigen
+      (`fediverse.py`, siehe eigenen Abschnitt unten). Ein vollständiger
+      ActivityPub-Server/-Actor bleibt Konzept-Skizze, siehe
+      Machbarkeits-Notiz im Vault unter "10 DTEW Workshop"
+- [ ] Fediverse-Anzeige gegen die echte Mastodon-API verifizieren (in dieser
+      Sandbox durch die Netzwerk-Allowlist blockiert, siehe unten)
