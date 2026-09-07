@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrieren – Perspektiv</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">Perspektiv</span>
+      <span class="brand-tag">Registrieren</span>
+    </div>
+  </header>
+
+  <main class="app">
+    <div class="disclosure settings" open>
+      <p class="tab-caption" style="border:none;padding:0.75rem 0 0;">Neuen Account anlegen, um Posts zu erstellen, zu liken und zu kommentieren.</p>
+
+      {% if not auth_configured %}
+        <p class="tab-caption">Supabase-Auth ist nicht konfiguriert – Registrierung ist aktuell nicht möglich.</p>
+      {% endif %}
+      {% if error %}
+        <p class="tab-caption" style="color:var(--contra);">{{ error }}</p>
+      {% endif %}
+
+      <form class="settings-row" method="post">
+        <label for="display_name">Anzeigename</label>
+        <input type="text" name="display_name" id="display_name" required maxlength="60">
+
+        <label for="email">E-Mail</label>
+        <input type="email" name="email" id="email" required>
+
+        <label for="password">Passwort</label>
+        <input type="password" name="password" id="password" required minlength="6">
+
+        <button type="submit" {{ 'disabled' if not auth_configured }}>Account erstellen</button>
+      </form>
+
+      <p class="tab-caption">Schon registriert? <a href="{{ url_for('login') }}">Einloggen</a></p>
+    </div>
+  </main>
+</body>
+</html>

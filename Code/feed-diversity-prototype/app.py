@@ -8,7 +8,7 @@ full problem statements (PS1 for persona "Mia", PS2 for persona "Tom").
 import hashlib
 import json
 import os
-import uuid
+from functools import wraps
 from pathlib import Path
 
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
@@ -17,9 +17,9 @@ import db
 from ranking import Post, diversity_aware_feed, diversity_score, standard_feed, suggest_category
 
 app = Flask(__name__)
-# Only guards the session cookie (an anonymous per-browser id for likes), not
-# any real auth - a fixed dev fallback is fine for a workshop prototype, but
-# set FLASK_SECRET_KEY in .env for anything longer-lived than a demo.
+# Signs the session cookie that now holds the logged-in account's user_id -
+# set FLASK_SECRET_KEY in .env for anything longer-lived than a demo, the
+# fixed dev fallback lets sessions survive a restart but isn't a secret.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-not-secret")
 
 DATA_PATH = Path(__file__).parent / "data" / "posts.json"
@@ -49,8 +49,9 @@ VALID_MODES = {"standard", "diversity"}
 # the standard feed the same one or two accounts repeat over and over, in
 # the diversity-aware feed different accounts interrupt that pattern.
 # User-submitted posts get their author/handle/avatar straight from the DB
-# (db.fetch_posts(), same values, see supabase/migrations/0001_init.sql
-# seed data) instead of this dict - it only covers the static dataset.
+# (db.fetch_posts() - the real account's profile, or the fictional authors
+# seed data as a fallback for posts predating accounts) instead of this
+# dict - it only covers the static dataset.
 AUTHOR_META = {
     ("klima", "pro"): {"avatar": "🌱", "name": "Klimaschutz Jetzt", "handle": "@klimajetzt"},
     ("klima", "contra"): {"avatar": "⚡", "name": "Energie Realistisch", "handle": "@energierealistisch"},
@@ -86,10 +87,24 @@ def _fake_engagement(post_id: str) -> dict:
     }
 
 
-def _session_id() -> str:
-    if "session_id" not in session:
-        session["session_id"] = uuid.uuid4().hex
-    return session["session_id"]
+def _current_user() -> dict | None:
+    if "user_id" not in session:
+        return None
+    return {"id": session["user_id"], "display_name": session.get("display_name"), "handle": session.get("handle")}
+
+
+def login_required_json(view):
+    """For fetch()-driven endpoints: a JSON 401 instead of a redirect, so the
+    frontend can send the browser to /login itself (see toggleLike/submitComment
+    in templates/index.html)."""
+
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if "user_id" not in session:
+            return jsonify({"error": "login_required"}), 401
+        return view(*args, **kwargs)
+
+    return wrapped
 
 
 def _decorate_feed(feed: list[dict], extra_meta: dict) -> list[dict]:
@@ -98,7 +113,7 @@ def _decorate_feed(feed: list[dict], extra_meta: dict) -> list[dict]:
         post = item["post"]
         meta = extra_meta.get(post.id)
         if meta:
-            engagement = {"likes": meta["likes"], "comments": 0, "reposts": 0}
+            engagement = {"likes": meta["likes"], "comments": meta["comments"], "reposts": 0}
             author = meta["author"]
             is_db_post = True
         else:
@@ -132,7 +147,10 @@ def load_posts() -> tuple[list[Post], dict]:
 
     db_rows = db.fetch_posts()
     db_posts = [row["post"] for row in db_rows]
-    extra_meta = {row["post"].id: {"author": row["author"], "likes": row["likes"]} for row in db_rows}
+    extra_meta = {
+        row["post"].id: {"author": row["author"], "likes": row["likes"], "comments": row["comments"]}
+        for row in db_rows
+    }
 
     return static_posts + db_posts, extra_meta
 
@@ -168,8 +186,9 @@ def index():
 
     feed_items = _decorate_feed(active_feed, extra_meta)
 
+    current_user = _current_user()
     db_post_ids = [item["post"].id for item in feed_items if item["is_db_post"]]
-    liked_ids = db.fetch_liked_post_ids(_session_id(), db_post_ids) if db_post_ids else set()
+    liked_ids = db.fetch_liked_post_ids(current_user["id"], db_post_ids) if current_user and db_post_ids else set()
     for item in feed_items:
         item["liked"] = item["post"].id in liked_ids
 
@@ -185,18 +204,70 @@ def index():
         known_topics=KNOWN_TOPICS,
         known_perspectives=KNOWN_PERSPECTIVES,
         db_configured=db.is_configured(),
+        current_user=current_user,
     )
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    error = None
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        display_name = request.form.get("display_name", "").strip()
+        if not email or not password or not display_name:
+            error = "Bitte alle Felder ausfüllen."
+        elif len(password) < 6:
+            error = "Passwort muss mindestens 6 Zeichen haben."
+        else:
+            user = db.sign_up(email, password)
+            if user is None:
+                error = "Registrierung fehlgeschlagen (E-Mail evtl. schon vergeben, oder Supabase nicht erreichbar)."
+            else:
+                handle = db.create_unique_profile(user["id"], display_name)
+                session["user_id"] = user["id"]
+                session["display_name"] = display_name
+                session["handle"] = handle
+                return redirect(request.args.get("next") or url_for("index"))
+    return render_template("register.html", error=error, auth_configured=db.auth_configured())
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        user = db.sign_in(email, password)
+        if user is None:
+            error = "E-Mail oder Passwort falsch."
+        else:
+            profile = db.fetch_profile(user["id"]) or {}
+            session["user_id"] = user["id"]
+            session["display_name"] = profile.get("display_name", user["email"])
+            session["handle"] = profile.get("handle", "@" + user["email"].split("@")[0])
+            return redirect(request.args.get("next") or url_for("index"))
+    return render_template("login.html", error=error, auth_configured=db.auth_configured())
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 
 @app.route("/posts", methods=["POST"])
 def create_post():
+    if "user_id" not in session:
+        return redirect(url_for("login", next=url_for("index")))
+
     title = request.form.get("title", "").strip()
     content = request.form.get("content", "").strip()
     topic = request.form.get("topic", "")
     perspective = request.form.get("perspective", "")
 
     if title and content and topic in KNOWN_TOPICS and perspective in KNOWN_PERSPECTIVES:
-        db.insert_post(title, content, topic, perspective)
+        db.insert_post(title, content, topic, perspective, session["user_id"])
 
     return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
 
@@ -218,11 +289,29 @@ def suggest_category_endpoint():
 
 
 @app.route("/posts/<post_id>/like", methods=["POST"])
+@login_required_json
 def like_post(post_id):
-    liked = db.toggle_like(post_id, _session_id())
+    liked = db.toggle_like(post_id, session["user_id"])
     if liked is None:
         return jsonify({"error": "Supabase nicht erreichbar"}), 503
     return jsonify({"liked": liked})
+
+
+@app.route("/posts/<post_id>/comments", methods=["GET"])
+def list_comments(post_id):
+    return jsonify({"comments": db.fetch_comments(post_id)})
+
+
+@app.route("/posts/<post_id>/comments", methods=["POST"])
+@login_required_json
+def create_comment(post_id):
+    payload = request.get_json(silent=True) or {}
+    content = (payload.get("content") or "").strip()
+    if not content:
+        return jsonify({"error": "empty"}), 400
+    if not db.insert_comment(post_id, session["user_id"], content):
+        return jsonify({"error": "Supabase nicht erreichbar"}), 503
+    return jsonify({"ok": True})
 
 
 if __name__ == "__main__":

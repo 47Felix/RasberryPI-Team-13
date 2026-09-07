@@ -54,37 +54,70 @@ Problem-Statements einzahlen:
 - **Tom** (PS2): steckt in "contra"-Wirtschaftspolitik-Posts fest, will
   bewusst raus.
 
-## Neue Posts, Kategorie-Vorschlag & Likes (Supabase)
+## Accounts, neue Posts, Kommentare, Likes & Kategorie-Vorschlag (Supabase)
 
 Der statische Datensatz (`data/posts.json`) lässt sich zur Laufzeit um
 Nutzer-Posts erweitern, die über das Formular "Neuen Post erstellen"
 angelegt werden. Storage ist Supabase Postgres, angebunden über `db.py`.
+Posten, Liken und Kommentieren setzt einen **echten, eingeloggten Account**
+voraus (Supabase Auth) – keine anonymen Interaktionen mehr.
 
-**Schema** (`supabase/migrations/0001_init.sql`): `categories`, `authors`,
-`posts` (verweist auf beide), `likes` (Post + anonyme Session-Cookie-ID als
-Composite Key). `authors`/`categories` sind mit denselben Werten vorbefüllt
-wie `app.py:AUTHOR_META`, damit ein Nutzer-Post ins selbe "wirkt wie ein
-echter Account pro Thema/Perspektive"-Design passt wie die statischen Posts.
+**Schema** (`supabase/migrations/0001_init.sql` + `0002_accounts.sql`):
+`categories`, `authors` (fiktive Accounts für den statischen Datensatz),
+`posts` (verweist auf beide + optional `user_id`), `profiles` (Anzeigename/
+Handle/Avatar pro Supabase-Auth-Account, `id` = `auth.users.id`), `likes`
+(Post + `user_id`, Composite Key – ein Like pro Account und Post), `comments`
+(Post + `user_id` + Text). `posts.user_id`/`likes.user_id`/`comments.user_id`
+zeigen bewusst auf `profiles(id)` statt direkt auf `auth.users(id)` – nur so
+kann PostgREST die Relation beim Abfragen einbetten (`auth`-Schema ist für
+PostgREST nicht sichtbar).
 
 - `.env` (nicht committet, siehe `.gitignore`) mit `SUPABASE_URL`,
   `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
-- Backend nutzt ausschließlich den **Secret Key** (server-seitig, umgeht
-  Row Level Security) – der Publishable Key wird aktuell vom Code gar nicht
-  gebraucht, liegt nur für ein mögliches späteres Client-seitiges Feature mit
-  in der `.env`
-- Alle vier Tabellen haben RLS aktiv **ohne** Policies – nur der Secret Key
-  kommt ran, direkter Zugriff über den Publishable Key ist absichtlich
-  blockiert
-- Tabellen einmalig anlegen: SQL aus `supabase/migrations/0001_init.sql` im
-  Supabase Dashboard unter *SQL Editor* ausführen, **oder** `apply_schema.py`
-  laufen lassen (braucht `SUPABASE_MANAGEMENT_TOKEN`, ein Account-weites
-  Personal Access Token aus den Supabase-Kontoeinstellungen – direkter
-  Postgres-Port 5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar,
-  das Skript geht deshalb über die Management-API per HTTPS)
+- Datentabellen laufen weiterhin ausschließlich über den **Secret Key**
+  (server-seitig, umgeht Row Level Security) – **neu:** Registrierung/Login
+  gehen direkt gegen die Supabase-Auth-API (GoTrue) mit dem
+  **Publishable Key**, das ist der dafür vorgesehene Key (siehe
+  `db.sign_up`/`db.sign_in`)
+- Alle Tabellen haben RLS aktiv **ohne** Policies – nur der Secret Key kommt
+  an die Daten-Tabellen ran, direkter Zugriff über den Publishable Key ist
+  dort absichtlich blockiert
+- Im Supabase-Dashboard unter *Authentication → Providers → Email* die
+  Option **"Confirm email" deaktivieren** – sonst kann sich niemand direkt
+  nach der Registrierung einloggen, weil erst ein Bestätigungslink in einer
+  (in diesem Setup nicht konfigurierten) E-Mail geklickt werden müsste
+- Tabellen/Migrationen einmalig anlegen: SQL aus
+  `supabase/migrations/*.sql` der Reihe nach im Supabase Dashboard unter
+  *SQL Editor* ausführen, **oder** `apply_schema.py` laufen lassen (ohne
+  Argument wendet es automatisch alle Migrationen in Dateinamen-Reihenfolge
+  an; braucht `SUPABASE_MANAGEMENT_TOKEN`, ein Account-weites Personal
+  Access Token aus den Supabase-Kontoeinstellungen – direkter Postgres-Port
+  5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar, das Skript geht
+  deshalb über die Management-API per HTTPS)
+- ⚠️ **Breaking Change durch `0002_accounts.sql`:** Likes waren bisher an
+  eine anonyme Session-Cookie-ID gebunden, das lässt sich keinem Account
+  zuordnen – die Migration löscht deshalb alle bestehenden Like-Zeilen und
+  stellt danach auf `(post_id, user_id)` um. Bestehende Posts ohne
+  `user_id` (vor dieser Änderung angelegt) zeigen weiterhin den fiktiven
+  `authors`-Eintrag als Autor, neue Posts zeigen den echten Account
 - Fällt Supabase aus/ist nicht konfiguriert, degradiert die App sauber auf
   den statischen Datensatz (`db.fetch_posts()` gibt dann `[]` zurück, das
-  Formular zeigt einen Hinweis statt eines Fehlers, Like-Buttons erscheinen
-  nur bei Posts mit echten DB-Metadaten)
+  Formular zeigt einen Hinweis statt eines Fehlers, Like-/Kommentar-UI
+  erscheint nur bei Posts mit echten DB-Metadaten)
+
+**Accounts:** `/register` (E-Mail, Passwort, Anzeigename) legt einen
+Supabase-Auth-Account plus `profiles`-Zeile an (Handle wird aus dem
+Anzeigenamen abgeleitet, bei Kollision mit Zahlensuffix, siehe
+`db.create_unique_profile`). `/login`/`/logout` verwalten die Session
+(Flask-Session-Cookie speichert nur `user_id`/Anzeigename/Handle, nicht das
+Passwort). Ohne Account: Feed lesen geht weiterhin, Posten/Liken/
+Kommentieren verlangt Login (Redirect zu `/login`, bei den fetch()-Aktionen
+über einen 401).
+
+**Kommentare:** pro DB-Post über "💬 N Kommentare" aufklappbar (lädt per
+`GET /posts/<id>/comments`), neuer Kommentar via Formular
+(`POST /posts/<id>/comments`, JSON, verlangt Login). Nur für DB-Posts, aus
+demselben Grund wie Likes (siehe unten).
 
 **Kategorie-Vorschlag:** `ranking.suggest_category()` (reine, netzwerkfreie
 Funktion, per Unit-Test abgedeckt) vergleicht Titel+Text des Entwurfs per
@@ -92,9 +125,8 @@ TF-IDF gegen alle vorhandenen Posts und schlägt das Thema des ähnlichsten
 Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
 angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
 
-**Likes:** anonymer Toggle pro Browser über einen signierten Flask-Session-
-Cookie (`FLASK_SECRET_KEY` in `.env`, Fallback-Wert nur für lokale Demos).
-Nur für DB-Posts sichtbar, da `likes.post_id` auf `posts.id` (uuid)
+**Likes:** Toggle pro Account (`(post_id, user_id)` in der DB, verlangt
+Login). Nur für DB-Posts sichtbar, da `likes.post_id` auf `posts.id` (uuid)
 verweist und die statischen JSON-Posts keine echten IDs dafür haben. Fließt
 aktuell **nicht** ins Ranking ein (bewusst nicht gemacht, um die getestete
 Diversity-Logik nicht anzufassen) – reine Anzeige/Interaktion bisher.
@@ -125,10 +157,17 @@ pytest tests/
 - [x] Supabase-Anbindung für nutzergenerierte Posts, Kategorien, Autoren
       (Code steht, siehe oben)
 - [x] Kategorie-Vorschlag per TF-IDF beim Post-Erstellen
-- [x] Like-Toggle pro Browser-Session für DB-Posts
 - [x] Tabellen in Supabase angelegt (04.09.2026, über die Management-API) und
       end-to-end verifiziert (Post erstellen, Like togglen, beides über die
       echte DB, siehe PR #88)
+- [x] Echte Accounts (Supabase Auth: Registrierung/Login/Logout), Profile
+      mit Anzeigename/Handle, Likes und Kommentare pro Account statt
+      anonymer Session-Cookies (`0002_accounts.sql`)
+- [ ] `0002_accounts.sql` muss noch gegen die echte Supabase-Instanz
+      angewendet werden (siehe oben, `apply_schema.py` oder SQL Editor) und
+      "Confirm email" im Dashboard deaktiviert werden – bis dahin bleiben
+      Login/Registrierung ohne Effekt (`db.sign_up`/`db.sign_in` liefern
+      dann `None`)
 - [ ] Likes als Ranking-Signal berücksichtigen (aktuell nur Anzeige, siehe oben)
 - [ ] Datensatz ggf. um weitere Themen/Posts erweitern, sobald das Team echten
       Beispiel-Content hat
