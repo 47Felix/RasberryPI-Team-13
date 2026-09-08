@@ -242,6 +242,30 @@ Dann `http://localhost:5050` öffnen.
 pytest tests/
 ```
 
+## Beispiel-Accounts für den Standard-Algorithmus (`seed_demo_accounts.py`)
+
+Für eine überzeugende Demo braucht es Accounts mit einer klar erkennbaren,
+gegensätzlichen Like-Historie, damit `ranking.dominant_perspective()`/
+`dominant_political_label()` beim Vorführen sichtbar wird. `seed_demo_accounts.py`
+legt dafür vier Beispiel-Accounts (unterschiedliche Namen, je zwei liken
+konsequent "contra"/"links" bzw. "pro"/"rechts") sowie einen Admin-Account an,
+der die Seed-Posts veröffentlicht, und lässt die Beispiel-Accounts passende
+Posts liken.
+
+**Zugangsdaten kommen ausschließlich aus der Umgebung/`.env`** (`DEMO_ACCOUNT_A_EMAIL`/
+`_PASSWORD` bis `DEMO_ACCOUNT_D_EMAIL`/`_PASSWORD`, `DEMO_ADMIN_EMAIL`/`_PASSWORD`,
+zusätzlich zu den bestehenden `SUPABASE_*`-Variablen) - das Skript bricht ohne
+diese Variablen ab, statt Platzhalterwerte zu verwenden. Diese Session hatte
+keine Supabase-Zugangsdaten zur Verfügung und konnte das Skript deshalb nicht
+ausführen (siehe `NIGHTLY_TASK.md`). Eine reine Namens-/Zweck-Übersicht der
+Accounts (ohne Zugangsdaten) steht im Vault unter `ObsidianGehirn/06
+Zugangsdaten/Feed-Diversity-Beispielaccounts.md`.
+
+```bash
+# .env ergänzen (SUPABASE_* + die DEMO_*-Variablen oben), dann einmalig:
+python3 seed_demo_accounts.py
+```
+
 ## Aktueller Stand / offen
 
 - [x] Standard- und Diversity-aware-Ranking mit Tests (`ranking.py`, dataset-
