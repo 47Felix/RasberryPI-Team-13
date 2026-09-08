@@ -660,6 +660,36 @@ input[type="range"]::-moz-range-thumb {
   min-width: 11rem;
 }
 
+.trend-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 3.5rem;
+  margin-top: 0.6rem;
+  padding: 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.trend-bar {
+  flex: 1 1 auto;
+  width: 6px;
+  min-width: 3px;
+  max-width: 10px;
+  min-height: 2px;
+  border-radius: 1px;
+  background: var(--brand);
+  opacity: 0.75;
+}
+
+.trend-caption {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 noscript button {
   margin-top: 0.4rem;
   padding: 0.35rem 0.7rem;

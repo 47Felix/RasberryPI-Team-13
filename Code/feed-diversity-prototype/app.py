@@ -14,6 +14,7 @@ import db
 import fediverse
 from ranking import (
     Post,
+    bubble_trend,
     diversity_aware_feed,
     diversity_score_for_perspective,
     diversity_score_for_political_label,
@@ -127,6 +128,11 @@ def index():
     show_political_score = False
     fediverse_posts = []
     fediverse_topic = None
+    # One query covers both the account's overall lean (dominant_perspective
+    # doesn't care about order) and the like-history trend below, instead of
+    # fetching the same likes/posts join twice per request.
+    liked_history = db.fetch_liked_history(current_user["id"]) if current_user else []
+    bubble_trend_data = bubble_trend(liked_history)
 
     if posts:
         seed_id = request.args.get("seed_id")
@@ -137,7 +143,7 @@ def index():
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
         if current_user:
-            preferred_perspective = dominant_perspective(db.fetch_liked_perspectives(current_user["id"]))
+            preferred_perspective = dominant_perspective(liked_history)
             preferred_political_label = dominant_political_label(db.fetch_liked_political_labels(current_user["id"]))
         bias_perspective = preferred_perspective or seed_post.perspective
         bias_political_label = preferred_political_label or seed_post.political_label
@@ -187,6 +193,7 @@ def index():
         fediverse_topic=fediverse_topic,
         preferred_perspective=preferred_perspective,
         preferred_political_label=preferred_political_label,
+        bubble_trend_data=bubble_trend_data,
     )
 
 

@@ -250,15 +250,20 @@ def insert_post(title: str, content: str, topic: str, perspective: str, user_id:
     return True
 
 
-def fetch_liked_perspectives(user_id: str) -> list[str]:
-    """Perspective ('pro'/'contra') of every post the account has ever
-    liked, in no particular order - feeds ranking.dominant_perspective() so
-    the standard feed can reinforce whichever side an account leans toward
-    across its whole like history, not just the current seed post."""
+def fetch_liked_history(user_id: str) -> list[str]:
+    """Perspective of every post the account has liked, oldest first - feeds
+    both ranking.dominant_perspective() (order doesn't matter there) and
+    ranking.bubble_trend() (order is the whole point), so callers get the
+    account's overall lean and its like-history trend from a single query
+    instead of fetching the same likes/posts join twice. [] if there's no
+    history yet or Supabase is unreachable."""
     if not is_configured():
         return []
     try:
-        rows = _get("likes", {"user_id": f"eq.{user_id}", "select": "posts(perspective)"})
+        rows = _get(
+            "likes",
+            {"user_id": f"eq.{user_id}", "select": "created_at,posts(perspective)", "order": "created_at.asc"},
+        )
     except requests.RequestException:
         return []
     return [row["posts"]["perspective"] for row in rows if row.get("posts")]
