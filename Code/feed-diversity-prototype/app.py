@@ -11,6 +11,7 @@ from functools import wraps
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
 import db
+import fediverse
 from ranking import (
     Post,
     diversity_aware_feed,
@@ -124,12 +125,16 @@ def index():
     preferred_perspective = None
     preferred_political_label = None
     show_political_score = False
+    fediverse_posts = []
+    fediverse_topic = None
 
     if posts:
         seed_id = request.args.get("seed_id")
         if seed_id not in {p.id for p in posts}:
             seed_id = posts[0].id
         seed_post = next(p for p in posts if p.id == seed_id)
+        fediverse_topic = seed_post.topic
+        fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
         if current_user:
             preferred_perspective = dominant_perspective(db.fetch_liked_perspectives(current_user["id"]))
@@ -178,6 +183,8 @@ def index():
         known_political_labels=KNOWN_POLITICAL_LABELS,
         db_configured=db.is_configured(),
         current_user=current_user,
+        fediverse_posts=fediverse_posts,
+        fediverse_topic=fediverse_topic,
         preferred_perspective=preferred_perspective,
         preferred_political_label=preferred_political_label,
     )

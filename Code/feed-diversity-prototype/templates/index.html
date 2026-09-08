@@ -131,6 +131,25 @@
       {% endfor %}
     </div>
 
+    {% if fediverse_topic %}
+      <details class="disclosure fediverse">
+        <summary>Aus dem Fediverse zu „{{ fediverse_topic }}“</summary>
+        {% if fediverse_posts %}
+          {% for post in fediverse_posts %}
+            <div class="fediverse-item">
+              {{ post.content }}
+              <span class="fediverse-meta">
+                {{ post.account_handle }}
+                {% if post.url %} · <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">Original ansehen</a>{% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="fediverse-empty">Aktuell keine öffentlichen Fediverse-Posts zu diesem Thema erreichbar.</p>
+        {% endif %}
+      </details>
+    {% endif %}
+
     <details class="disclosure settings">
       <summary>Feed-Einstellungen</summary>
 
