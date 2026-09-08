@@ -126,22 +126,41 @@ def sign_in(email: str, password: str) -> dict | None:
     return {"id": user["id"], "email": user.get("email", email)}
 
 
-def create_unique_profile(user_id: str, display_name: str, avatar: str = "🙂") -> str:
+def create_unique_profile(
+    user_id: str,
+    display_name: str,
+    avatar: str = "🙂",
+    onboarding_perspective: str | None = None,
+    onboarding_political_label: str | None = None,
+) -> str:
     """Creates the profiles row for a freshly signed-up account. The handle
     is derived from the display name; on a uniqueness conflict (409) a
     numeric suffix is appended and retried. Returns the handle actually
     used (best-effort fallback to the first attempted handle on network
     errors, since there's nothing better to store in the session then).
+
+    onboarding_perspective/onboarding_political_label are the optional,
+    skippable registration-survey answers (see 0004_onboarding_survey.sql) -
+    None just leaves the feed with no initial lean until real likes/comments
+    provide one, same as an account created before this survey existed.
     """
     base_handle = "@" + _slugify_handle(display_name)
     handle = base_handle
     suffix = 1
+    payload = {
+        "id": user_id,
+        "display_name": display_name,
+        "handle": handle,
+        "avatar": avatar,
+        "onboarding_perspective": onboarding_perspective,
+        "onboarding_political_label": onboarding_political_label,
+    }
     while True:
         try:
             response = requests.post(
                 f"{SUPABASE_URL}/rest/v1/profiles",
                 headers=_headers(),
-                json={"id": user_id, "display_name": display_name, "handle": handle, "avatar": avatar},
+                json={**payload, "handle": handle},
                 timeout=5,
             )
         except requests.RequestException:
@@ -159,7 +178,10 @@ def fetch_profile(user_id: str) -> dict | None:
     if not is_configured():
         return None
     try:
-        rows = _get("profiles", {"id": f"eq.{user_id}", "select": "display_name,handle,avatar"})
+        rows = _get(
+            "profiles",
+            {"id": f"eq.{user_id}", "select": "display_name,handle,avatar,onboarding_perspective,onboarding_political_label"},
+        )
     except requests.RequestException:
         return None
     return rows[0] if rows else None
@@ -248,6 +270,44 @@ def insert_post(title: str, content: str, topic: str, perspective: str, user_id:
     except requests.RequestException:
         return False
     return True
+
+
+def fetch_latest_post_id() -> str | None:
+    """Id of the newest post, for the frontend's new-posts poll (see
+    templates/index.html) - deliberately just one narrow column/row instead
+    of the full fetch_posts() join, since this gets called every ~15s."""
+    if not is_configured():
+        return None
+    try:
+        rows = _get("posts", {"select": "id", "order": "created_at.desc", "limit": "1"})
+    except requests.RequestException:
+        return None
+    return rows[0]["id"] if rows else None
+
+
+def fetch_commented_perspectives(user_id: str) -> list[str]:
+    """Perspective of every post the account has commented on - same idea as
+    fetch_liked_history(), so commenting counts as an engagement signal for
+    dominant_perspective() too, not just liking."""
+    if not is_configured():
+        return []
+    try:
+        rows = _get("comments", {"user_id": f"eq.{user_id}", "select": "posts(perspective)"})
+    except requests.RequestException:
+        return []
+    return [row["posts"]["perspective"] for row in rows if row.get("posts")]
+
+
+def fetch_commented_political_labels(user_id: str) -> list[str]:
+    """Same idea as fetch_commented_perspectives(), for the independent
+    political_label axis (feeds dominant_political_label())."""
+    if not is_configured():
+        return []
+    try:
+        rows = _get("comments", {"user_id": f"eq.{user_id}", "select": "posts(political_label)"})
+    except requests.RequestException:
+        return []
+    return [row["posts"]["political_label"] for row in rows if row.get("posts")]
 
 
 def fetch_liked_history(user_id: str) -> list[str]:

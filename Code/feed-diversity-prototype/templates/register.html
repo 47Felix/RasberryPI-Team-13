@@ -34,6 +34,32 @@
         <label for="password">Passwort</label>
         <input type="password" name="password" id="password" required minlength="6">
 
+        <details class="disclosure" style="margin:0.9rem 0;">
+          <summary>Kurzer Einstiegs-Fragebogen (optional, jederzeit überspringbar)</summary>
+          <p class="tab-caption" style="border:none;padding:0.5rem 0;">
+            Hilft dem Feed, von Anfang an eine Richtung zu haben, statt bei null
+            zu starten – wird sofort von deinen echten Likes/Kommentaren
+            überschrieben, sobald du welche machst. Nichts hier ist Pflicht.
+          </p>
+
+          {% for question in onboarding_questions %}
+            <fieldset class="settings-row" style="border:none;padding:0;margin:0 0 0.75rem;">
+              <legend class="tab-caption" style="border:none;padding:0 0 0.3rem;">{{ question.topic }}</legend>
+              <label><input type="radio" name="onboarding_q{{ loop.index0 }}" value="pro"> {{ question.pro }}</label>
+              <label><input type="radio" name="onboarding_q{{ loop.index0 }}" value="contra"> {{ question.contra }}</label>
+              <label><input type="radio" name="onboarding_q{{ loop.index0 }}" value="" checked> Keine Angabe</label>
+            </fieldset>
+          {% endfor %}
+
+          <label for="onboarding_political_label">Politisch würdest du dich eher einordnen als</label>
+          <select name="onboarding_political_label" id="onboarding_political_label">
+            <option value="" selected>Keine Angabe</option>
+            {% for label in known_political_labels %}
+              <option value="{{ label }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </details>
+
         <button type="submit" {{ 'disabled' if not auth_configured }}>Account erstellen</button>
       </form>
 

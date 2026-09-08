@@ -59,14 +59,27 @@
       </p>
       {% if preferred_perspective or preferred_political_label %}
         <p class="bias-note">
-          Basierend auf deinen bisherigen Likes bevorzugt dein Feed aktuell
+          {% if onboarding_perspective_used or onboarding_political_label_used %}
+            Basierend auf deiner Angabe im Einstiegs-Fragebogen bevorzugt dein Feed aktuell
+          {% else %}
+            Basierend auf deinen bisherigen Likes und Kommentaren bevorzugt dein Feed aktuell
+          {% endif %}
           {% if preferred_perspective %}<strong>{{ preferred_perspective }}</strong>-Posts{% endif %}
           {% if preferred_perspective and preferred_political_label %} und {% endif %}
           {% if preferred_political_label %}das Lager <strong>{{ preferred_political_label }}</strong>{% endif %}
-          – das verstärkt sich mit jedem weiteren Like in diese Richtung. Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
+          {% if onboarding_perspective_used or onboarding_political_label_used %}
+            – sobald du likest oder kommentierst, übernimmt das die Führung und verstärkt sich von da an in diese Richtung.
+          {% else %}
+            – das verstärkt sich mit jedem weiteren Like/Kommentar in diese Richtung.
+          {% endif %}
+          Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
         </p>
       {% endif %}
     </div>
+
+    <button type="button" id="refresh-banner" class="refresh-banner" hidden onclick="window.location.reload()">
+      ↑ Neue Beiträge – aktualisieren
+    </button>
 
     <div class="feed">
       {% for item in feed_items %}
@@ -255,6 +268,20 @@
 
   <script>
     var CURRENT_USER_ID = {{ current_user.id | tojson if current_user else 'null' }};
+    var LATEST_POST_ID = {{ latest_post_id | tojson }};
+    var NEW_POSTS_POLL_MS = 15000;
+
+    function pollForNewPosts() {
+      fetch("/posts/latest-id")
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data.id && data.id !== LATEST_POST_ID) {
+            document.getElementById("refresh-banner").hidden = false;
+          }
+        })
+        .catch(function () { /* offline/unreachable - just try again next tick */ });
+    }
+    setInterval(pollForNewPosts, NEW_POSTS_POLL_MS);
 
     var MIX_LABELS = {
       2: "Hoch (jeder 2. Post)",

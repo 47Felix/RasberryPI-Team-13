@@ -39,6 +39,37 @@ KNOWN_PERSPECTIVES = ["pro", "contra"]
 # user-chosen label rather than an automatically detected one.
 KNOWN_POLITICAL_LABELS = ["links", "mitte", "rechts"]
 
+# Optional registration-time survey (see 0004_onboarding_survey.sql): one
+# pro/contra statement pair per known topic, phrased to match the framing
+# already used by the seed posts for that topic (see supabase/migrations/
+# 0001_init.sql seed data) so a skippable self-placement here feels like the
+# same kind of choice as picking a post's own perspective, not a separate
+# vocabulary. Purely gives the feed an initial lean before any likes/comments
+# exist - dominant_perspective() still only sees a majority across whichever
+# questions the account actually answered, ties/all-skipped stay None.
+ONBOARDING_QUESTIONS = [
+    {
+        "topic": "klima",
+        "pro": "CO2-Bepreisung sollte deutlich steigen, auch wenn das kurzfristig teurer wird.",
+        "contra": "Klimaauflagen sollten nicht zu stark auf Kosten der Bezahlbarkeit gehen.",
+    },
+    {
+        "topic": "verkehr",
+        "pro": "Rad/ÖPNV sollten beim Ausbau Vorrang vor dem Auto bekommen.",
+        "contra": "Der Autoverkehr bleibt für viele unverzichtbar und sollte nicht ausgebremst werden.",
+    },
+    {
+        "topic": "wirtschaft",
+        "pro": "Höhere Mindestlöhne/kürzere Arbeitszeiten sind mir wichtiger als Kostendruck auf Betriebe.",
+        "contra": "Der Kostendruck auf Betriebe sollte stärker gewichtet werden als höhere Lohnnebenkosten.",
+    },
+    {
+        "topic": "digital",
+        "pro": "Digitalisierung von Behörden/Open-Source sollte Vorrang vor Datenschutzbedenken bekommen.",
+        "contra": "Datenschutzbedenken sollten Vorrang vor schnellerer Digitalisierung bekommen.",
+    },
+]
+
 DEFAULT_DIVERSITY_EVERY = 3
 MIN_DIVERSITY_EVERY = 2
 MAX_DIVERSITY_EVERY = 6
@@ -128,6 +159,8 @@ def index():
     show_political_score = False
     fediverse_posts = []
     fediverse_topic = None
+    onboarding_perspective_used = False
+    onboarding_political_label_used = False
     # One query covers both the account's overall lean (dominant_perspective
     # doesn't care about order) and the like-history trend below, instead of
     # fetching the same likes/posts join twice per request.
@@ -143,8 +176,27 @@ def index():
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
         if current_user:
-            preferred_perspective = dominant_perspective(liked_history)
-            preferred_political_label = dominant_political_label(db.fetch_liked_political_labels(current_user["id"]))
+            # Comments count as an engagement signal alongside likes - someone
+            # who mostly comments on "pro" posts leans "pro" for the feed the
+            # same way a liker would, even without hitting the like button.
+            commented_perspectives = db.fetch_commented_perspectives(current_user["id"])
+            commented_labels = db.fetch_commented_political_labels(current_user["id"])
+            preferred_perspective = dominant_perspective(liked_history + commented_perspectives)
+            preferred_political_label = dominant_political_label(
+                db.fetch_liked_political_labels(current_user["id"]) + commented_labels
+            )
+            # No likes/comments yet (or no majority among them) - fall back to
+            # the account's own registration-survey answer, if it gave one,
+            # instead of leaving the feed with zero signal until the first
+            # like comes in. Real engagement above always wins once it exists.
+            if preferred_perspective is None or preferred_political_label is None:
+                profile = db.fetch_profile(current_user["id"]) or {}
+                if preferred_perspective is None:
+                    preferred_perspective = profile.get("onboarding_perspective")
+                    onboarding_perspective_used = preferred_perspective is not None
+                if preferred_political_label is None:
+                    preferred_political_label = profile.get("onboarding_political_label")
+                    onboarding_political_label_used = preferred_political_label is not None
         bias_perspective = preferred_perspective or seed_post.perspective
         bias_political_label = preferred_political_label or seed_post.political_label
 
@@ -193,7 +245,10 @@ def index():
         fediverse_topic=fediverse_topic,
         preferred_perspective=preferred_perspective,
         preferred_political_label=preferred_political_label,
+        onboarding_perspective_used=onboarding_perspective_used,
+        onboarding_political_label_used=onboarding_political_label_used,
         bubble_trend_data=bubble_trend_data,
+        latest_post_id=posts[0].id if posts else None,
     )
 
 
@@ -213,12 +268,37 @@ def register():
             if user is None:
                 error = "Registrierung fehlgeschlagen (E-Mail evtl. schon vergeben, oder Supabase nicht erreichbar)."
             else:
-                handle = db.create_unique_profile(user["id"], display_name)
+                # Survey is entirely optional - unanswered/tied questions
+                # just leave onboarding_perspective as None (see
+                # ranking.dominant_perspective()), same as skipping it outright.
+                quiz_answers = [
+                    request.form.get(f"onboarding_q{i}")
+                    for i in range(len(ONBOARDING_QUESTIONS))
+                ]
+                onboarding_perspective = dominant_perspective(
+                    [answer for answer in quiz_answers if answer in KNOWN_PERSPECTIVES]
+                )
+                onboarding_political_label = request.form.get("onboarding_political_label")
+                if onboarding_political_label not in KNOWN_POLITICAL_LABELS:
+                    onboarding_political_label = None
+
+                handle = db.create_unique_profile(
+                    user["id"],
+                    display_name,
+                    onboarding_perspective=onboarding_perspective,
+                    onboarding_political_label=onboarding_political_label,
+                )
                 session["user_id"] = user["id"]
                 session["display_name"] = display_name
                 session["handle"] = handle
                 return redirect(request.args.get("next") or url_for("index"))
-    return render_template("register.html", error=error, auth_configured=db.auth_configured())
+    return render_template(
+        "register.html",
+        error=error,
+        auth_configured=db.auth_configured(),
+        onboarding_questions=ONBOARDING_QUESTIONS,
+        known_political_labels=KNOWN_POLITICAL_LABELS,
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -266,6 +346,14 @@ def create_post():
         db.insert_post(title, content, topic, perspective, session["user_id"], political_label)
 
     return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
+
+
+@app.route("/posts/latest-id")
+def latest_post_id():
+    """Polled from the frontend (see templates/index.html) to detect posts
+    created by someone else since the page was loaded, without re-running
+    the full ranked-feed query every ~15s."""
+    return jsonify({"id": db.fetch_latest_post_id()})
 
 
 @app.route("/posts/suggest-category", methods=["POST"])
