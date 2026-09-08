@@ -1,0 +1,33 @@
+[Unit]
+Description=Feed-Diversity-Prototyp (Case 3) - Gunicorn
+After=network.target
+
+[Service]
+# Anpassen: tatsaechlicher Linux-User/Pfad auf der Zielumgebung.
+User=feeddiversity
+Group=feeddiversity
+WorkingDirectory=/opt/feed-diversity-prototype
+EnvironmentFile=/opt/feed-diversity-prototype/.env
+
+# Bindet nur auf localhost - erreichbar wird die App ausschliesslich ueber
+# den Caddy-Reverse-Proxy (siehe Caddyfile in diesem Ordner), nie direkt von
+# aussen. Kein Flask-Dev-Server, kein debug=True - siehe README.md dieses
+# Ordners fuer die Begruendung.
+ExecStart=/opt/feed-diversity-prototype/venv/bin/gunicorn \
+    --bind 127.0.0.1:8000 \
+    --workers 2 \
+    --timeout 30 \
+    app:app
+
+Restart=on-failure
+RestartSec=5
+
+# Haertung: Prozess bekommt nur Zugriff auf sein eigenes Arbeitsverzeichnis,
+# kein Root, keine neuen Privilegien.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/feed-diversity-prototype
+
+[Install]
+WantedBy=multi-user.target
