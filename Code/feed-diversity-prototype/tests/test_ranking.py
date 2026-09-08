@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ranking import (
     Post,
+    bubble_trend,
     diversity_aware_feed,
     diversity_score,
     dominant_perspective,
@@ -167,3 +168,27 @@ def test_diversity_aware_feed_interrupts_the_preferred_perspective_not_just_the_
     diverse_items = [item for item in feed if item["is_diverse_pick"]]
     assert diverse_items
     assert all(item["post"].perspective == "pro" for item in diverse_items)
+
+
+def test_bubble_trend_is_empty_without_any_likes():
+    assert bubble_trend([]) == []
+
+
+def test_bubble_trend_climbs_toward_one_hundred_as_one_side_reinforces():
+    trend = bubble_trend(["pro", "pro", "pro"])
+    assert [point["dominant_share"] for point in trend] == [100.0, 100.0, 100.0]
+    assert [point["index"] for point in trend] == [1, 2, 3]
+
+
+def test_bubble_trend_drops_back_toward_fifty_when_a_counter_like_comes_in():
+    # Three "pro" likes tighten the bubble to 100%, a "contra" like right
+    # after loosens it back toward 50/50 - the whole point is that this is
+    # visible as movement, not just a final snapshot number.
+    trend = bubble_trend(["pro", "pro", "pro", "contra"])
+    assert trend[2]["dominant_share"] == 100.0
+    assert trend[3]["dominant_share"] == 75.0
+
+
+def test_bubble_trend_treats_a_tie_as_fifty_fifty():
+    trend = bubble_trend(["pro", "contra"])
+    assert trend[-1]["dominant_share"] == 50.0

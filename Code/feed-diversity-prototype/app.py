@@ -13,6 +13,7 @@ from flask import Flask, jsonify, redirect, render_template, request, session, u
 import db
 from ranking import (
     Post,
+    bubble_trend,
     diversity_aware_feed,
     diversity_score_for_perspective,
     dominant_perspective,
@@ -115,6 +116,11 @@ def index():
     feed_items = []
     feed_score = 0
     preferred_perspective = None
+    # One query covers both the account's overall lean (dominant_perspective
+    # doesn't care about order) and the like-history trend below, instead of
+    # fetching the same likes/posts join twice per request.
+    liked_history = db.fetch_liked_history(current_user["id"]) if current_user else []
+    bubble_trend_data = bubble_trend(liked_history)
 
     if posts:
         seed_id = request.args.get("seed_id")
@@ -123,7 +129,7 @@ def index():
         seed_post = next(p for p in posts if p.id == seed_id)
 
         if current_user:
-            preferred_perspective = dominant_perspective(db.fetch_liked_perspectives(current_user["id"]))
+            preferred_perspective = dominant_perspective(liked_history)
         bias_perspective = preferred_perspective or seed_post.perspective
 
         if mode == "diversity":
@@ -154,6 +160,7 @@ def index():
         db_configured=db.is_configured(),
         current_user=current_user,
         preferred_perspective=preferred_perspective,
+        bubble_trend_data=bubble_trend_data,
     )
 
 

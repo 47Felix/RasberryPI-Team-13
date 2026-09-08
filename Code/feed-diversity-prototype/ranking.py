@@ -165,3 +165,31 @@ def diversity_score(feed: list[dict], seed_post: Post) -> float:
     post's own perspective - kept as a convenience wrapper for callers that
     don't track an account-level bias_perspective (see standard_feed())."""
     return diversity_score_for_perspective(feed, seed_post.perspective)
+
+
+def bubble_trend(liked_perspectives_in_order: list[str]) -> list[dict]:
+    """Tracks how one-sided an account's own like history has become over
+    time - critical point 6 in DTEW 0209 (measuring perspective diversity)
+    asked for this to be visible across a session, not just as a single
+    per-feed-view score.
+
+    `liked_perspectives_in_order` is the perspective of every post the
+    account has liked, oldest first. For each like (1-indexed), returns the
+    share (0-100) of likes-so-far that match whichever perspective is
+    dominant *at that point* - so the sequence shows the bubble either
+    tightening (share climbing toward 100) or loosening (share drifting back
+    toward 50) as more likes come in. A tie at any point counts as 50/50,
+    matching dominant_perspective()'s own tie-breaking.
+    """
+    trend = []
+    pro_count = 0
+    contra_count = 0
+    for index, perspective in enumerate(liked_perspectives_in_order, start=1):
+        if perspective == "pro":
+            pro_count += 1
+        elif perspective == "contra":
+            contra_count += 1
+        dominant_count = max(pro_count, contra_count)
+        share = 100 * dominant_count / index
+        trend.append({"index": index, "perspective": perspective, "dominant_share": round(share, 1)})
+    return trend
