@@ -21,7 +21,7 @@ MAIN_REPO_PATH = os.environ.get("REPO_PATH", os.path.expanduser("~/RasberryPI-Te
 WORKTREES_BASE = Path(os.path.expanduser("~/repos/worktrees"))
 SESSIONS_BASE = Path(os.path.expanduser("~/sessions"))
 USERS_FILE = Path(__file__).parent / "users.json"
-CLAUDE_TIMEOUT_SECONDS = 300
+CLAUDE_TIMEOUT_SECONDS = 1800  # 30 Min: laengere Coding-Tasks (Tests, Commits, PRs) brauchen mehr als die alten 5 Min
 AUTO_RESET_AFTER_MESSAGES = 25  # Session wird danach automatisch neu gestartet, kein !register noetig
 
 

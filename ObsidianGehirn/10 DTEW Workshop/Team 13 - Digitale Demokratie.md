@@ -120,7 +120,7 @@ Bearbeitung siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideatio
 - [ ] Team Canvas gemeinsam ausfüllen (Ziele/Rollen/Regeln)
 - [ ] Team-13-Karte im Teams-Übersicht-Board pflegen
 - [ ] Facilitator-Rolle klären
-- [ ] Tech-Stack für Prototyp festlegen (noch offen, hängt von Lösungsidee ab)
+- [x] Tech-Stack für Prototyp festlegen: Flask + TF-IDF/Cosine Similarity (scikit-learn), siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]] Abschnitt "Prototyp gebaut" und [`Code/feed-diversity-prototype/`](https://github.com/47Felix/RasberryPI-Team-13/tree/main/Code/feed-diversity-prototype)
 - [ ] Entscheiden, ob AI-Workshop Donnerstag relevant ist (siehe oben)
 - [ ] Kritische Punkte/Problem Statements/Ideation vom Mittwoch im Team bestätigen (siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]])
 

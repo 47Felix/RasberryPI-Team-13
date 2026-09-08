@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Perspektiv – Feed Diversity Lab (Case 3 DTEW)</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark">Perspektiv</span>
+        <span class="brand-tag">Dein Feed</span>
+      </div>
+      <div class="auth-status">
+        {% if current_user %}
+          <span>{{ current_user.display_name }} ({{ current_user.handle }})</span>
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <a href="{{ url_for('register') }}">Registrieren</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+    <details class="disclosure about">
+      <summary>ⓘ Was ist das hier?</summary>
+      <p class="about-text">
+        Ein Feed, zwei Ranking-Modi für denselben Ausgangs-Post: <strong>Standard</strong>
+        sortiert rein nach inhaltlicher Ähnlichkeit – bubble-verstärkend, wie ein
+        typischer „For You“-Feed. <strong>Diversity-aware</strong> mischt bewusst
+        thematisch verwandte Gegenperspektiven ein. Zwischen beiden wechseln und den
+        Unterschied beim Scrollen spüren, nicht nur an einer Zahl ablesen.
+        Prototyp für Case 3 (DTEW Hamburg 2026, digi&amp;demo e.V.).
+      </p>
+    </details>
+
+    <nav class="tabs" aria-label="Feed-Modus">
+      <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='standard') }}"
+         class="tab {{ 'active' if mode == 'standard' }}">Standard</a>
+      <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='diversity') }}"
+         class="tab {{ 'active' if mode == 'diversity' }}">Diversity-aware</a>
+    </nav>
+    <div class="tab-caption">
+      <p style="margin:0;">
+        {% if mode == 'diversity' %}
+          Bewusst eingemischte Gegenperspektiven/-lager, damit der Feed thematisch relevant bleibt statt nur zu bestätigen.
+        {% else %}
+          Reine Ähnlichkeits-Rangfolge, kein Eingriff – wie ein typischer bubble-verstärkender "For You"-Feed.
+        {% endif %}
+      </p>
+      <p class="score-row">
+        <span><span class="score-label">Perspektive (pro/contra):</span> <span class="score-value">{{ feed_score }}%</span> Gegenmeinung</span>
+        {% if show_political_score %}
+          <span><span class="score-label">Politisch (links/mitte/rechts):</span> <span class="score-value">{{ political_feed_score }}%</span> anderes Lager</span>
+        {% endif %}
+      </p>
+      {% if preferred_perspective_by_topic or preferred_political_label %}
+        <p class="bias-note">
+          Basierend auf deinen bisherigen Likes/Kommentaren (und, wo du noch keine
+          hast, deiner Angabe im Einstiegs-Fragebogen) bevorzugt dein Feed aktuell
+          pro Thema:
+          {% for topic, perspective in preferred_perspective_by_topic.items() %}
+            <strong>{{ topic }}</strong>&rarr;<strong>{{ perspective }}</strong>{{ ' (Fragebogen)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
+          {% endfor %}
+          {% if preferred_political_label %}
+            {{ ' – ' if preferred_perspective_by_topic }}außerdem das Lager <strong>{{ preferred_political_label }}</strong>{{ ' (Fragebogen)' if onboarding_political_label_used }}
+          {% endif %}
+          – das verstärkt sich pro Thema mit jedem weiteren Like/Kommentar dazu in diese Richtung.
+          Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
+        </p>
+      {% endif %}
+    </div>
+
+    <button type="button" id="refresh-banner" class="refresh-banner" hidden onclick="window.location.reload()">
+      ↑ Neue Beiträge – aktualisieren
+    </button>
+
+    <div class="feed">
+      {% for item in feed_items %}
+        <article class="feed-item {{ item.post.perspective }} {{ 'is-diverse' if item.is_diverse_pick }}">
+          {% if item.is_diverse_pick %}
+            <p class="suggested-label">✨ Vorgeschlagen · andere Perspektive zu „{{ item.post.topic }}“</p>
+          {% endif %}
+          <div class="feed-row">
+            <div class="avatar avatar-{{ item.post.perspective }}">{{ item.avatar }}</div>
+            <div class="feed-body">
+              <div class="post-header">
+                <span class="author">{{ item.author }}</span>
+                <span class="handle">{{ item.handle }}</span>
+                <span class="dot">·</span>
+                <span class="time">{{ item.time_label }}</span>
+              </div>
+              <h3 class="post-title">{{ item.post.title }}</h3>
+              <p class="post-text">{{ item.post.text }}</p>
+              <div class="post-footer">
+                <div class="tags">
+                  <span class="chip {{ item.post.perspective }}" title="Perspektive: {{ item.post.perspective }}">
+                    <span class="chip-mark" aria-hidden="true">{{ '▲' if item.post.perspective == 'pro' else '▼' }}</span>
+                    {{ item.post.topic }}
+                    <span class="sr-only">, Perspektive: {{ item.post.perspective }}</span>
+                  </span>
+                  <span class="compass-wrap" title="Politische Einordnung (von der Autorin/dem Autor selbst gewählt): {{ item.post.political_label or 'nicht angegeben' }}">
+                    <span class="compass">
+                      <span class="compass-segment links {{ 'active' if item.post.political_label == 'links' }}"></span>
+                      <span class="compass-segment mitte {{ 'active' if item.post.political_label == 'mitte' }}"></span>
+                      <span class="compass-segment rechts {{ 'active' if item.post.political_label == 'rechts' }}"></span>
+                    </span>
+                    <span class="compass-label">{{ item.post.political_label or 'unmarkiert' }}</span>
+                  </span>
+                </div>
+                <div class="engagement">
+                  <button
+                    type="button"
+                    class="like-button {{ 'liked' if item.liked }}"
+                    data-post-id="{{ item.post.id }}"
+                    onclick="toggleLike(this)">
+                    <span class="like-icon">{{ '♥' if item.liked else '♡' }}</span>
+                    <span class="like-count">{{ item.likes }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="comments" data-post-id="{{ item.post.id }}">
+                <button type="button" class="comments-toggle" onclick="toggleComments(this)">💬 {{ item.comments }} Kommentare</button>
+                <div class="comments-list" hidden></div>
+                {% if current_user %}
+                  <form class="comment-form" hidden onsubmit="return submitComment(event, this)">
+                    <input type="text" name="content" maxlength="300" placeholder="Kommentieren als {{ current_user.handle }}…" required>
+                    <button type="submit">Senden</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </article>
+      {% else %}
+        <div class="empty-state">Keine Posts gefunden.</div>
+      {% endfor %}
+    </div>
+
+    {% if fediverse_topic %}
+      <details class="disclosure fediverse">
+        <summary>Aus dem Fediverse zu „{{ fediverse_topic }}“</summary>
+        {% if fediverse_posts %}
+          {% for post in fediverse_posts %}
+            <div class="fediverse-item">
+              {{ post.content }}
+              <span class="fediverse-meta">
+                {{ post.account_handle }}
+                {% if post.url %} · <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">Original ansehen</a>{% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="fediverse-empty">Aktuell keine öffentlichen Fediverse-Posts zu diesem Thema erreichbar.</p>
+        {% endif %}
+      </details>
+    {% endif %}
+
+    <details class="disclosure settings">
+      <summary>Feed-Einstellungen</summary>
+
+      <form class="settings-row" method="get">
+        <input type="hidden" name="mode" value="{{ mode }}">
+        <input type="hidden" name="mix" value="{{ mix }}">
+        <label for="seed_id">Eigener Ausgangs-Post</label>
+        <select name="seed_id" id="seed_id" onchange="this.form.submit()">
+          {% for post in posts %}
+            <option value="{{ post.id }}" {{ 'selected' if post.id == seed_id }}>
+              [{{ post.topic }}/{{ post.perspective }}] {{ post.title }}
+            </option>
+          {% endfor %}
+        </select>
+        <noscript><button type="submit">Anzeigen</button></noscript>
+      </form>
+
+      <form class="settings-row mix-block" method="get">
+        <input type="hidden" name="mode" value="{{ mode }}">
+        <input type="hidden" name="seed_id" value="{{ seed_id }}">
+        <label for="mix">Vielfalt-Stärke im Diversity-aware Feed</label>
+        <div class="mix-row">
+          <input
+            type="range" name="mix" id="mix"
+            min="2" max="6" step="1" value="{{ mix }}"
+            oninput="updateMixLabel(this.value)"
+            onchange="this.form.submit()">
+          <span class="mix-value" id="mix-label"></span>
+        </div>
+        <noscript><button type="submit">Anzeigen</button></noscript>
+      </form>
+    </details>
+
+    {% if current_user and bubble_trend_data|length >= 2 %}
+      <details class="disclosure settings">
+        <summary>📈 Deine Bubble-Entwicklung ({{ bubble_trend_data|length }} Likes)</summary>
+        <p class="tab-caption">
+          Anteil deiner Likes, der jeweils zur gerade vorherrschenden Perspektive gehört –
+          je näher an 100%, desto enger deine Bubble bisher. Ein Ausschlag nach unten heißt:
+          du hast (wieder) etwas von der Gegenseite geliked.
+        </p>
+        <div class="trend-sparkline"
+             role="img"
+             aria-label="Bubble-Anteil über deine letzten {{ bubble_trend_data|length }} Likes, von {{ bubble_trend_data[0].dominant_share }}% auf zuletzt {{ bubble_trend_data[-1].dominant_share }}%">
+          {% for point in bubble_trend_data %}
+            <span class="trend-bar" style="height: {{ point.dominant_share }}%"
+                  title="Like #{{ point.index }} ({{ point.perspective }}): {{ point.dominant_share }}% Bubble-Anteil"></span>
+          {% endfor %}
+        </div>
+        <p class="trend-caption">Aktuell <strong>{{ bubble_trend_data[-1].dominant_share }}%</strong> in einer Bubble.</p>
+      </details>
+    {% endif %}
+
+    <details class="disclosure settings">
+      <summary>Neuen Post erstellen</summary>
+
+      {% if not db_configured %}
+        <p class="tab-caption">Supabase ist nicht konfiguriert – neue Posts können aktuell nicht gespeichert werden.</p>
+      {% elif not current_user %}
+        <p class="tab-caption">Bitte <a href="{{ url_for('login', next=url_for('index')) }}">einloggen</a> oder
+          <a href="{{ url_for('register') }}">registrieren</a>, um einen Post zu veröffentlichen.</p>
+      {% endif %}
+
+      <form class="settings-row" method="post" action="{{ url_for('create_post') }}">
+        <input type="hidden" name="mode" value="{{ mode }}">
+        <input type="hidden" name="mix" value="{{ mix }}">
+
+        <label for="title">Titel</label>
+        <input type="text" name="title" id="title" required maxlength="120">
+
+        <label for="content">Text</label>
+        <textarea name="content" id="content" required maxlength="600" rows="3"></textarea>
+
+        <label for="topic">
+          Kategorie
+          <button type="button" class="suggest-button" onclick="suggestCategory()">Vorschlagen</button>
+          <span id="suggest-hint" class="suggest-hint"></span>
+        </label>
+        <select name="topic" id="topic">
+          {% for topic in known_topics %}
+            <option value="{{ topic }}">{{ topic }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="perspective">Perspektive (pro/contra zum Thema)</label>
+        <select name="perspective" id="perspective">
+          {% for perspective in known_perspectives %}
+            <option value="{{ perspective }}">{{ perspective }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="political_label">Politische Einordnung (unabhängig von der Perspektive, selbst gewählt)</label>
+        <select name="political_label" id="political_label">
+          {% for label in known_political_labels %}
+            <option value="{{ label }}" {{ 'selected' if label == 'mitte' }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit" {{ 'disabled' if not db_configured or not current_user }}>Post veröffentlichen</button>
+      </form>
+    </details>
+  </main>
+
+  <script>
+    var CURRENT_USER_ID = {{ current_user.id | tojson if current_user else 'null' }};
+    var LATEST_POST_ID = {{ latest_post_id | tojson }};
+    var NEW_POSTS_POLL_MS = 15000;
+
+    function pollForNewPosts() {
+      fetch("/posts/latest-id")
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data.id && data.id !== LATEST_POST_ID) {
+            document.getElementById("refresh-banner").hidden = false;
+          }
+        })
+        .catch(function () { /* offline/unreachable - just try again next tick */ });
+    }
+    setInterval(pollForNewPosts, NEW_POSTS_POLL_MS);
+
+    var MIX_LABELS = {
+      2: "Hoch (jeder 2. Post)",
+      3: "Mittel-hoch (jeder 3. Post)",
+      4: "Mittel (jeder 4. Post)",
+      5: "Mittel-niedrig (jeder 5. Post)",
+      6: "Niedrig (jeder 6. Post)"
+    };
+    function updateMixLabel(value) {
+      var el = document.getElementById("mix-label");
+      if (el) el.textContent = MIX_LABELS[value] || value;
+    }
+    var mixInput = document.getElementById("mix");
+    if (mixInput) updateMixLabel(mixInput.value);
+
+    function toggleLike(button) {
+      var postId = button.getAttribute("data-post-id");
+      fetch("/posts/" + encodeURIComponent(postId) + "/like", { method: "POST" })
+        .then(function (response) {
+          if (response.status === 401) {
+            window.location.href = "/login";
+            return null;
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || data.error) return;
+          var icon = button.querySelector(".like-icon");
+          var count = button.querySelector(".like-count");
+          var delta = data.liked ? 1 : -1;
+          icon.textContent = data.liked ? "♥" : "♡";
+          button.classList.toggle("liked", data.liked);
+          count.textContent = parseInt(count.textContent, 10) + delta;
+        });
+    }
+
+    function toggleComments(button) {
+      var container = button.closest(".comments");
+      var list = container.querySelector(".comments-list");
+      var form = container.querySelector(".comment-form");
+      var postId = container.getAttribute("data-post-id");
+      var opening = list.hasAttribute("hidden");
+      if (opening) {
+        list.removeAttribute("hidden");
+        if (form) form.removeAttribute("hidden");
+        loadComments(postId, list);
+      } else {
+        list.setAttribute("hidden", "");
+        if (form) form.setAttribute("hidden", "");
+      }
+    }
+
+    function renderComments(list, comments) {
+      list.textContent = "";
+      if (!comments.length) {
+        list.textContent = "Noch keine Kommentare.";
+        return;
+      }
+      comments.forEach(function (comment) {
+        var el = document.createElement("p");
+        el.className = "comment";
+        var strong = document.createElement("strong");
+        strong.textContent = comment.author;
+        el.appendChild(strong);
+        el.appendChild(document.createTextNode(comment.handle + ": " + comment.content));
+        if (CURRENT_USER_ID && comment.user_id === CURRENT_USER_ID) {
+          var del = document.createElement("button");
+          del.type = "button";
+          del.className = "comment-delete";
+          del.textContent = "Löschen";
+          del.onclick = function () { deleteComment(comment.id, list); };
+          el.appendChild(del);
+        }
+        list.appendChild(el);
+      });
+    }
+
+    function loadComments(postId, list) {
+      list.textContent = "Lädt…";
+      fetch("/posts/" + encodeURIComponent(postId) + "/comments")
+        .then(function (response) { return response.json(); })
+        .then(function (data) { renderComments(list, data.comments || []); });
+    }
+
+    function deleteComment(commentId, list) {
+      fetch("/comments/" + encodeURIComponent(commentId), { method: "DELETE" })
+        .then(function (response) {
+          if (!response.ok) return null;
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || !data.ok) return;
+          var container = list.closest(".comments");
+          var postId = container.getAttribute("data-post-id");
+          loadComments(postId, list);
+          var toggle = container.querySelector(".comments-toggle");
+          var current = parseInt((toggle.textContent.match(/\d+/) || ["0"])[0], 10) || 0;
+          toggle.textContent = "💬 " + Math.max(current - 1, 0) + " Kommentare";
+        });
+    }
+
+    function submitComment(event, form) {
+      event.preventDefault();
+      var container = form.closest(".comments");
+      var postId = container.getAttribute("data-post-id");
+      var input = form.querySelector("input[name=content]");
+      var content = input.value.trim();
+      if (!content) return false;
+      fetch("/posts/" + encodeURIComponent(postId) + "/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: content }),
+      })
+        .then(function (response) {
+          if (response.status === 401) {
+            window.location.href = "/login";
+            return null;
+          }
+          return response.json();
+        })
+        .then(function (data) {
+          if (!data || data.error) return;
+          input.value = "";
+          loadComments(postId, container.querySelector(".comments-list"));
+          var toggle = container.querySelector(".comments-toggle");
+          var current = parseInt((toggle.textContent.match(/\d+/) || ["0"])[0], 10) || 0;
+          toggle.textContent = "💬 " + (current + 1) + " Kommentare";
+        });
+      return false;
+    }
+
+    function suggestCategory() {
+      var title = document.getElementById("title").value;
+      var content = document.getElementById("content").value;
+      var hint = document.getElementById("suggest-hint");
+      hint.textContent = "…";
+      fetch("/posts/suggest-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title, content: content }),
+      })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (!data.topic) {
+            hint.textContent = "Kein Vorschlag (Titel/Text eingeben)";
+            return;
+          }
+          document.getElementById("topic").value = data.topic;
+          hint.textContent = "Vorschlag: " + data.topic;
+        });
+    }
+  </script>
+</body>
+</html>

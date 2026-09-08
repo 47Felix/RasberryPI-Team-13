@@ -1,0 +1,758 @@
+/* Perspektiv — Feed Diversity Lab (Case 3 DTEW)
+
+   Editorial masthead look instead of a generic SaaS-dashboard aesthetic:
+   warm paper background, serif nameplate, hairline rules instead of
+   floating rounded cards/gradients, monospace bylines (press-agency style)
+   for metadata. Two independent axes per post - perspective (pro/contra,
+   green/red) and political self-label (links/mitte/rechts) - each get
+   their own colour language so they read as separate signals, not one
+   generic "tag". No external fonts/CDNs — must run fully offline. */
+
+:root {
+  --paper: #f6f2e9;
+  --surface: #fbf8f2;
+  --ink: #201c16;
+  --muted: #6b6154;
+  --faint: #99907f;
+  --line: #ddd3c0;
+  --line-strong: #201c16;
+
+  --accent: #a34a1f;
+  --accent-ink: #7a3717;
+
+  --pro: #206a3f;
+  --pro-bg: #e5efe4;
+  --contra: #a3311d;
+  --contra-bg: #f5e6e0;
+
+  --links: #5b4b8a;
+  --links-bg: #eae5f2;
+  --mitte: #7d6a3f;
+  --mitte-bg: #f0e9d8;
+  --rechts: #2c6e83;
+  --rechts-bg: #e2eef1;
+
+  --radius-sm: 3px;
+  --radius-round: 999px;
+
+  --font-display: Georgia, "Times New Roman", ui-serif, serif;
+  --font-body: -apple-system, "Segoe UI", "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  --font-meta: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+
+/* ---------- Masthead ---------- */
+
+.topbar {
+  background: var(--paper);
+  border-bottom: 3px double var(--line-strong);
+  padding: 0.9rem 1.25rem 0.7rem;
+}
+
+.topbar .brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.topbar-inner .brand {
+  max-width: none;
+  margin: 0;
+}
+
+.auth-status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--font-meta);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.auth-status a {
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.topbar .brand-mark {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+
+.topbar .brand-tag {
+  font-family: var(--font-meta);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  border-left: 1px solid var(--line);
+  padding-left: 0.6rem;
+}
+
+/* ---------- Layout ---------- */
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.1rem 1rem 3rem;
+}
+
+.disclosure {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 1rem 0.15rem;
+}
+
+.disclosure summary {
+  cursor: pointer;
+  font-family: var(--font-meta);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.about {
+  margin: 0 0 1rem;
+}
+
+.about summary {
+  padding: 0.6rem 0;
+}
+
+.about-text {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.9rem;
+  font-family: var(--font-body);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ---------- Mode tabs ---------- */
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.7rem 0.5rem 0.55rem;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--faint);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.tab-caption {
+  margin: 0;
+  padding: 0.6rem 0 0.9rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1rem;
+}
+
+.score-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.1rem;
+  margin: 0.5rem 0 0.35rem;
+  font-family: var(--font-meta);
+  font-size: 0.76rem;
+}
+
+.score-row .score-label {
+  color: var(--faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.score-row .score-value {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.bias-note {
+  margin: 0.3rem 0 0;
+}
+
+.refresh-banner {
+  display: block;
+  width: 100%;
+  margin: 0.75rem 0;
+  padding: 0.55rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--accent-ink);
+  font-family: var(--font-meta);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.refresh-banner:hover {
+  background: var(--paper);
+}
+
+/* ---------- Feed ---------- */
+
+.feed {
+  background: var(--surface);
+}
+
+.feed-item {
+  padding: 0.95rem 0 0.95rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.feed-item:first-child {
+  padding-top: 0.2rem;
+}
+
+.feed-item:last-child {
+  border-bottom: none;
+}
+
+.feed-item.is-diverse {
+  box-shadow: inset 3px 0 0 var(--accent);
+  padding-left: 0.75rem;
+}
+
+.suggested-label {
+  margin: 0 0 0.45rem 2.85rem;
+  font-family: var(--font-meta);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+
+.feed-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.avatar {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  background: var(--paper);
+}
+
+.avatar-pro {
+  background: var(--pro-bg);
+}
+
+.avatar-contra {
+  background: var(--contra-bg);
+}
+
+.feed-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-family: var(--font-meta);
+  font-size: 0.76rem;
+}
+
+.post-header .author {
+  font-weight: 700;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+
+.post-header .handle,
+.post-header .dot,
+.post-header .time {
+  color: var(--faint);
+}
+
+.post-title {
+  margin: 0.3rem 0 0.2rem;
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.post-text {
+  margin: 0 0 0.65rem;
+  color: var(--ink);
+  font-size: 0.93rem;
+}
+
+.post-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 0.9rem;
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-family: var(--font-meta);
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-round);
+  background: #ece5d4;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+}
+
+.chip.pro {
+  background: var(--pro-bg);
+  color: var(--pro);
+  border-color: var(--pro);
+}
+
+.chip.contra {
+  background: var(--contra-bg);
+  color: var(--contra);
+  border-color: var(--contra);
+}
+
+.chip-mark {
+  font-size: 0.6rem;
+}
+
+/* Political compass: a small three-segment bar, one segment per label,
+   the post's own label lit up and the other two dimmed - a compact stand-in
+   for the "Perspektiven-Kompass" idea from the team brain dump, without a
+   full illustrated compass widget. */
+.compass-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.compass {
+  display: inline-flex;
+  width: 2.4rem;
+  height: 0.55rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.compass-segment {
+  flex: 1;
+  opacity: 0.2;
+}
+
+.compass-segment.links {
+  background: var(--links);
+}
+
+.compass-segment.mitte {
+  background: var(--mitte);
+}
+
+.compass-segment.rechts {
+  background: var(--rechts);
+}
+
+.compass-segment.active {
+  opacity: 1;
+}
+
+.compass-label {
+  font-family: var(--font-meta);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.engagement {
+  display: flex;
+  gap: 0.85rem;
+  font-family: var(--font-meta);
+  font-size: 0.76rem;
+  color: var(--faint);
+}
+
+.comments {
+  margin-top: 0.6rem;
+}
+
+.comments-toggle {
+  border: none;
+  background: none;
+  font-family: var(--font-meta);
+  font-size: 0.74rem;
+  color: var(--faint);
+  cursor: pointer;
+  padding: 0;
+}
+
+.comments-list {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.7rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.comment {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.comment strong {
+  margin-right: 0.3rem;
+}
+
+.comment-delete {
+  margin-left: 0.5rem;
+  border: none;
+  background: none;
+  font-family: var(--font-meta);
+  font-size: 0.7rem;
+  color: var(--contra);
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.comment-form input[type="text"] {
+  flex: 1;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  font-size: 0.85rem;
+  font-family: inherit;
+  background: var(--surface);
+}
+
+.comment-form button {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--ink);
+  color: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.empty-state {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 1.5rem 0;
+  text-align: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* ---------- Settings (collapsed by default, deliberately secondary) ---------- */
+
+.settings {
+  margin-top: 1.25rem;
+  padding-bottom: 0.9rem;
+}
+
+.settings summary {
+  padding: 0.7rem 0;
+}
+
+.settings-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.settings-row label {
+  font-family: var(--font-meta);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+}
+
+.settings-row select,
+.settings-row input[type="text"],
+.settings-row input[type="email"],
+.settings-row input[type="password"],
+.settings-row textarea {
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.88rem;
+  font-family: inherit;
+  resize: vertical;
+  color: var(--ink);
+}
+
+.settings-row button[type="submit"] {
+  margin-top: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: var(--ink);
+  color: var(--surface);
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.settings-row button[type="submit"]:disabled {
+  background: var(--faint);
+  border-color: var(--faint);
+  cursor: not-allowed;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: none;
+  background: none;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.like-button.liked {
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.suggest-button {
+  margin-left: 0.4rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.64rem;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.suggest-hint {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--faint);
+}
+
+.mix-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+input[type="range"] {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 3px;
+  border-radius: var(--radius-round);
+  background: var(--line-strong);
+  outline-offset: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+}
+
+.mix-value {
+  font-family: var(--font-meta);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--accent-ink);
+  white-space: nowrap;
+  min-width: 11rem;
+}
+
+.trend-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 3.5rem;
+  margin-top: 0.6rem;
+  padding: 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.trend-bar {
+  flex: 1 1 auto;
+  width: 6px;
+  min-width: 3px;
+  max-width: 10px;
+  min-height: 2px;
+  border-radius: 1px;
+  background: var(--brand);
+  opacity: 0.75;
+}
+
+.trend-caption {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+noscript button {
+  margin-top: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+/* ---------- Fediverse section (read-only, see fediverse.py) ---------- */
+
+.fediverse {
+  margin-top: 1.25rem;
+}
+
+.fediverse summary::after {
+  content: " (extern, nur lesend)";
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.fediverse-item {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.86rem;
+}
+
+.fediverse-item:last-child {
+  border-bottom: none;
+}
+
+.fediverse-item .fediverse-meta {
+  display: block;
+  font-family: var(--font-meta);
+  font-size: 0.7rem;
+  color: var(--faint);
+  margin-top: 0.3rem;
+}
+
+.fediverse-empty {
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding: 0.5rem 0;
+}
