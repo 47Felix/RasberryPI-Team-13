@@ -25,6 +25,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Installierte Services]]
 - [[Node-RED Flow - LED Test]]
 - [[Erweiterung - Raspberry Pi Dashboard]]
+- [[Rechtliches - Dashboard-Website]]
 
 ## 🎓 Moodle Kurs
 - [[Kursstruktur]]

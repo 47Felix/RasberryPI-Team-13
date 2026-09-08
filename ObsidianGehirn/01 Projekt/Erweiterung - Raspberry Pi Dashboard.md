@@ -32,7 +32,7 @@ Pi: ~/tresor-dashboard/app.py (Flask, systemd-Service "tresor-dashboard")
 
 - **Code im Repo** (versioniert, `Code/pi-dashboard/`): `app.py`, `templates/*.html`, `requirements.txt`, `tresor-dashboard.service`. Das ist die Referenzkopie, siehe [[Git Workflow]]/[[Branch-Strategie]] fuer Aenderungen daran (Branch+PR, nicht direkt deployen ohne Commit).
 - **Live auf dem Pi**: `~/tresor-dashboard/` (App-Code identisch zum Repo, plus `venv/` und `.env`, beide NICHT versioniert, siehe `.gitignore`).
-- **`.env` auf dem Pi enthaelt**: `DASHBOARD_ADMIN_PASSWORD` (zufaellig generiert, steht nicht hier im Vault – siehe [[⚠️ Zugangsdaten - Hinweis]]), `DASHBOARD_SECRET_KEY` (Flask-Session), `DISCORD_BOT_TOKEN` (Kopie vom gleichen Bot-Token, das auch die Azure-VM nutzt), `DISCORD_ALARM_CHANNEL_ID` (aktuell `pi-projekt`-Kanal).
+- **`.env` auf dem Pi enthaelt**: `DASHBOARD_ADMIN_PASSWORD` (zufaellig generiert, steht nicht hier im Vault – siehe [[⚠️ Zugangsdaten - Hinweis]]), `DASHBOARD_SECRET_KEY` (Flask-Session), `DISCORD_BOT_TOKEN` (Kopie vom gleichen Bot-Token, das auch die Azure-VM nutzt), `DISCORD_ALARM_CHANNEL_ID` (aktuell `pi-projekt`-Kanal). Seit 08.09.2026 zusaetzlich die Impressums-Angaben (`DASHBOARD_IMPRESSUM_NAME`, `DASHBOARD_IMPRESSUM_ADDRESS`, `DASHBOARD_IMPRESSUM_CONTACT`, `DASHBOARD_IMPRESSUM_RESPONSIBLE`, `DASHBOARD_DATENSCHUTZ_AUFSICHT`) sowie optional `DASHBOARD_HTTPS` und `DASHBOARD_ACCESS_LOG` – Details in [[Rechtliches - Dashboard-Website]].
 - **Erreichbar unter**: `http://team13-1.local:5000` im Schul-WLAN, oder ueber Tailscale (`http://100.100.186.55:5000`) – siehe [[Pi Zugriff]] fuer den neuen Tailscale-Zugangsweg.
 - **Service verwalten**: `sudo systemctl status/restart tresor-dashboard`, Logs: `sudo journalctl -u tresor-dashboard -f`.
 - **`.env`-Änderungen wirken automatisch (seit 27.08.2026)**: `tresor-dashboard-env-reload.path` überwacht `~/tresor-dashboard/.env` und startet den Dashboard-Service automatisch neu, sobald die Datei geändert wird (systemd `EnvironmentFile` wird sonst nur beim Prozessstart gelesen – ohne diesen Watcher bräuchte jede `.env`-Änderung, z.B. ein neues Admin-Passwort, einen manuellen `systemctl restart`). Status prüfen: `systemctl status tresor-dashboard-env-reload.path`.
@@ -114,10 +114,15 @@ Deploy auf dem Pi nach Merge: `cp Code/pi-dashboard/templates/*.html ~/tresor-da
 - Die Pi-Systemuhr ging beim Deployment falsch (zeigte 24.08. statt 27.08.) – vermutlich fehlende RTC-Batterie + NTP-Sync noch nicht durchgelaufen. Betrifft die Zeitstempel im Event-Log! Siehe [[Offene Punkte]].
 - Ein Teammitglied hatte parallel schon eigene Debugging-Versuche mit `Serial.println(key)` unternommen (Notiz: "in der Serial kommt keine Zahl wenn ich auf dem Keypad drücke") – nicht geloescht, als Referenz stehen gelassen, liegt seit dem Sketch-Ordner-Cleanup (28.08.2026, PR [#47](https://github.com/47Felix/RasberryPI-Team-13/pull/47)) unter `Code/arduino-tresor/tresor_integration/debug-referenz/` (`tresor_integration_v2.ino`, Screenshot, `message.txt`) statt direkt im Sketch-Ordner – Grund: Arduino/`arduino-cli` kompiliert sonst alle `.ino`-Dateien im selben Ordner zusammen, was mit der zweiten `setup()`/`loop()`-Kopie fehlgeschlagen waere. Mein Ansatz loggt strukturierte Ereignisse statt Rohtasten, sollte das Problem umgehen, sobald der neue Sketch geflasht ist.
 
+## Rechtliches (Impressum / Datenschutz)
+
+Seit 08.09.2026 hat das Dashboard eine `/impressum`- und eine `/datenschutz`-Seite (Footer-Link auf jeder Seite) plus Sicherheits-Header, gehaertete Session-Cookies und reduziertes IP-Logging. Betreiber-/Kontaktdaten kommen aus der `.env`, nicht aus dem Repo. Vollstaendige Doku inkl. offener To-Dos (echte Daten eintragen, Lehrkraft-Review): [[Rechtliches - Dashboard-Website]].
+
 ## Verwandte Notizen
 - [[WS-Kurzprojekt Freitag]]
 - [[Pi Zugriff]]
 - [[Claude Discord Bot Setup]]
+- [[Rechtliches - Dashboard-Website]]
 - [[Offene Punkte]]
 
 #projekt #pi-dashboard #arduino #kurzprojekt
