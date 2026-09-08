@@ -38,6 +38,77 @@ zu durchbrechen statt nur die des aktuellen Ausgangs-Posts. Ohne Account
 oder ohne bisherige Likes (bzw. bei einem exakten Unentschieden) bleibt das
 alte Verhalten erhalten: Perspektive des Ausgangs-Posts entscheidet.
 
+## Politische Einordnung (links/mitte/rechts) als zweite, unabhängige Dimension
+
+Bisher gab es pro Post nur eine Achse: `perspective` (pro/contra zum jeweiligen
+Thema). Seit dieser Erweiterung gibt es eine zweite, davon unabhängige Achse:
+`political_label` (`links`/`mitte`/`rechts`), z.B. ein Post kann gleichzeitig
+"pro Windkraft-Ausbau" **und** "links" sein, oder "pro Windkraft-Ausbau"
+**und** "rechts" – die beiden Achsen sind orthogonal, nicht dasselbe Feld
+zweimal.
+
+**Bewusst kein automatischer Links/Rechts-Klassifikator.** Kritischer Punkt 6
+aus der DTEW-0209-Notiz (`ObsidianGehirn/10 DTEW Workshop/DTEW 0209 -
+Kritische Punkte, Problem Statements und Ideation.md`) benennt es direkt:
+"Wie misst/zeigt man 'Perspektivenvielfalt' überhaupt messbar, statt nur
+subjektiv zu behaupten das ist jetzt vielfältiger?" Eine zuverlässige
+automatische Erkennung der politischen Ausrichtung aus Freitext ist ein
+ungelöstes, in der NLP-Forschung selbst umstrittenes Problem (uneinheitliche
+Trainingsdaten, kulturell/zeitlich verschobene Definitionen von "links" und
+"rechts", hohe Fehlerquote gerade bei kurzen Posts ohne viel Kontext) und für
+ein zweiwöchiges Prototyping ohne ML-Vorerfahrung im Team nicht seriös
+machbar (dieselbe Einschätzung wie schon bei Lasses Fake-News-Detektor-
+Vorschlägen, siehe `ObsidianGehirn/10 DTEW Workshop/Team 13 - Digitale
+Demokratie.md`). Ein Prototyp, der intern behauptet "das hier ist objektiv
+links", würde eine Genauigkeit vortäuschen, die es nicht gibt, und selbst
+genau die Art von unsichtbarer, unüberprüfbarer algorithmischer Bewertung
+reproduzieren, die der ganze Case eigentlich sichtbar machen soll.
+
+**Stattdessen: Nutzer wählen das Label selbst**, beim Post-Erstellen über ein
+Dropdown, genau wie Thema/Perspektive schon funktionieren (`templates/
+index.html`, Feld `political_label`, serverseitig gegen `KNOWN_POLITICAL_LABELS`
+geprüft in `app.py:create_post`). Kein automatisches Nachjustieren, kein
+verstecktes Scoring – die Autorin/der Autor sieht das eigene Label, alle
+anderen sehen es am Post (kleiner Drei-Segment-"Kompass"-Chip, angelehnt an
+Felix' Brain-Dump-Idee eines "Perspektiven-Kompass", siehe
+`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`).
+
+**Kritisch einzuordnen:** Ein selbst gewähltes Label ist kein objektives Maß
+für "tatsächliche" politische Position, sondern eine Selbstauskunft. Das
+bringt eigene Verzerrungen mit (Selbstauswahl, sozial erwünschte Antworten,
+manche Nutzer:innen labeln strategisch "mitte" um neutral zu wirken, andere
+übertreiben absichtlich), ist aber ehrlich darüber, was es ist: eine
+Zuschreibung durch die Autorin/den Autor, keine von der App behauptete
+Wahrheit. Für einen Demo-Prototyp, der zeigen soll *wie* ein Ranking eine
+gewählte Dimension verstärken oder aufbrechen kann, reicht dieses transparente
+Label – es ersetzt keine echte, validierte Politikwissenschafts-Metrik und
+soll das auch nicht vorgeben.
+
+**Wie es ins Ranking einfließt (`ranking.py`):** `dominant_political_label()`
+ist das Pendant zu `dominant_perspective()` – Mehrheitslabel aus der gesamten
+Like-Historie eines Accounts (`db.fetch_liked_political_labels()`), `None` bei
+fehlendem Signal oder einem Unentschieden zwischen mehreren Labels. In
+`standard_feed()` sortiert das Ergebnis (`preferred_political_label` oder
+ersatzweise das Label des Ausgangs-Posts) *innerhalb* der bestehenden
+Perspektive-Tier zusätzlich danach, ob das politische Label übereinstimmt –
+ein Post, der sowohl Perspektive als auch politisches Lager trifft, steht vor
+einem, der nur die Perspektive trifft. In `diversity_aware_feed()` bevorzugt
+ein Diversity-Slot einen "doppelten Gegenpol" (weicht auf *beiden* Achsen ab)
+vor einem, der nur auf einer Achse abweicht. `diversity_score_for_political_label()`
+misst denselben Vielfalts-Anteil wie `diversity_score_for_perspective()`, nur
+für die politische Achse, und wird in der UI als zweiter Wert neben dem
+Perspektive-Score angezeigt (nur wenn ein politisches Signal überhaupt
+vorliegt). Beide Achsen sind unabhängig testbar (`tests/test_ranking.py`) und
+verändern das bestehende, bereits getestete Perspektive-Ranking nicht, wenn
+kein `political_label` gesetzt ist (Rückwärtskompatibilität zu Posts von vor
+dieser Erweiterung).
+
+**Schema:** `supabase/migrations/0003_political_label.sql` fügt die Spalte
+`posts.political_label` hinzu (nullable, `check` auf die drei erlaubten
+Werte). Muss wie 0001/0002 einmalig angewendet werden (SQL-Editor oder
+`apply_schema.py`) – siehe "Aktueller Stand" unten, in dieser Nacht-Session
+ohne Supabase-Zugriff nicht möglich.
+
 ## UI: ein Feed, zwei Modi (`templates/index.html`, `static/style.css`)
 
 Nach Nutzer-Feedback ("sieht nach Claude Design aus", "kein richtiger Feed")
@@ -45,6 +116,22 @@ verworfen: zwei nebeneinanderliegende Spalten mit Segmented Control, Regler
 und Score-Pille. Stattdessen ein **einzelner, vertikal scrollender Feed** mit
 einem Tab-Umschalter oben ("Standard" / "Diversity-aware", `?mode=`), wie ein
 echter Wechsel zwischen zwei Feeds in einer App:
+
+> [!note] Zweites Redesign (Nacht-Session): weg vom generischen SaaS-Look
+> Dasselbe Feedback ("sieht nach Claude Design aus") kam ein zweites Mal, diesmal
+> zur konkreten Umsetzung (Indigo-Verlauf im Header, durchgehend abgerundete
+> weiße Karten, Sans-Serif-UI-Font) – typische Merkmale generischer
+> KI-Dashboard-Vorlagen. `static/style.css` wurde daraufhin komplett auf eine
+> redaktionelle Optik umgestellt statt nur Farben zu tauschen: warmer
+> Papier-Hintergrund statt kühles Grau, Serif-Schrift (Georgia) fürs
+> Nameplate/die Post-Titel statt Sans-Serif überall, eine Monospace-Schrift
+> für Metadaten (Handle, Zeit, Kategorien-Chips) im Stil einer
+> Nachrichtenagentur-Zeile, feine Trennlinien statt schwebender Karten mit
+> Schatten, kein Farbverlauf mehr im Header (flache Fläche mit Doppellinie wie
+> ein Zeitungs-Impressum). Die neue politische Einordnung (siehe oben) bekommt
+> einen eigenen kleinen Drei-Segment-"Kompass"-Chip statt eines weiteren
+> generischen Badges, als eigenständiges visuelles Element statt Farbe Nummer
+> drei im selben Chip-Stil.
 
 - Jeder Post hat eine feed-typische Kopfzeile (Avatar, Account-Name, Handle,
   relative Zeitangabe) statt einer nackten Karte – Avatar/Name/Handle kommen
@@ -134,9 +221,8 @@ Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
 angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
 
 **Likes:** Toggle pro Account (`(post_id, user_id)` in der DB, verlangt
-Login). Fließt aktuell **nicht** ins Ranking ein (bewusst nicht gemacht, um
-die getestete Diversity-Logik nicht anzufassen) – reine Anzeige/Interaktion
-bisher.
+Login). Fließt seit `dominant_perspective()`/`dominant_political_label()`
+(siehe oben) direkt ins Ranking ein, nicht mehr nur reine Anzeige.
 
 ## Lokal starten
 
@@ -179,3 +265,17 @@ pytest tests/
 - [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
       Punkt 6 in der DTEW-0209-Notiz) – der Diversity-Score existiert schon
       pro Feed-Aufruf, aber es gibt noch keine Verlaufsansicht über die Zeit
+- [x] Politische Einordnung (links/mitte/rechts) als zweite, unabhängige
+      Dimension neben pro/contra, nutzergewählt statt automatisch erkannt
+      (siehe "Politische Einordnung" oben, `0003_political_label.sql`)
+- [x] Visuelles Redesign weg vom generischen SaaS-/KI-Dashboard-Look
+      (Papier-Optik, Serif/Monospace statt durchgehend Sans-Serif, Kompass-Chip
+      statt Verlauf/abgerundete Karten überall, siehe "UI-Redesign" oben)
+- [ ] `0003_political_label.sql` gegen die echte Supabase-Instanz anwenden
+      (in dieser Nacht-Session ohne `SUPABASE_MANAGEMENT_TOKEN` nicht möglich,
+      siehe NIGHTLY_TASK.md)
+- [ ] Beispiel-Accounts mit gegensätzlicher Like-Historie für die Demo
+      (Skript vorbereitet, noch nicht ausgeführt – siehe `seed_demo_accounts.py`
+      und NIGHTLY_TASK.md)
+- [ ] Fediverse/ActivityPub-Anbindung (siehe eigene Machbarkeits-Notiz im
+      Vault unter "10 DTEW Workshop")

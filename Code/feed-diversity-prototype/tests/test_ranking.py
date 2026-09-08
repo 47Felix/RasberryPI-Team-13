@@ -7,7 +7,9 @@ from ranking import (
     Post,
     diversity_aware_feed,
     diversity_score,
+    diversity_score_for_political_label,
     dominant_perspective,
+    dominant_political_label,
     standard_feed,
     suggest_category,
 )
@@ -167,3 +169,78 @@ def test_diversity_aware_feed_interrupts_the_preferred_perspective_not_just_the_
     diverse_items = [item for item in feed if item["is_diverse_pick"]]
     assert diverse_items
     assert all(item["post"].perspective == "pro" for item in diverse_items)
+
+
+def test_dominant_political_label_picks_the_majority():
+    assert dominant_political_label(["links", "links", "rechts"]) == "links"
+
+
+def test_dominant_political_label_is_none_without_signal_or_on_a_tie():
+    assert dominant_political_label([]) is None
+    assert dominant_political_label(["links", "rechts"]) is None
+    assert dominant_political_label(["links", "rechts", "mitte"]) is None
+
+
+def test_dominant_political_label_ignores_unlabeled_posts():
+    assert dominant_political_label([None, None, "links"]) == "links"
+
+
+POLITICAL_POSTS = [
+    Post("seed", "Windkraft-Ausbau", "Windkraft Energiewende Klimaschutz Ausbau", "klima", "pro", "links"),
+    # Same perspective as seed, but a different political label.
+    Post("pro-other-label", "Solar-Ausbau", "Windkraft Energiewende Klimaschutz Solar Ausbau", "klima", "pro", "rechts"),
+    # Same perspective and same political label as seed - the strongest "home" match.
+    Post("pro-same-label", "Netzausbau", "Windkraft Energiewende Klimaschutz Netz Ausbau", "klima", "pro", "links"),
+    # Opposite perspective, same political label - a softer counter-signal.
+    Post("contra-same-label", "Kosten des Ausbaus", "Windkraft Energiewende Klimaschutz Kosten Ausbau", "klima", "contra", "links"),
+    # Opposite perspective AND opposite political label - the strongest possible counter-signal.
+    Post("contra-other-label", "Landschaftsschutz", "Windkraft Energiewende Klimaschutz Landschaft Ausbau", "klima", "contra", "rechts"),
+]
+
+
+def test_standard_feed_ranks_matching_political_label_ahead_of_same_perspective_only():
+    feed = standard_feed(POLITICAL_POSTS, seed_id="seed", limit=5)
+    same_perspective_ids = [item["post"].id for item in feed if item["post"].perspective == "pro"]
+    assert same_perspective_ids[0] == "pro-same-label"
+    assert "pro-other-label" in same_perspective_ids[1:]
+
+
+def test_standard_feed_uses_preferred_political_label_over_the_seeds_own():
+    feed = standard_feed(
+        POLITICAL_POSTS, seed_id="seed", limit=5, preferred_political_label="rechts"
+    )
+    same_perspective_ids = [item["post"].id for item in feed if item["post"].perspective == "pro"]
+    assert same_perspective_ids[0] == "pro-other-label"
+
+
+def test_diversity_aware_feed_prefers_the_double_counter_pick():
+    feed = diversity_aware_feed(POLITICAL_POSTS, seed_id="seed", limit=1, diversity_every=1)
+    assert feed[0]["post"].id == "contra-other-label"
+    assert feed[0]["is_diverse_pick"] is True
+
+
+def test_diversity_aware_feed_marks_a_political_only_difference_as_diverse():
+    # Only same-perspective posts and one that differs solely on political
+    # label are in reach - the diversity slot should still surface it and
+    # flag it, not silently fall back to a same-perspective/same-label post.
+    posts = [
+        Post("seed", "Windkraft-Ausbau", "Windkraft Energiewende Klimaschutz Ausbau", "klima", "pro", "links"),
+        Post("pro-same-label", "Netzausbau", "Windkraft Energiewende Klimaschutz Netz Ausbau", "klima", "pro", "links"),
+        Post("pro-other-label", "Solar-Ausbau", "Windkraft Energiewende Klimaschutz Solar Ausbau", "klima", "pro", "rechts"),
+    ]
+    feed = diversity_aware_feed(posts, seed_id="seed", limit=2, diversity_every=2)
+    assert feed[1]["post"].id == "pro-other-label"
+    assert feed[1]["is_diverse_pick"] is True
+
+
+def test_diversity_score_for_political_label_reflects_share_of_differing_posts():
+    feed = [
+        {"post": POLITICAL_POSTS[2], "score": 0.9, "is_diverse_pick": False},  # same label
+        {"post": POLITICAL_POSTS[4], "score": 0.5, "is_diverse_pick": True},  # differing label
+    ]
+    assert diversity_score_for_political_label(feed, "links") == 50.0
+
+
+def test_diversity_score_for_political_label_is_zero_without_a_label_signal():
+    feed = [{"post": POLITICAL_POSTS[2], "score": 0.9, "is_diverse_pick": False}]
+    assert diversity_score_for_political_label(feed, None) == 0.0
