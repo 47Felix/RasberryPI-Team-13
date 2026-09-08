@@ -11,11 +11,15 @@ from functools import wraps
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
 import db
+import fediverse
 from ranking import (
     Post,
+    bubble_trend,
     diversity_aware_feed,
     diversity_score_for_perspective,
+    diversity_score_for_political_label,
     dominant_perspective,
+    dominant_political_label,
     standard_feed,
     suggest_category,
 )
@@ -30,6 +34,10 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-not-secret")
 # instead of free-text topics fragmenting the feed into one-off categories.
 KNOWN_TOPICS = ["klima", "verkehr", "wirtschaft", "digital"]
 KNOWN_PERSPECTIVES = ["pro", "contra"]
+# Self-chosen political label, independent of the topic's pro/contra
+# perspective - see README ("Politische Einordnung") for why this is a
+# user-chosen label rather than an automatically detected one.
+KNOWN_POLITICAL_LABELS = ["links", "mitte", "rechts"]
 
 DEFAULT_DIVERSITY_EVERY = 3
 MIN_DIVERSITY_EVERY = 2
@@ -114,27 +122,52 @@ def index():
     seed_id = None
     feed_items = []
     feed_score = 0
+    political_feed_score = 0
     preferred_perspective = None
+    preferred_political_label = None
+    show_political_score = False
+    fediverse_posts = []
+    fediverse_topic = None
+    # One query covers both the account's overall lean (dominant_perspective
+    # doesn't care about order) and the like-history trend below, instead of
+    # fetching the same likes/posts join twice per request.
+    liked_history = db.fetch_liked_history(current_user["id"]) if current_user else []
+    bubble_trend_data = bubble_trend(liked_history)
 
     if posts:
         seed_id = request.args.get("seed_id")
         if seed_id not in {p.id for p in posts}:
             seed_id = posts[0].id
         seed_post = next(p for p in posts if p.id == seed_id)
+        fediverse_topic = seed_post.topic
+        fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
         if current_user:
-            preferred_perspective = dominant_perspective(db.fetch_liked_perspectives(current_user["id"]))
+            preferred_perspective = dominant_perspective(liked_history)
+            preferred_political_label = dominant_political_label(db.fetch_liked_political_labels(current_user["id"]))
         bias_perspective = preferred_perspective or seed_post.perspective
+        bias_political_label = preferred_political_label or seed_post.political_label
 
         if mode == "diversity":
             active_feed = diversity_aware_feed(
-                posts, seed_id, diversity_every=diversity_every, preferred_perspective=preferred_perspective
+                posts,
+                seed_id,
+                diversity_every=diversity_every,
+                preferred_perspective=preferred_perspective,
+                preferred_political_label=preferred_political_label,
             )
         else:
-            active_feed = standard_feed(posts, seed_id, preferred_perspective=preferred_perspective)
+            active_feed = standard_feed(
+                posts,
+                seed_id,
+                preferred_perspective=preferred_perspective,
+                preferred_political_label=preferred_political_label,
+            )
 
         feed_items = _decorate_feed(active_feed, extra_meta)
         feed_score = diversity_score_for_perspective(active_feed, bias_perspective)
+        political_feed_score = diversity_score_for_political_label(active_feed, bias_political_label)
+        show_political_score = bias_political_label is not None
 
         db_post_ids = [item["post"].id for item in feed_items]
         liked_ids = db.fetch_liked_post_ids(current_user["id"], db_post_ids) if current_user else set()
@@ -149,11 +182,18 @@ def index():
         mode=mode,
         feed_items=feed_items,
         feed_score=feed_score,
+        political_feed_score=political_feed_score,
+        show_political_score=show_political_score,
         known_topics=KNOWN_TOPICS,
         known_perspectives=KNOWN_PERSPECTIVES,
+        known_political_labels=KNOWN_POLITICAL_LABELS,
         db_configured=db.is_configured(),
         current_user=current_user,
+        fediverse_posts=fediverse_posts,
+        fediverse_topic=fediverse_topic,
         preferred_perspective=preferred_perspective,
+        preferred_political_label=preferred_political_label,
+        bubble_trend_data=bubble_trend_data,
     )
 
 
@@ -214,9 +254,16 @@ def create_post():
     content = request.form.get("content", "").strip()
     topic = request.form.get("topic", "")
     perspective = request.form.get("perspective", "")
+    political_label = request.form.get("political_label", "")
 
-    if title and content and topic in KNOWN_TOPICS and perspective in KNOWN_PERSPECTIVES:
-        db.insert_post(title, content, topic, perspective, session["user_id"])
+    if (
+        title
+        and content
+        and topic in KNOWN_TOPICS
+        and perspective in KNOWN_PERSPECTIVES
+        and political_label in KNOWN_POLITICAL_LABELS
+    ):
+        db.insert_post(title, content, topic, perspective, session["user_id"], political_label)
 
     return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
 

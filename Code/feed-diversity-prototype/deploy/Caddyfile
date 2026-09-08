@@ -1,0 +1,17 @@
+# Reverse-Proxy mit automatischem HTTPS (Caddy holt/erneuert das
+# Let's-Encrypt-Zertifikat selbststaendig, solange Port 80+443 von aussen
+# erreichbar sind und die Domain per DNS auf diesen Server zeigt).
+#
+# Platzhalter ersetzen: perspektiv.example.org durch die tatsaechliche Domain.
+perspektiv.example.org {
+	reverse_proxy 127.0.0.1:8000
+
+	encode gzip
+
+	# Etwas Grundhaertung - Caddy setzt per Default schon vernuenftige TLS-Defaults.
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+}

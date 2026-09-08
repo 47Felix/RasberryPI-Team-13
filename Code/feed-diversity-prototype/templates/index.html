@@ -43,18 +43,30 @@
       <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='diversity') }}"
          class="tab {{ 'active' if mode == 'diversity' }}">Diversity-aware</a>
     </nav>
-    <p class="tab-caption">
-      {% if mode == 'diversity' %}
-        {{ feed_score }}% der gezeigten Posts sind bewusst eingemischte Gegenperspektiven.
-      {% else %}
-        {{ feed_score }}% Gegenperspektiven – reine Ähnlichkeits-Rangfolge, kein Eingriff.
+    <div class="tab-caption">
+      <p style="margin:0;">
+        {% if mode == 'diversity' %}
+          Bewusst eingemischte Gegenperspektiven/-lager, damit der Feed thematisch relevant bleibt statt nur zu bestätigen.
+        {% else %}
+          Reine Ähnlichkeits-Rangfolge, kein Eingriff – wie ein typischer bubble-verstärkender "For You"-Feed.
+        {% endif %}
+      </p>
+      <p class="score-row">
+        <span><span class="score-label">Perspektive (pro/contra):</span> <span class="score-value">{{ feed_score }}%</span> Gegenmeinung</span>
+        {% if show_political_score %}
+          <span><span class="score-label">Politisch (links/mitte/rechts):</span> <span class="score-value">{{ political_feed_score }}%</span> anderes Lager</span>
+        {% endif %}
+      </p>
+      {% if preferred_perspective or preferred_political_label %}
+        <p class="bias-note">
+          Basierend auf deinen bisherigen Likes bevorzugt dein Feed aktuell
+          {% if preferred_perspective %}<strong>{{ preferred_perspective }}</strong>-Posts{% endif %}
+          {% if preferred_perspective and preferred_political_label %} und {% endif %}
+          {% if preferred_political_label %}das Lager <strong>{{ preferred_political_label }}</strong>{% endif %}
+          – das verstärkt sich mit jedem weiteren Like in diese Richtung. Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
+        </p>
       {% endif %}
-      {% if preferred_perspective %}
-        Basierend auf deinen bisherigen Likes bevorzugt dein Feed aktuell
-        <strong>{{ preferred_perspective }}</strong>-Posts – das verstärkt sich mit jedem
-        weiteren Like in diese Richtung. Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
-      {% endif %}
-    </p>
+    </div>
 
     <div class="feed">
       {% for item in feed_items %}
@@ -74,11 +86,21 @@
               <h3 class="post-title">{{ item.post.title }}</h3>
               <p class="post-text">{{ item.post.text }}</p>
               <div class="post-footer">
-                <span class="chip {{ item.post.perspective }}" title="Perspektive: {{ item.post.perspective }}">
-                  <span class="chip-mark" aria-hidden="true">{{ '▲' if item.post.perspective == 'pro' else '▼' }}</span>
-                  {{ item.post.topic }}
-                  <span class="sr-only">, Perspektive: {{ item.post.perspective }}</span>
-                </span>
+                <div class="tags">
+                  <span class="chip {{ item.post.perspective }}" title="Perspektive: {{ item.post.perspective }}">
+                    <span class="chip-mark" aria-hidden="true">{{ '▲' if item.post.perspective == 'pro' else '▼' }}</span>
+                    {{ item.post.topic }}
+                    <span class="sr-only">, Perspektive: {{ item.post.perspective }}</span>
+                  </span>
+                  <span class="compass-wrap" title="Politische Einordnung (von der Autorin/dem Autor selbst gewählt): {{ item.post.political_label or 'nicht angegeben' }}">
+                    <span class="compass">
+                      <span class="compass-segment links {{ 'active' if item.post.political_label == 'links' }}"></span>
+                      <span class="compass-segment mitte {{ 'active' if item.post.political_label == 'mitte' }}"></span>
+                      <span class="compass-segment rechts {{ 'active' if item.post.political_label == 'rechts' }}"></span>
+                    </span>
+                    <span class="compass-label">{{ item.post.political_label or 'unmarkiert' }}</span>
+                  </span>
+                </div>
                 <div class="engagement">
                   <button
                     type="button"
@@ -108,6 +130,25 @@
         <div class="empty-state">Keine Posts gefunden.</div>
       {% endfor %}
     </div>
+
+    {% if fediverse_topic %}
+      <details class="disclosure fediverse">
+        <summary>Aus dem Fediverse zu „{{ fediverse_topic }}“</summary>
+        {% if fediverse_posts %}
+          {% for post in fediverse_posts %}
+            <div class="fediverse-item">
+              {{ post.content }}
+              <span class="fediverse-meta">
+                {{ post.account_handle }}
+                {% if post.url %} · <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">Original ansehen</a>{% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="fediverse-empty">Aktuell keine öffentlichen Fediverse-Posts zu diesem Thema erreichbar.</p>
+        {% endif %}
+      </details>
+    {% endif %}
 
     <details class="disclosure settings">
       <summary>Feed-Einstellungen</summary>
@@ -142,6 +183,26 @@
       </form>
     </details>
 
+    {% if current_user and bubble_trend_data|length >= 2 %}
+      <details class="disclosure settings">
+        <summary>📈 Deine Bubble-Entwicklung ({{ bubble_trend_data|length }} Likes)</summary>
+        <p class="tab-caption">
+          Anteil deiner Likes, der jeweils zur gerade vorherrschenden Perspektive gehört –
+          je näher an 100%, desto enger deine Bubble bisher. Ein Ausschlag nach unten heißt:
+          du hast (wieder) etwas von der Gegenseite geliked.
+        </p>
+        <div class="trend-sparkline"
+             role="img"
+             aria-label="Bubble-Anteil über deine letzten {{ bubble_trend_data|length }} Likes, von {{ bubble_trend_data[0].dominant_share }}% auf zuletzt {{ bubble_trend_data[-1].dominant_share }}%">
+          {% for point in bubble_trend_data %}
+            <span class="trend-bar" style="height: {{ point.dominant_share }}%"
+                  title="Like #{{ point.index }} ({{ point.perspective }}): {{ point.dominant_share }}% Bubble-Anteil"></span>
+          {% endfor %}
+        </div>
+        <p class="trend-caption">Aktuell <strong>{{ bubble_trend_data[-1].dominant_share }}%</strong> in einer Bubble.</p>
+      </details>
+    {% endif %}
+
     <details class="disclosure settings">
       <summary>Neuen Post erstellen</summary>
 
@@ -173,10 +234,17 @@
           {% endfor %}
         </select>
 
-        <label for="perspective">Perspektive</label>
+        <label for="perspective">Perspektive (pro/contra zum Thema)</label>
         <select name="perspective" id="perspective">
           {% for perspective in known_perspectives %}
             <option value="{{ perspective }}">{{ perspective }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="political_label">Politische Einordnung (unabhängig von der Perspektive, selbst gewählt)</label>
+        <select name="political_label" id="political_label">
+          {% for label in known_political_labels %}
+            <option value="{{ label }}" {{ 'selected' if label == 'mitte' }}>{{ label }}</option>
           {% endfor %}
         </select>
 

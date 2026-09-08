@@ -50,6 +50,41 @@ Klassische 9 Bausteine plus die für ein Social-Business-Format übliche Ergänz
 - **Abgrenzung zu pleenum:** pleenum fokussiert auf Diskursformat/Moderation, unser Prototyp fokussiert auf das Feed-Ranking selbst – im Marketing klar als **Ergänzung**, nicht Konkurrenz kommunizieren (Mittwoch-Erkenntnis, siehe [[DTEW 0209 - Kritische Punkte, Problem Statements und Ideation]]).
 - **Realistische Reichweiten-Einordnung:** Für die Präsentation ehrlich bleiben, dass der Prototyp aktuell eine Standalone-Demo ist (siehe Integrationsdiskussion Mittwoch) – Marketing sollte "zeigt den Mechanismus" versprechen, nicht "ersetzt deinen TikTok-Feed".
 
+> [!note] Ergänzung (Nacht-Session 07.09.2026): neue Features seit diesem Entwurf
+> Der Prototyp hat seit diesem Entwurf drei Features dazubekommen, die die
+> Positionierung schärfen statt sie zu ändern – Ergänzung, kein Ersatz der
+> Stichpunkte oben:
+>
+> - **Echte Accounts statt anonymer Demo:** Registrierung/Login über Supabase
+>   Auth, echte Like-/Kommentar-Historie pro Account (siehe README des
+>   Prototyps). Fürs Marketing wichtig: "Dein Feed" ist jetzt wörtlich
+>   gemeint, nicht nur eine Persona-Schnellauswahl – die Kernbotschaft
+>   "Dein Feed entscheidet mit, welche Meinungen du siehst" lässt sich live
+>   an der eigenen Like-Historie zeigen statt nur behauptet zu werden.
+> - **Politische Einordnung (links/mitte/rechts) als zweite Dimension:**
+>   Ergänzt die bestehende pro/contra-Perspektive um eine zweite,
+>   unabhängige Achse (Details/kritische Einordnung siehe README des
+>   Prototyps, Abschnitt "Politische Einordnung"). Für die Positionierung
+>   heißt das: der Prototyp zeigt jetzt sichtbar zwei Achsen, an denen ein
+>   Feed einseitig werden kann, statt nur einer – näher an der
+>   Ursprungsidee aus dem Case ("zwei politische Lager im selben Feed
+>   unterschiedliche Meinungen sehen lassen"). Wichtig für die
+>   Kommunikation: das Label ist nutzergewählt, nicht von der App
+>   "erkannt" – das lässt sich als Transparenz-Argument nutzen ("wir
+>   erfinden keine Bewertung, die Autorin/der Autor sagt es selbst"), sollte
+>   aber auch so kommuniziert werden, nicht als objektive Analyse verkauft
+>   werden.
+> - **Fediverse-Anzeige (rein lesend):** Der Feed kann jetzt öffentliche
+>   Mastodon-Posts zum aktuellen Thema mit anzeigen (kein eigener
+>   ActivityPub-Account, siehe Machbarkeits-Einschätzung in
+>   `Fediverse ActivityPub - Machbarkeitseinschaetzung.md`). Für Kanäle/
+>   Reichweite ein zusätzlicher, ehrlicher Talking Point: der Prototyp ist
+>   kompatibel mit dem Fediverse-Gedanken, ohne zu behaupten, selbst schon
+>   Teil davon zu sein.
+>
+> Die Zielgruppen-Ansprache (Mia/Tom), die Abgrenzung zu pleenum und die
+> realistische Reichweiten-Einordnung oben gelten unverändert weiter.
+
 ## ✅ Vorbereitet: Logo/Onboarding-Prozess-Konzept (Entwurf)
 
 Kein fertiges visuelles Logo (das ist Teamarbeit/Design-Aufgabe vor Ort), sondern ein textliches Konzept als Startpunkt:

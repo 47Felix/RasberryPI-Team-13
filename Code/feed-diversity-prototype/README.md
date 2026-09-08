@@ -38,6 +38,77 @@ zu durchbrechen statt nur die des aktuellen Ausgangs-Posts. Ohne Account
 oder ohne bisherige Likes (bzw. bei einem exakten Unentschieden) bleibt das
 alte Verhalten erhalten: Perspektive des Ausgangs-Posts entscheidet.
 
+## Politische Einordnung (links/mitte/rechts) als zweite, unabhängige Dimension
+
+Bisher gab es pro Post nur eine Achse: `perspective` (pro/contra zum jeweiligen
+Thema). Seit dieser Erweiterung gibt es eine zweite, davon unabhängige Achse:
+`political_label` (`links`/`mitte`/`rechts`), z.B. ein Post kann gleichzeitig
+"pro Windkraft-Ausbau" **und** "links" sein, oder "pro Windkraft-Ausbau"
+**und** "rechts" – die beiden Achsen sind orthogonal, nicht dasselbe Feld
+zweimal.
+
+**Bewusst kein automatischer Links/Rechts-Klassifikator.** Kritischer Punkt 6
+aus der DTEW-0209-Notiz (`ObsidianGehirn/10 DTEW Workshop/DTEW 0209 -
+Kritische Punkte, Problem Statements und Ideation.md`) benennt es direkt:
+"Wie misst/zeigt man 'Perspektivenvielfalt' überhaupt messbar, statt nur
+subjektiv zu behaupten das ist jetzt vielfältiger?" Eine zuverlässige
+automatische Erkennung der politischen Ausrichtung aus Freitext ist ein
+ungelöstes, in der NLP-Forschung selbst umstrittenes Problem (uneinheitliche
+Trainingsdaten, kulturell/zeitlich verschobene Definitionen von "links" und
+"rechts", hohe Fehlerquote gerade bei kurzen Posts ohne viel Kontext) und für
+ein zweiwöchiges Prototyping ohne ML-Vorerfahrung im Team nicht seriös
+machbar (dieselbe Einschätzung wie schon bei Lasses Fake-News-Detektor-
+Vorschlägen, siehe `ObsidianGehirn/10 DTEW Workshop/Team 13 - Digitale
+Demokratie.md`). Ein Prototyp, der intern behauptet "das hier ist objektiv
+links", würde eine Genauigkeit vortäuschen, die es nicht gibt, und selbst
+genau die Art von unsichtbarer, unüberprüfbarer algorithmischer Bewertung
+reproduzieren, die der ganze Case eigentlich sichtbar machen soll.
+
+**Stattdessen: Nutzer wählen das Label selbst**, beim Post-Erstellen über ein
+Dropdown, genau wie Thema/Perspektive schon funktionieren (`templates/
+index.html`, Feld `political_label`, serverseitig gegen `KNOWN_POLITICAL_LABELS`
+geprüft in `app.py:create_post`). Kein automatisches Nachjustieren, kein
+verstecktes Scoring – die Autorin/der Autor sieht das eigene Label, alle
+anderen sehen es am Post (kleiner Drei-Segment-"Kompass"-Chip, angelehnt an
+Felix' Brain-Dump-Idee eines "Perspektiven-Kompass", siehe
+`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`).
+
+**Kritisch einzuordnen:** Ein selbst gewähltes Label ist kein objektives Maß
+für "tatsächliche" politische Position, sondern eine Selbstauskunft. Das
+bringt eigene Verzerrungen mit (Selbstauswahl, sozial erwünschte Antworten,
+manche Nutzer:innen labeln strategisch "mitte" um neutral zu wirken, andere
+übertreiben absichtlich), ist aber ehrlich darüber, was es ist: eine
+Zuschreibung durch die Autorin/den Autor, keine von der App behauptete
+Wahrheit. Für einen Demo-Prototyp, der zeigen soll *wie* ein Ranking eine
+gewählte Dimension verstärken oder aufbrechen kann, reicht dieses transparente
+Label – es ersetzt keine echte, validierte Politikwissenschafts-Metrik und
+soll das auch nicht vorgeben.
+
+**Wie es ins Ranking einfließt (`ranking.py`):** `dominant_political_label()`
+ist das Pendant zu `dominant_perspective()` – Mehrheitslabel aus der gesamten
+Like-Historie eines Accounts (`db.fetch_liked_political_labels()`), `None` bei
+fehlendem Signal oder einem Unentschieden zwischen mehreren Labels. In
+`standard_feed()` sortiert das Ergebnis (`preferred_political_label` oder
+ersatzweise das Label des Ausgangs-Posts) *innerhalb* der bestehenden
+Perspektive-Tier zusätzlich danach, ob das politische Label übereinstimmt –
+ein Post, der sowohl Perspektive als auch politisches Lager trifft, steht vor
+einem, der nur die Perspektive trifft. In `diversity_aware_feed()` bevorzugt
+ein Diversity-Slot einen "doppelten Gegenpol" (weicht auf *beiden* Achsen ab)
+vor einem, der nur auf einer Achse abweicht. `diversity_score_for_political_label()`
+misst denselben Vielfalts-Anteil wie `diversity_score_for_perspective()`, nur
+für die politische Achse, und wird in der UI als zweiter Wert neben dem
+Perspektive-Score angezeigt (nur wenn ein politisches Signal überhaupt
+vorliegt). Beide Achsen sind unabhängig testbar (`tests/test_ranking.py`) und
+verändern das bestehende, bereits getestete Perspektive-Ranking nicht, wenn
+kein `political_label` gesetzt ist (Rückwärtskompatibilität zu Posts von vor
+dieser Erweiterung).
+
+**Schema:** `supabase/migrations/0003_political_label.sql` fügt die Spalte
+`posts.political_label` hinzu (nullable, `check` auf die drei erlaubten
+Werte). Muss wie 0001/0002 einmalig angewendet werden (SQL-Editor oder
+`apply_schema.py`) – siehe "Aktueller Stand" unten, in dieser Nacht-Session
+ohne Supabase-Zugriff nicht möglich.
+
 ## UI: ein Feed, zwei Modi (`templates/index.html`, `static/style.css`)
 
 Nach Nutzer-Feedback ("sieht nach Claude Design aus", "kein richtiger Feed")
@@ -45,6 +116,22 @@ verworfen: zwei nebeneinanderliegende Spalten mit Segmented Control, Regler
 und Score-Pille. Stattdessen ein **einzelner, vertikal scrollender Feed** mit
 einem Tab-Umschalter oben ("Standard" / "Diversity-aware", `?mode=`), wie ein
 echter Wechsel zwischen zwei Feeds in einer App:
+
+> [!note] Zweites Redesign (Nacht-Session): weg vom generischen SaaS-Look
+> Dasselbe Feedback ("sieht nach Claude Design aus") kam ein zweites Mal, diesmal
+> zur konkreten Umsetzung (Indigo-Verlauf im Header, durchgehend abgerundete
+> weiße Karten, Sans-Serif-UI-Font) – typische Merkmale generischer
+> KI-Dashboard-Vorlagen. `static/style.css` wurde daraufhin komplett auf eine
+> redaktionelle Optik umgestellt statt nur Farben zu tauschen: warmer
+> Papier-Hintergrund statt kühles Grau, Serif-Schrift (Georgia) fürs
+> Nameplate/die Post-Titel statt Sans-Serif überall, eine Monospace-Schrift
+> für Metadaten (Handle, Zeit, Kategorien-Chips) im Stil einer
+> Nachrichtenagentur-Zeile, feine Trennlinien statt schwebender Karten mit
+> Schatten, kein Farbverlauf mehr im Header (flache Fläche mit Doppellinie wie
+> ein Zeitungs-Impressum). Die neue politische Einordnung (siehe oben) bekommt
+> einen eigenen kleinen Drei-Segment-"Kompass"-Chip statt eines weiteren
+> generischen Badges, als eigenständiges visuelles Element statt Farbe Nummer
+> drei im selben Chip-Stil.
 
 - Jeder Post hat eine feed-typische Kopfzeile (Avatar, Account-Name, Handle,
   relative Zeitangabe) statt einer nackten Karte – Avatar/Name/Handle kommen
@@ -134,9 +221,8 @@ Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
 angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
 
 **Likes:** Toggle pro Account (`(post_id, user_id)` in der DB, verlangt
-Login). Fließt aktuell **nicht** ins Ranking ein (bewusst nicht gemacht, um
-die getestete Diversity-Logik nicht anzufassen) – reine Anzeige/Interaktion
-bisher.
+Login). Fließt seit `dominant_perspective()`/`dominant_political_label()`
+(siehe oben) direkt ins Ranking ein, nicht mehr nur reine Anzeige.
 
 ## Lokal starten
 
@@ -150,11 +236,76 @@ python app.py
 
 Dann `http://localhost:5050` öffnen.
 
+## Deployment (öffentlich erreichbar machen)
+
+`deploy/` enthält eine fertig vorbereitete systemd-Unit (Gunicorn statt
+Flask-Dev-Server) und ein Caddyfile (automatisches HTTPS per Reverse-Proxy),
+plus eine Schritt-für-Schritt-Anleitung inkl. Azure-NSG-Firewall-Hinweis und
+Tailscale-only-Alternative - siehe `deploy/README.md`. Noch nicht angewendet,
+nur vorbereitet (siehe dortige Anleitung, warum).
+
 ## Tests
 
 ```bash
 pytest tests/
 ```
+
+## Beispiel-Accounts für den Standard-Algorithmus (`seed_demo_accounts.py`)
+
+Für eine überzeugende Demo braucht es Accounts mit einer klar erkennbaren,
+gegensätzlichen Like-Historie, damit `ranking.dominant_perspective()`/
+`dominant_political_label()` beim Vorführen sichtbar wird. `seed_demo_accounts.py`
+legt dafür vier Beispiel-Accounts (unterschiedliche Namen, je zwei liken
+konsequent "contra"/"links" bzw. "pro"/"rechts") sowie einen Admin-Account an,
+der die Seed-Posts veröffentlicht, und lässt die Beispiel-Accounts passende
+Posts liken.
+
+**Zugangsdaten kommen ausschließlich aus der Umgebung/`.env`** (`DEMO_ACCOUNT_A_EMAIL`/
+`_PASSWORD` bis `DEMO_ACCOUNT_D_EMAIL`/`_PASSWORD`, `DEMO_ADMIN_EMAIL`/`_PASSWORD`,
+zusätzlich zu den bestehenden `SUPABASE_*`-Variablen) - das Skript bricht ohne
+diese Variablen ab, statt Platzhalterwerte zu verwenden. Diese Session hatte
+keine Supabase-Zugangsdaten zur Verfügung und konnte das Skript deshalb nicht
+ausführen (siehe `NIGHTLY_TASK.md`). Eine reine Namens-/Zweck-Übersicht der
+Accounts (ohne Zugangsdaten) steht im Vault unter `ObsidianGehirn/06
+Zugangsdaten/Feed-Diversity-Beispielaccounts.md`.
+
+```bash
+# .env ergänzen (SUPABASE_* + die DEMO_*-Variablen oben), dann einmalig:
+python3 seed_demo_accounts.py
+```
+
+## Fediverse-Anzeige (`fediverse.py`, rein lesend)
+
+Auf Wunsch aus dem Brain Dump ("look into fediverse and activity pub and
+look how we can connect these things with each other", siehe
+`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`) zeigt der Feed unten
+einen zusätzlichen, klar als extern gekennzeichneten Abschnitt "Aus dem
+Fediverse zu [Thema]" mit öffentlichen Mastodon-Posts zum aktuell
+gewählten Thema.
+
+**Bewusst keine ActivityPub-Implementierung.** Ein vollständiger
+ActivityPub-Client/-Server (eigener Actor, WebFinger, HTTP Signatures,
+Inbox/Outbox) ist ein eigener Protokoll-Stack mit realistisch mehreren
+Wochen Aufwand, siehe die ausführliche Machbarkeits-Einschätzung im Vault
+(`ObsidianGehirn/10 DTEW Workshop/Fediverse ActivityPub -
+Machbarkeitseinschaetzung.md`). Stattdessen nutzt `fediverse.py` Mastodons
+**öffentliche, unauthentifizierte REST-API** (`GET
+/api/v1/timelines/tag/{hashtag}`) – braucht keinen Account, kein Token,
+funktioniert rein lesend gegen jede Mastodon-Instanz. Fehlschläge (Instanz
+nicht erreichbar, Timeout, unerwartetes Antwortformat) liefern eine leere
+Liste statt eines Fehlers, genau wie `db.py` bei einem nicht erreichbaren
+Supabase. Externe Post-Inhalte kommen als HTML von der API zurück und
+werden vor der Anzeige zu Klartext reduziert (`fediverse._strip_html`),
+statt sie ungefiltert ins Template zu rendern – sonst wäre das ein
+XSS-Risiko über fremde, nicht moderierte Inhalte.
+
+> [!warning] Nicht live gegen Mastodon getestet
+> Die Cloud-Sandbox dieser Session erlaubt nur ausgehende Verbindungen zu
+> einer festen Domain-Allowlist – ein Aufruf gegen `mastodon.social` wurde
+> vom sandboxeigenen Proxy mit `403` blockiert. Mit gemockten Requests
+> unit-getestet (`tests/test_fediverse.py`), aber noch nicht gegen die
+> echte API verifiziert – vor dem Vorführen einmal in einer Umgebung mit
+> normalem Internetzugriff prüfen.
 
 ## Aktueller Stand / offen
 
@@ -179,3 +330,22 @@ pytest tests/
 - [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
       Punkt 6 in der DTEW-0209-Notiz) – der Diversity-Score existiert schon
       pro Feed-Aufruf, aber es gibt noch keine Verlaufsansicht über die Zeit
+- [x] Politische Einordnung (links/mitte/rechts) als zweite, unabhängige
+      Dimension neben pro/contra, nutzergewählt statt automatisch erkannt
+      (siehe "Politische Einordnung" oben, `0003_political_label.sql`)
+- [x] Visuelles Redesign weg vom generischen SaaS-/KI-Dashboard-Look
+      (Papier-Optik, Serif/Monospace statt durchgehend Sans-Serif, Kompass-Chip
+      statt Verlauf/abgerundete Karten überall, siehe "UI-Redesign" oben)
+- [ ] `0003_political_label.sql` gegen die echte Supabase-Instanz anwenden
+      (in dieser Nacht-Session ohne `SUPABASE_MANAGEMENT_TOKEN` nicht möglich,
+      siehe NIGHTLY_TASK.md)
+- [ ] Beispiel-Accounts mit gegensätzlicher Like-Historie für die Demo
+      (Skript vorbereitet, noch nicht ausgeführt – siehe `seed_demo_accounts.py`
+      und NIGHTLY_TASK.md)
+- [x] Erster, risikoarmer Fediverse-Schritt: öffentliche Mastodon-Posts zu
+      einem themenabhängigen Hashtag rein lesend im Feed anzeigen
+      (`fediverse.py`, siehe eigenen Abschnitt unten). Ein vollständiger
+      ActivityPub-Server/-Actor bleibt Konzept-Skizze, siehe
+      Machbarkeits-Notiz im Vault unter "10 DTEW Workshop"
+- [ ] Fediverse-Anzeige gegen die echte Mastodon-API verifizieren (in dieser
+      Sandbox durch die Netzwerk-Allowlist blockiert, siehe unten)
