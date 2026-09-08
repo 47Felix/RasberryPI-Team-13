@@ -221,6 +221,25 @@ a {
   margin: 0.3rem 0 0;
 }
 
+.refresh-banner {
+  display: block;
+  width: 100%;
+  margin: 0.75rem 0;
+  padding: 0.55rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--accent-ink);
+  font-family: var(--font-meta);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.refresh-banner:hover {
+  background: var(--paper);
+}
+
 /* ---------- Feed ---------- */
 
 .feed {
