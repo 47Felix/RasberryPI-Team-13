@@ -703,6 +703,15 @@ input[type="range"]::-moz-range-thumb {
   opacity: 0.75;
 }
 
+/* Political-axis trend panel reuses .trend-sparkline/.trend-bar, distinguished
+   from the perspective one only by color (var(--accent-ink), the same warm
+   accent used for the site's masthead rule) - a second brand-colored panel
+   right below the first would read as one repeated widget instead of two
+   distinct axes. */
+.trend-bar--political {
+  background: var(--accent-ink);
+}
+
 .trend-caption {
   margin-top: 0.5rem;
   font-size: 0.82rem;

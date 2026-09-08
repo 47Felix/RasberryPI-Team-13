@@ -18,10 +18,26 @@ never breaks the page - the section simply shows nothing instead of an error.
 import html
 import os
 import re
+import time
 
 import requests
 
 DEFAULT_INSTANCE = os.environ.get("FEDIVERSE_INSTANCE", "mastodon.social")
+
+# index() calls fetch_public_posts() on every "/" request, but a hashtag
+# timeline doesn't change fast enough to justify one live Mastodon fetch per
+# page view (see NIGHTLY_TASK.md) - cache successful responses per
+# (hashtag, limit) for this long before fetching again.
+CACHE_TTL_SECONDS = int(os.environ.get("FEDIVERSE_CACHE_SECONDS", "300"))
+
+# {(hashtag, limit): (fetched_at_monotonic, result)}
+_cache: dict[tuple[str, int], tuple[float, list[dict]]] = {}
+
+
+def clear_cache() -> None:
+    """Drops all cached responses immediately - used by tests, and available
+    for a future admin/ops action if a stale cache ever needs a manual kick."""
+    _cache.clear()
 
 # One hashtag per existing topic, so the "aus dem Fediverse" section can
 # follow whichever topic the visitor is currently looking at. Rough,
@@ -53,10 +69,23 @@ def fetch_public_posts(topic: str, limit: int = 3) -> list[dict]:
     each as {"content", "url", "account_handle", "created_at"}. Empty list
     if the topic has no mapped hashtag, the instance is unreachable, or the
     response isn't the JSON list format expected - never raises.
+
+    Cached per (hashtag, limit) for CACHE_TTL_SECONDS instead of hitting
+    Mastodon on every call (see NIGHTLY_TASK.md) - a stale cache entry is
+    still served if a later live fetch fails (network blip, instance
+    briefly down), same fail-open spirit as the rest of this module: better
+    to keep showing the last known-good posts than blank the section over a
+    transient error. Only an *empty* cache on failure falls back to [].
     """
     hashtag = TOPIC_HASHTAGS.get(topic)
     if not hashtag:
         return []
+    cache_key = (hashtag, limit)
+    cached = _cache.get(cache_key)
+    now = time.monotonic()
+    if cached is not None and now - cached[0] < CACHE_TTL_SECONDS:
+        return cached[1]
+
     try:
         response = requests.get(
             f"https://{DEFAULT_INSTANCE}/api/v1/timelines/tag/{hashtag}",
@@ -66,9 +95,9 @@ def fetch_public_posts(topic: str, limit: int = 3) -> list[dict]:
         response.raise_for_status()
         posts = response.json()
     except (requests.RequestException, ValueError):
-        return []
+        return cached[1] if cached is not None else []
     if not isinstance(posts, list):
-        return []
+        return cached[1] if cached is not None else []
 
     result = []
     for post in posts[:limit]:
@@ -85,4 +114,5 @@ def fetch_public_posts(topic: str, limit: int = 3) -> list[dict]:
                 "created_at": post.get("created_at", ""),
             }
         )
+    _cache[cache_key] = (now, result)
     return result

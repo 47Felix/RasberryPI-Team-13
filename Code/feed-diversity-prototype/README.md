@@ -86,7 +86,10 @@ soll das auch nicht vorgeben.
 
 **Wie es ins Ranking einfließt (`ranking.py`):** `dominant_political_label()`
 ist das Pendant zu `dominant_perspective()` – Mehrheitslabel aus der gesamten
-Like-Historie eines Accounts (`db.fetch_liked_political_labels()`), `None` bei
+Like-Historie eines Accounts (Feld `political_label` in `db.fetch_liked_history()`,
+bis zu dieser Nacht-Session eine eigene `fetch_liked_political_labels()`-Query,
+jetzt in dieselbe Query wie Thema/Perspektive gefaltet statt denselben
+Likes-Join zweimal abzufragen), `None` bei
 fehlendem Signal oder einem Unentschieden zwischen mehreren Labels. In
 `standard_feed()` sortiert das Ergebnis (`preferred_political_label` oder
 ersatzweise das Label des Ausgangs-Posts) *innerhalb* der bestehenden
@@ -102,6 +105,21 @@ vorliegt). Beide Achsen sind unabhängig testbar (`tests/test_ranking.py`) und
 verändern das bestehende, bereits getestete Perspektive-Ranking nicht, wenn
 kein `political_label` gesetzt ist (Rückwärtskompatibilität zu Posts von vor
 dieser Erweiterung).
+
+**Bubble-Entwicklung über die Zeit, für beide Achsen:** `ranking.bubble_trend()`
+(Perspektive) hatte bisher keine Entsprechung für die politische Achse. Neu:
+`ranking.political_bubble_trend()`, gleiche Idee (Anteil der bisherigen Likes,
+der zur jeweils dann vorherrschenden Ausprägung gehört, für jeden Like einzeln
+berechnet statt nur als Momentaufnahme), aber für drei mögliche Werte
+(links/mitte/rechts) statt zwei, deshalb eine eigene Zähl-Logik statt einer
+Wiederverwendung der pro/contra-Zähler. Likes auf Posts ohne gesetztes Label
+(vor dieser Erweiterung geliket, oder Autor:in hat kein Label gewählt) werden
+übersprungen statt als eigener "kein Label"-Balken gezählt. In der UI
+(`templates/index.html`) erscheint dafür ein zweites Sparkline-Panel
+("Deine politische Bubble-Entwicklung") unterhalb des bestehenden, nur
+sichtbar ab zwei gelabelten Likes, farblich abgesetzt (`--accent-ink` statt
+`--brand`) damit die beiden Achsen nicht wie ein doppelt gerendertes Widget
+wirken.
 
 **Schema:** `supabase/migrations/0003_political_label.sql` fügt die Spalte
 `posts.political_label` hinzu (nullable, `check` auf die drei erlaubten
@@ -299,6 +317,20 @@ werden vor der Anzeige zu Klartext reduziert (`fediverse._strip_html`),
 statt sie ungefiltert ins Template zu rendern – sonst wäre das ein
 XSS-Risiko über fremde, nicht moderierte Inhalte.
 
+**Caching statt live pro Seitenaufruf:** `index()` ruft `fetch_public_posts()`
+bei jedem `/`-Aufruf auf, ein Hashtag-Timeline ändert sich aber nicht schnell
+genug, um jedes Mal einen frischen Mastodon-Request zu rechtfertigen. Seit
+dieser Nacht-Session hält `fediverse.py` erfolgreiche Antworten pro
+(Hashtag, Limit) `FEDIVERSE_CACHE_SECONDS` lang (Default 300s, per
+Umgebungsvariable änderbar) im Prozessspeicher vor, statt bei jedem Aufruf neu
+zu fragen. Schlägt ein Refresh nach Ablauf des Caches fehl (Netzwerkfehler,
+Instanz kurz nicht erreichbar), wird der zuletzt bekannte Cache-Stand weiter
+ausgeliefert statt die Sektion leer zu zeigen – nur ein leerer Cache fällt auf
+`[]` zurück, im selben "fail open"-Stil wie der Rest des Moduls. Kein Redis
+oder Ähnliches nötig für einen Ein-Prozess-Prototyp; bei mehreren
+Gunicorn-Workern (siehe `deploy/`) hat jeder Worker seinen eigenen Cache, was
+für diesen Zweck unkritisch ist.
+
 > [!warning] Nicht live gegen Mastodon getestet
 > Die Cloud-Sandbox dieser Session erlaubt nur ausgehende Verbindungen zu
 > einer festen Domain-Allowlist – ein Aufruf gegen `mastodon.social` wurde
@@ -327,9 +359,12 @@ XSS-Risiko über fremde, nicht moderierte Inhalte.
 - [x] Likes als Ranking-Signal: Standard-Feed reinforct jetzt die
       Mehrheits-Perspektive der eigenen Like-Historie statt nur die des
       gerade gewählten Ausgangs-Posts (`dominant_perspective`)
-- [ ] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
-      Punkt 6 in der DTEW-0209-Notiz) – der Diversity-Score existiert schon
-      pro Feed-Aufruf, aber es gibt noch keine Verlaufsansicht über die Zeit
+- [x] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
+      Punkt 6 in der DTEW-0209-Notiz) – neben dem Diversity-Score pro
+      Feed-Aufruf jetzt auch eine Verlaufsansicht über die Zeit
+      (`ranking.bubble_trend()`/`political_bubble_trend()`, Sparkline-Panels
+      in `templates/index.html`), für beide Achsen (Perspektive und
+      politisches Label)
 - [x] Politische Einordnung (links/mitte/rechts) als zweite, unabhängige
       Dimension neben pro/contra, nutzergewählt statt automatisch erkannt
       (siehe "Politische Einordnung" oben, `0003_political_label.sql`)
@@ -349,3 +384,5 @@ XSS-Risiko über fremde, nicht moderierte Inhalte.
       Machbarkeits-Notiz im Vault unter "10 DTEW Workshop"
 - [ ] Fediverse-Anzeige gegen die echte Mastodon-API verifizieren (in dieser
       Sandbox durch die Netzwerk-Allowlist blockiert, siehe unten)
+- [x] Fediverse-Fetch cachen statt live pro `/`-Aufruf (`fediverse.py`,
+      `FEDIVERSE_CACHE_SECONDS`, siehe eigenen Abschnitt oben)

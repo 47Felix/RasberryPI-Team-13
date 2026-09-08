@@ -362,3 +362,39 @@ def bubble_trend(liked_perspectives_in_order: list[str]) -> list[dict]:
         share = 100 * dominant_count / index
         trend.append({"index": index, "perspective": perspective, "dominant_share": round(share, 1)})
     return trend
+
+
+def political_bubble_trend(liked_political_labels_in_order: list[str | None]) -> list[dict]:
+    """Same idea as bubble_trend(), for the independent political_label axis
+    (see NIGHTLY_TASK.md - the perspective-only trend view left this second
+    dimension from PR #113 without a trend of its own).
+
+    Three possible labels ('links'/'mitte'/'rechts') instead of two, so this
+    can't reuse bubble_trend()'s pro/contra counters directly - tracks a
+    count per label seen so far and takes whichever is highest at each
+    point, same "share of likes-so-far matching the current majority"
+    definition. A tie for the top spot (all counts equal, e.g. after the
+    very first like, or 1/1 links-vs-rechts) shows as `dominant_count /
+    index` using whichever tied label is counted first - functionally the
+    same "not yet dominant" signal as bubble_trend()'s explicit 50/50
+    tie-break, just without special-casing exactly two options.
+
+    `liked_political_labels_in_order` is the political_label of every liked
+    post, oldest first - entries with no label (liked before this field
+    existed, or the author left it unset) are skipped entirely rather than
+    counted as a fourth "no label" bucket, matching how
+    dominant_political_label() already ignores them. The `index` in each
+    returned point therefore counts labeled likes only, not every like.
+    """
+    trend = []
+    counts: dict[str, int] = {}
+    index = 0
+    for label in liked_political_labels_in_order:
+        if not label:
+            continue
+        counts[label] = counts.get(label, 0) + 1
+        index += 1
+        dominant_count = max(counts.values())
+        share = 100 * dominant_count / index
+        trend.append({"index": index, "political_label": label, "dominant_share": round(share, 1)})
+    return trend

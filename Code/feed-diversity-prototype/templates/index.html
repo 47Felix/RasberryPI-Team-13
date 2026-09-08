@@ -213,6 +213,25 @@
       </details>
     {% endif %}
 
+    {% if current_user and political_bubble_trend_data|length >= 2 %}
+      <details class="disclosure settings">
+        <summary>🧭 Deine politische Bubble-Entwicklung ({{ political_bubble_trend_data|length }} gelabelte Likes)</summary>
+        <p class="tab-caption">
+          Dasselbe wie oben, aber für die politische Einordnung (links/mitte/rechts) statt
+          pro/contra – zählt nur Likes auf Posts mit gesetztem Label.
+        </p>
+        <div class="trend-sparkline"
+             role="img"
+             aria-label="Politischer Bubble-Anteil über deine letzten {{ political_bubble_trend_data|length }} gelabelten Likes, von {{ political_bubble_trend_data[0].dominant_share }}% auf zuletzt {{ political_bubble_trend_data[-1].dominant_share }}%">
+          {% for point in political_bubble_trend_data %}
+            <span class="trend-bar trend-bar--political" style="height: {{ point.dominant_share }}%"
+                  title="Like #{{ point.index }} ({{ point.political_label }}): {{ point.dominant_share }}% Bubble-Anteil"></span>
+          {% endfor %}
+        </div>
+        <p class="trend-caption">Aktuell <strong>{{ political_bubble_trend_data[-1].dominant_share }}%</strong> in einer politischen Bubble.</p>
+      </details>
+    {% endif %}
+
     <details class="disclosure settings">
       <summary>Neuen Post erstellen</summary>
 
