@@ -19,3 +19,7 @@ ObsidianGehirn/.obsidian/plugins/*/data.json
 Code/pi-dashboard/venv/
 Code/pi-dashboard/tresor.db
 Code/pi-dashboard/.env
+
+# Python-Bytecode-Cache (entsteht z.B. beim lokalen Testen der Flask-App)
+__pycache__/
+*.pyc

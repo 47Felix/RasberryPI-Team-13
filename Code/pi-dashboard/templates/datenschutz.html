@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Datenschutzerklaerung{% endblock %}
+{% block crumb %}Datenschutz{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="panel-head"><span>Datenschutzerklaerung</span></div>
+  <div class="panel-body prose">
+    <p class="muted">
+      Informationen zur Verarbeitung personenbezogener Daten nach Art. 13 DSGVO.
+      Dieses Dashboard ist ein nicht-oeffentlicher Schulprojekt-Dienst und nur im
+      Schul-WLAN bzw. ueber das private Tailnet des Teams erreichbar.
+    </p>
+
+    <h2>1. Verantwortlicher</h2>
+    {% if impressum.betreiber %}
+      <p>
+        {{ impressum.betreiber }}<br>
+        {{ impressum.anschrift or "" }}<br>
+        {{ impressum.kontakt or "" }}
+      </p>
+    {% else %}
+      <span class="todo">Noch auszufuellen: verantwortliche Stelle inkl. Anschrift und Kontakt
+      (identisch mit dem Impressum, wird ueber die gleichen <code>DASHBOARD_IMPRESSUM_*</code>-Variablen gesetzt).</span>
+    {% endif %}
+
+    <h2>2. Aufruf des Dashboards (Server-Logs)</h2>
+    <p>
+      Beim Aufruf werden technisch notwendige Daten verarbeitet, die der Browser
+      uebermittelt: IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite
+      und User-Agent. Diese Daten werden nur fluechtig zur Auslieferung der Seite
+      und zur Abwehr von Missbrauch verarbeitet.
+    </p>
+    <p>
+      Der Anwendungsserver schreibt im Normalbetrieb <strong>keine</strong>
+      Zugriffsprotokolle mit IP-Adressen dauerhaft mit (Zugriffs-Logging ist
+      standardmaessig deaktiviert, Datenminimierung nach Art. 5 Abs. 1 lit. c DSGVO).
+      Wird es zur Fehlersuche voruebergehend aktiviert, landen die Zeilen im
+      System-Journal des Pi (<code>journalctl</code>) und werden dort im Rahmen der
+      normalen Journal-Rotation wieder ueberschrieben.
+    </p>
+    <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Betrieb und Sicherheit des Dienstes).</p>
+
+    <h2>3. Admin-Login (Session-Cookie)</h2>
+    <p>
+      Der geschuetzte Bereich <code>/admin</code> setzt nach erfolgreichem Login ein
+      einzelnes, technisch notwendiges Session-Cookie. Es enthaelt nur die
+      Information, dass die aktuelle Sitzung angemeldet ist, wird
+      <code>HttpOnly</code> und <code>SameSite=Lax</code> gesetzt und beim Ausloggen
+      bzw. Schliessen des Browsers geloescht. Es findet kein Tracking statt, daher
+      ist hierfuer keine Einwilligung erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).
+    </p>
+    <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Absicherung des Verwaltungszugangs).</p>
+
+    <h2>4. Ereignisprotokoll des Tresors</h2>
+    <p>
+      Die vom Arduino gemeldeten Tresor-Ereignisse (z.B. "geoeffnet",
+      "Fehlversuch", "Alarm", "Code geaendert") werden mit UTC-Zeitstempel in einer
+      lokalen SQLite-Datenbank auf dem Pi gespeichert und die letzten 50 Eintraege
+      im Dashboard angezeigt. Es werden ausschliesslich Geraete-Ereignisse
+      protokolliert, <strong>keine</strong> Namen, keine eingegebenen Codes und
+      keine sonstigen personenbeziehbaren Angaben.
+    </p>
+    <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Nachvollziehbarkeit der Tresor-Nutzung).</p>
+
+    <h2>5. Alarm-Benachrichtigung an Discord</h2>
+    {% if discord_aktiv %}
+      <p>
+        Bei einem Alarm sendet das Dashboard eine feste Textmeldung ("Tresor-Alarm
+        ausgeloest") an einen internen Discord-Kanal des Teams. Dabei werden
+        <strong>keine</strong> personenbezogenen Daten uebermittelt. Empfaenger ist
+        Discord (Discord Netherlands BV / Discord Inc., USA); es kann somit zu einer
+        Uebermittlung in ein Drittland kommen. Discord stuetzt solche Uebermittlungen
+        auf die EU-Standardvertragsklauseln bzw. das EU-US Data Privacy Framework.
+      </p>
+      <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (zeitnahe Alarmierung des Teams).</p>
+    {% else %}
+      <p>
+        Eine Alarm-Weiterleitung an externe Dienste (z.B. Discord) ist in dieser
+        Installation derzeit <strong>nicht</strong> konfiguriert. Es werden keine
+        Daten an Dritte uebermittelt.
+      </p>
+    {% endif %}
+
+    <h2>6. Keine externen Inhalte, kein Tracking</h2>
+    <p>
+      Das Dashboard laedt alle Ressourcen (Stylesheets, Skript, Bilder, Schriften)
+      vom eigenen Server. Es werden keine Inhalte von Drittanbietern (CDNs, Google
+      Fonts, Kartendienste), keine Analyse-Werkzeuge und keine Werbe- oder
+      Tracking-Cookies eingesetzt. Ein Cookie-Banner ist deshalb nicht erforderlich.
+    </p>
+
+    <h2>7. Empfaenger und Speicherdauer</h2>
+    <p>
+      Die Daten werden lokal auf dem Raspberry Pi des Teams verarbeitet und nicht an
+      weitere Stellen weitergegeben (Ausnahme: die unter Punkt 5 genannte
+      Alarmmeldung, sofern aktiv). Das Ereignisprotokoll verbleibt bis zur manuellen
+      Loeschung durch das Team in der lokalen Datenbank; angezeigt werden nur die
+      letzten 50 Eintraege.
+    </p>
+
+    <h2>8. Ihre Rechte</h2>
+    <p>
+      Sie haben im Rahmen der gesetzlichen Voraussetzungen das Recht auf Auskunft
+      (Art. 15), Berichtigung (Art. 16), Loeschung (Art. 17), Einschraenkung der
+      Verarbeitung (Art. 18), Datenuebertragbarkeit (Art. 20) sowie ein
+      Widerspruchsrecht gegen Verarbeitungen auf Grundlage von Art. 6 Abs. 1 lit. f
+      DSGVO (Art. 21). Wenden Sie sich dazu an den oben genannten Verantwortlichen.
+    </p>
+    <p>
+      Ausserdem besteht ein Beschwerderecht bei einer Datenschutz-Aufsichtsbehoerde
+      (Art. 77 DSGVO).
+      {% if impressum.aufsichtsbehoerde %}
+        Zustaendig ist: {{ impressum.aufsichtsbehoerde }}.
+      {% else %}
+        <span class="todo">Noch auszufuellen: konkrete Aufsichtsbehoerde des Bundeslandes der Schule
+        (Umgebungsvariable <code>DASHBOARD_DATENSCHUTZ_AUFSICHT</code>).</span>
+      {% endif %}
+    </p>
+
+    <p class="muted">Stand: September 2026</p>
+  </div>
+</div>
+{% endblock %}
