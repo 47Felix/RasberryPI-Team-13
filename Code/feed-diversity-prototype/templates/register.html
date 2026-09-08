@@ -37,17 +37,19 @@
         <details class="disclosure" style="margin:0.9rem 0;">
           <summary>Kurzer Einstiegs-Fragebogen (optional, jederzeit überspringbar)</summary>
           <p class="tab-caption" style="border:none;padding:0.5rem 0;">
-            Hilft dem Feed, von Anfang an eine Richtung zu haben, statt bei null
-            zu starten – wird sofort von deinen echten Likes/Kommentaren
-            überschrieben, sobald du welche machst. Nichts hier ist Pflicht.
+            Hilft dem Feed, pro Thema von Anfang an eine Richtung zu haben, statt
+            bei null zu starten – bei jedem Thema für sich, z.B. bei Verkehr "pro"
+            und bei Digital "contra" gleichzeitig. Wird pro Thema sofort von
+            deinen echten Likes/Kommentaren zu diesem Thema überschrieben, sobald
+            du welche machst. Nichts hier ist Pflicht.
           </p>
 
           {% for question in onboarding_questions %}
             <fieldset class="settings-row" style="border:none;padding:0;margin:0 0 0.75rem;">
               <legend class="tab-caption" style="border:none;padding:0 0 0.3rem;">{{ question.topic }}</legend>
-              <label><input type="radio" name="onboarding_q{{ loop.index0 }}" value="pro"> {{ question.pro }}</label>
-              <label><input type="radio" name="onboarding_q{{ loop.index0 }}" value="contra"> {{ question.contra }}</label>
-              <label><input type="radio" name="onboarding_q{{ loop.index0 }}" value="" checked> Keine Angabe</label>
+              <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="pro"> {{ question.pro }}</label>
+              <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="contra"> {{ question.contra }}</label>
+              <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="" checked> Keine Angabe</label>
             </fieldset>
           {% endfor %}
 

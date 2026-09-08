@@ -130,7 +130,7 @@ def create_unique_profile(
     user_id: str,
     display_name: str,
     avatar: str = "🙂",
-    onboarding_perspective: str | None = None,
+    onboarding_perspective_by_topic: dict[str, str] | None = None,
     onboarding_political_label: str | None = None,
 ) -> str:
     """Creates the profiles row for a freshly signed-up account. The handle
@@ -139,10 +139,14 @@ def create_unique_profile(
     used (best-effort fallback to the first attempted handle on network
     errors, since there's nothing better to store in the session then).
 
-    onboarding_perspective/onboarding_political_label are the optional,
-    skippable registration-survey answers (see 0004_onboarding_survey.sql) -
-    None just leaves the feed with no initial lean until real likes/comments
-    provide one, same as an account created before this survey existed.
+    onboarding_perspective_by_topic/onboarding_political_label are the
+    optional, skippable registration-survey answers (see
+    0004_onboarding_survey.sql/0005_onboarding_per_topic.sql) - the topic map
+    stores one pro/contra answer per topic (e.g. {"verkehr": "pro"}), same
+    shape as ranking.dominant_perspective_by_topic() produces from real
+    engagement, so app.py can merge the two without converting between
+    formats. None/{} just leaves the feed with no initial lean until real
+    likes/comments provide one.
     """
     base_handle = "@" + _slugify_handle(display_name)
     handle = base_handle
@@ -150,9 +154,8 @@ def create_unique_profile(
     payload = {
         "id": user_id,
         "display_name": display_name,
-        "handle": handle,
         "avatar": avatar,
-        "onboarding_perspective": onboarding_perspective,
+        "onboarding_perspective_by_topic": onboarding_perspective_by_topic or None,
         "onboarding_political_label": onboarding_political_label,
     }
     while True:
@@ -180,7 +183,10 @@ def fetch_profile(user_id: str) -> dict | None:
     try:
         rows = _get(
             "profiles",
-            {"id": f"eq.{user_id}", "select": "display_name,handle,avatar,onboarding_perspective,onboarding_political_label"},
+            {
+                "id": f"eq.{user_id}",
+                "select": "display_name,handle,avatar,onboarding_perspective_by_topic,onboarding_political_label",
+            },
         )
     except requests.RequestException:
         return None
@@ -285,21 +291,29 @@ def fetch_latest_post_id() -> str | None:
     return rows[0]["id"] if rows else None
 
 
-def fetch_commented_perspectives(user_id: str) -> list[str]:
-    """Perspective of every post the account has commented on - same idea as
-    fetch_liked_history(), so commenting counts as an engagement signal for
-    dominant_perspective() too, not just liking."""
+def fetch_commented_history(user_id: str) -> list[dict]:
+    """Topic+perspective of every post the account has commented on - same
+    shape as fetch_liked_history(), so commenting counts as an engagement
+    signal for ranking.dominant_perspective_by_topic() too, not just liking.
+    Each item: {"topic":..., "perspective":...}."""
     if not is_configured():
         return []
     try:
-        rows = _get("comments", {"user_id": f"eq.{user_id}", "select": "posts(perspective)"})
+        rows = _get("comments", {"user_id": f"eq.{user_id}", "select": "posts(perspective,categories(name))"})
     except requests.RequestException:
         return []
-    return [row["posts"]["perspective"] for row in rows if row.get("posts")]
+    result = []
+    for row in rows:
+        post = row.get("posts")
+        if not post:
+            continue
+        category = post.get("categories") or {}
+        result.append({"topic": category.get("name"), "perspective": post.get("perspective")})
+    return result
 
 
 def fetch_commented_political_labels(user_id: str) -> list[str]:
-    """Same idea as fetch_commented_perspectives(), for the independent
+    """Same idea as fetch_commented_history(), for the independent
     political_label axis (feeds dominant_political_label())."""
     if not is_configured():
         return []
@@ -310,23 +324,36 @@ def fetch_commented_political_labels(user_id: str) -> list[str]:
     return [row["posts"]["political_label"] for row in rows if row.get("posts")]
 
 
-def fetch_liked_history(user_id: str) -> list[str]:
-    """Perspective of every post the account has liked, oldest first - feeds
-    both ranking.dominant_perspective() (order doesn't matter there) and
-    ranking.bubble_trend() (order is the whole point), so callers get the
-    account's overall lean and its like-history trend from a single query
-    instead of fetching the same likes/posts join twice. [] if there's no
-    history yet or Supabase is unreachable."""
+def fetch_liked_history(user_id: str) -> list[dict]:
+    """Topic+perspective of every post the account has liked, oldest first -
+    feeds both ranking.dominant_perspective_by_topic() (order doesn't matter
+    there) and ranking.bubble_trend() (order is the whole point, and only
+    cares about the "perspective" field of each item), so callers get the
+    account's per-topic lean and its like-history trend from a single query
+    instead of fetching the same likes/posts join twice. Each item:
+    {"topic":..., "perspective":...}. [] if there's no history yet or
+    Supabase is unreachable."""
     if not is_configured():
         return []
     try:
         rows = _get(
             "likes",
-            {"user_id": f"eq.{user_id}", "select": "created_at,posts(perspective)", "order": "created_at.asc"},
+            {
+                "user_id": f"eq.{user_id}",
+                "select": "created_at,posts(perspective,categories(name))",
+                "order": "created_at.asc",
+            },
         )
     except requests.RequestException:
         return []
-    return [row["posts"]["perspective"] for row in rows if row.get("posts")]
+    result = []
+    for row in rows:
+        post = row.get("posts")
+        if not post:
+            continue
+        category = post.get("categories") or {}
+        result.append({"topic": category.get("name"), "perspective": post.get("perspective")})
+    return result
 
 
 def fetch_liked_political_labels(user_id: str) -> list[str]:

@@ -57,21 +57,18 @@
           <span><span class="score-label">Politisch (links/mitte/rechts):</span> <span class="score-value">{{ political_feed_score }}%</span> anderes Lager</span>
         {% endif %}
       </p>
-      {% if preferred_perspective or preferred_political_label %}
+      {% if preferred_perspective_by_topic or preferred_political_label %}
         <p class="bias-note">
-          {% if onboarding_perspective_used or onboarding_political_label_used %}
-            Basierend auf deiner Angabe im Einstiegs-Fragebogen bevorzugt dein Feed aktuell
-          {% else %}
-            Basierend auf deinen bisherigen Likes und Kommentaren bevorzugt dein Feed aktuell
+          Basierend auf deinen bisherigen Likes/Kommentaren (und, wo du noch keine
+          hast, deiner Angabe im Einstiegs-Fragebogen) bevorzugt dein Feed aktuell
+          pro Thema:
+          {% for topic, perspective in preferred_perspective_by_topic.items() %}
+            <strong>{{ topic }}</strong>&rarr;<strong>{{ perspective }}</strong>{{ ' (Fragebogen)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
+          {% endfor %}
+          {% if preferred_political_label %}
+            {{ ' – ' if preferred_perspective_by_topic }}außerdem das Lager <strong>{{ preferred_political_label }}</strong>{{ ' (Fragebogen)' if onboarding_political_label_used }}
           {% endif %}
-          {% if preferred_perspective %}<strong>{{ preferred_perspective }}</strong>-Posts{% endif %}
-          {% if preferred_perspective and preferred_political_label %} und {% endif %}
-          {% if preferred_political_label %}das Lager <strong>{{ preferred_political_label }}</strong>{% endif %}
-          {% if onboarding_perspective_used or onboarding_political_label_used %}
-            – sobald du likest oder kommentierst, übernimmt das die Führung und verstärkt sich von da an in diese Richtung.
-          {% else %}
-            – das verstärkt sich mit jedem weiteren Like/Kommentar in diese Richtung.
-          {% endif %}
+          – das verstärkt sich pro Thema mit jedem weiteren Like/Kommentar dazu in diese Richtung.
           Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
         </p>
       {% endif %}

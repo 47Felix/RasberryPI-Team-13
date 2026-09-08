@@ -54,6 +54,38 @@ def dominant_perspective(perspectives: list[str]) -> str | None:
     return "pro" if pro > contra else "contra"
 
 
+def dominant_perspective_by_topic(engagement: list[dict]) -> dict[str, str]:
+    """Same idea as dominant_perspective(), but keyed per topic instead of
+    collapsed into one account-wide lean. `engagement` is every liked/
+    commented post for one account, each as {"topic":..., "perspective":...}
+    (see db.fetch_liked_history()/fetch_commented_history()).
+
+    A single global lean was the original design (see git history), but it
+    conflated unrelated topics: an account that likes "verkehr pro" posts and
+    "digital contra" posts isn't reliably "pro" or "contra" in general, those
+    are two independent stances. Grouping by topic first, then taking the
+    majority within each group the same way dominant_perspective() always
+    did, lets standard_feed()/diversity_aware_feed() reinforce/counter each
+    topic on its own terms. A topic with no entries or an exact tie is
+    simply absent from the returned dict, same semantics as None for the
+    single-topic case.
+    """
+    perspectives_by_topic: dict[str, list[str]] = {}
+    for entry in engagement:
+        topic = entry.get("topic")
+        perspective = entry.get("perspective")
+        if not topic or not perspective:
+            continue
+        perspectives_by_topic.setdefault(topic, []).append(perspective)
+
+    result = {}
+    for topic, perspectives in perspectives_by_topic.items():
+        dominant = dominant_perspective(perspectives)
+        if dominant:
+            result[topic] = dominant
+    return result
+
+
 def dominant_political_label(labels: list[str]) -> str | None:
     """Same idea as dominant_perspective(), but for the independent
     'links'/'mitte'/'rechts' self-labeling from Post.political_label (see
@@ -78,20 +110,26 @@ def standard_feed(
     posts: list[Post],
     seed_id: str,
     limit: int = 8,
-    preferred_perspective: str | None = None,
+    preferred_perspective_by_topic: dict[str, str] | None = None,
     preferred_political_label: str | None = None,
 ):
-    """Bubble-reinforcing ranking, like a typical 'For You' feed: one
-    perspective first, regardless of topic, before anything that would
-    introduce a counter-perspective. Within each tier, still ordered by
-    similarity.
+    """Bubble-reinforcing ranking, like a typical 'For You' feed: posts that
+    match the account's own stance *for their own topic* first, before
+    anything that would introduce a counter-perspective on that topic.
+    Within each tier, still ordered by similarity.
 
-    Which perspective that is comes from `preferred_perspective` (the
-    account's own like history, see dominant_perspective()) when given,
-    otherwise from the seed post - so once an account has liked enough
-    posts one way, the feed reinforces *that* lean on every seed post, not
-    just whichever one happens to be selected. This is what makes the
-    reinforcement self-sustaining instead of a one-off per seed post.
+    `preferred_perspective_by_topic` (from the account's own like/comment
+    history, see dominant_perspective_by_topic()) maps topic -> 'pro'/
+    'contra'. This is deliberately per-topic instead of one account-wide
+    label: an account can be "pro" on verkehr and "contra" on digital at the
+    same time, and a single global lean would either flatten that into one
+    arbitrary side or (worse) apply e.g. the verkehr-pro reinforcement to
+    digital posts too, which has nothing to do with what the account
+    actually likes there. A topic missing from the map (no engagement yet)
+    falls back to the seed post's own perspective, but only for posts that
+    share the seed's topic - there is no sane fallback for an unrelated
+    topic, so those are simply ranked by similarity alone, in neither the
+    "matches" nor the "differs" tier.
 
     Raw cosine similarity alone isn't a reliable stand-in for "reinforces the
     bubble": on a small dataset, a counter-perspective post on the same topic
@@ -104,32 +142,51 @@ def standard_feed(
 
     `preferred_political_label`/the seed post's own `political_label`
     ('links'/'mitte'/'rechts', see dominant_political_label()) works as a
-    second, independent axis on top of perspective: within the "same
-    perspective" tier, posts that also match on political label are ranked
-    ahead of ones that only match on perspective, so a feed that reinforces
-    both a topical stance and a political lean looks even more one-sided
-    than either signal alone. Posts without a political_label (legacy rows,
-    or bias_political being None because there's no signal yet) simply skip
-    this extra split and behave exactly as before.
+    second, independent, still account-wide axis on top of perspective
+    (political identity isn't topic-specific the way a pro/contra stance is)
+    - within the "same perspective" tier, posts that also match on political
+    label are ranked ahead of ones that only match on perspective. Posts
+    without a political_label (legacy rows, or bias_political being None
+    because there's no signal yet) simply skip this extra split and behave
+    exactly as before.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
-    bias_perspective = preferred_perspective or seed_post.perspective
+    preferred_perspective_by_topic = preferred_perspective_by_topic or {}
     bias_political = preferred_political_label or seed_post.political_label
     candidates = _similarities_to_seed(posts, seed_id)
 
+    def topic_bias(post: Post) -> str | None:
+        by_topic = preferred_perspective_by_topic.get(post.topic)
+        if by_topic:
+            return by_topic
+        return seed_post.perspective if post.topic == seed_post.topic else None
+
+    def matches_perspective(post: Post) -> bool:
+        bias = topic_bias(post)
+        return bias is not None and post.perspective == bias
+
+    def differs_perspective(post: Post) -> bool:
+        bias = topic_bias(post)
+        return bias is not None and post.perspective != bias
+
     if bias_political:
         same_both = _sorted_by_similarity(
-            candidates, lambda p: p.perspective == bias_perspective and p.political_label == bias_political
+            candidates, lambda p: matches_perspective(p) and p.political_label == bias_political
         )
         same_perspective_only = _sorted_by_similarity(
-            candidates, lambda p: p.perspective == bias_perspective and p.political_label != bias_political
+            candidates, lambda p: matches_perspective(p) and p.political_label != bias_political
         )
         ranked = same_both + same_perspective_only
     else:
-        ranked = _sorted_by_similarity(candidates, lambda p: p.perspective == bias_perspective)
+        ranked = _sorted_by_similarity(candidates, matches_perspective)
 
-    other_perspective = _sorted_by_similarity(candidates, lambda p: p.perspective != bias_perspective)
-    ranked = ranked + other_perspective
+    # Topics with neither engagement history nor being the seed's own topic
+    # have no bias to match or differ from - rank them ahead of confirmed
+    # counter-perspective posts (nothing here actively opposes the account's
+    # stance) but behind anything that actually reinforces it.
+    no_signal = _sorted_by_similarity(candidates, lambda p: topic_bias(p) is None)
+    other_perspective = _sorted_by_similarity(candidates, differs_perspective)
+    ranked = ranked + no_signal + other_perspective
 
     return [
         {"post": post, "score": score, "is_diverse_pick": False}
@@ -142,21 +199,27 @@ def diversity_aware_feed(
     seed_id: str,
     limit: int = 8,
     diversity_every: int = 3,
-    preferred_perspective: str | None = None,
+    preferred_perspective_by_topic: dict[str, str] | None = None,
     preferred_political_label: str | None = None,
 ):
     """Same similarity base, but deliberately mixes in topically-related
     counter-perspective posts every `diversity_every`-th slot, so the feed
     stays relevant (same topic) while avoiding pure echo-chamber reinforcement.
 
-    Uses the same `preferred_perspective` (account like history) as
-    standard_feed() to decide which side counts as "home" vs. "counter" -
-    so this interrupts the account's actual reinforced lean, not just the
-    current seed post's perspective.
+    Every slot in this feed is already restricted to "same topic as the seed
+    post" vs. "other topics" (see `same_topic()` below), so the relevant bias
+    is just the seed's own topic: `preferred_perspective_by_topic` (from the
+    account's own like/comment history, see dominant_perspective_by_topic())
+    is looked up for `seed_post.topic` specifically, falling back to the seed
+    post's own perspective if that topic has no engagement signal yet - e.g.
+    if the account leans "pro" on verkehr, a verkehr-seeded diversity feed
+    counters with verkehr "contra" posts, regardless of what the account
+    thinks about digital or any other topic.
 
     `preferred_political_label`/the seed post's `political_label` adds a
-    second, independent axis the same way it does in standard_feed(). When
-    it's set, same-topic candidates split into four groups instead of two
+    second, independent, still account-wide axis the same way it does in
+    standard_feed() (political identity isn't topic-specific). When it's
+    set, same-topic candidates split into four groups instead of two
     (matches/differs on perspective, crossed with matches/differs on
     political label). A diversity slot prefers a post that differs on
     *both* axes ("double counter") over one that only differs on
@@ -166,7 +229,8 @@ def diversity_aware_feed(
     (there's nothing to match), never as agreeing by default.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
-    bias_perspective = preferred_perspective or seed_post.perspective
+    preferred_perspective_by_topic = preferred_perspective_by_topic or {}
+    bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
     bias_political = preferred_political_label or seed_post.political_label
     candidates = _similarities_to_seed(posts, seed_id)
 

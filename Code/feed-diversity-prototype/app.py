@@ -18,7 +18,7 @@ from ranking import (
     diversity_aware_feed,
     diversity_score_for_perspective,
     diversity_score_for_political_label,
-    dominant_perspective,
+    dominant_perspective_by_topic,
     dominant_political_label,
     standard_feed,
     suggest_category,
@@ -39,14 +39,14 @@ KNOWN_PERSPECTIVES = ["pro", "contra"]
 # user-chosen label rather than an automatically detected one.
 KNOWN_POLITICAL_LABELS = ["links", "mitte", "rechts"]
 
-# Optional registration-time survey (see 0004_onboarding_survey.sql): one
-# pro/contra statement pair per known topic, phrased to match the framing
-# already used by the seed posts for that topic (see supabase/migrations/
-# 0001_init.sql seed data) so a skippable self-placement here feels like the
-# same kind of choice as picking a post's own perspective, not a separate
-# vocabulary. Purely gives the feed an initial lean before any likes/comments
-# exist - dominant_perspective() still only sees a majority across whichever
-# questions the account actually answered, ties/all-skipped stay None.
+# Optional registration-time survey (see 0004_onboarding_survey.sql/
+# 0005_onboarding_per_topic.sql): one pro/contra statement pair per known
+# topic, phrased to match the framing already used by the seed posts for
+# that topic (see supabase/migrations/0001_init.sql seed data) so a
+# skippable self-placement here feels like the same kind of choice as
+# picking a post's own perspective, not a separate vocabulary. Each answered
+# topic gives the feed an initial per-topic lean before any likes/comments
+# on that topic exist - unanswered topics are simply left out of the map.
 ONBOARDING_QUESTIONS = [
     {
         "topic": "klima",
@@ -154,18 +154,19 @@ def index():
     feed_items = []
     feed_score = 0
     political_feed_score = 0
-    preferred_perspective = None
+    preferred_perspective_by_topic = {}
     preferred_political_label = None
     show_political_score = False
     fediverse_posts = []
     fediverse_topic = None
-    onboarding_perspective_used = False
+    onboarding_topics_used = set()
     onboarding_political_label_used = False
-    # One query covers both the account's overall lean (dominant_perspective
-    # doesn't care about order) and the like-history trend below, instead of
-    # fetching the same likes/posts join twice per request.
+    # One query covers both the account's per-topic lean
+    # (dominant_perspective_by_topic doesn't care about order) and the
+    # like-history trend below, instead of fetching the same likes/posts
+    # join twice per request.
     liked_history = db.fetch_liked_history(current_user["id"]) if current_user else []
-    bubble_trend_data = bubble_trend(liked_history)
+    bubble_trend_data = bubble_trend([item["perspective"] for item in liked_history])
 
     if posts:
         seed_id = request.args.get("seed_id")
@@ -177,27 +178,30 @@ def index():
 
         if current_user:
             # Comments count as an engagement signal alongside likes - someone
-            # who mostly comments on "pro" posts leans "pro" for the feed the
-            # same way a liker would, even without hitting the like button.
-            commented_perspectives = db.fetch_commented_perspectives(current_user["id"])
+            # who mostly comments on "pro" posts on a topic leans "pro" on
+            # that topic the same way a liker would, even without hitting
+            # the like button.
+            commented_history = db.fetch_commented_history(current_user["id"])
             commented_labels = db.fetch_commented_political_labels(current_user["id"])
-            preferred_perspective = dominant_perspective(liked_history + commented_perspectives)
+            preferred_perspective_by_topic = dominant_perspective_by_topic(liked_history + commented_history)
             preferred_political_label = dominant_political_label(
                 db.fetch_liked_political_labels(current_user["id"]) + commented_labels
             )
-            # No likes/comments yet (or no majority among them) - fall back to
-            # the account's own registration-survey answer, if it gave one,
-            # instead of leaving the feed with zero signal until the first
-            # like comes in. Real engagement above always wins once it exists.
-            if preferred_perspective is None or preferred_political_label is None:
-                profile = db.fetch_profile(current_user["id"]) or {}
-                if preferred_perspective is None:
-                    preferred_perspective = profile.get("onboarding_perspective")
-                    onboarding_perspective_used = preferred_perspective is not None
-                if preferred_political_label is None:
-                    preferred_political_label = profile.get("onboarding_political_label")
-                    onboarding_political_label_used = preferred_political_label is not None
-        bias_perspective = preferred_perspective or seed_post.perspective
+            # Fill in topics with no engagement majority yet (or none at all)
+            # from the account's own registration-survey answer for that
+            # topic, if it gave one - instead of leaving those topics with
+            # zero signal until the first like/comment on them. Real
+            # engagement above always wins per topic once it exists.
+            profile = db.fetch_profile(current_user["id"]) or {}
+            onboarding_perspective_by_topic = profile.get("onboarding_perspective_by_topic") or {}
+            for topic, perspective in onboarding_perspective_by_topic.items():
+                if topic not in preferred_perspective_by_topic:
+                    preferred_perspective_by_topic[topic] = perspective
+                    onboarding_topics_used.add(topic)
+            if preferred_political_label is None:
+                preferred_political_label = profile.get("onboarding_political_label")
+                onboarding_political_label_used = preferred_political_label is not None
+        bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
         bias_political_label = preferred_political_label or seed_post.political_label
 
         if mode == "diversity":
@@ -205,21 +209,26 @@ def index():
                 posts,
                 seed_id,
                 diversity_every=diversity_every,
-                preferred_perspective=preferred_perspective,
+                preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
             )
         else:
             active_feed = standard_feed(
                 posts,
                 seed_id,
-                preferred_perspective=preferred_perspective,
+                preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
             )
 
         feed_items = _decorate_feed(active_feed, extra_meta)
         feed_score = diversity_score_for_perspective(active_feed, bias_perspective)
         political_feed_score = diversity_score_for_political_label(active_feed, bias_political_label)
-        show_political_score = bias_political_label is not None
+        # Only surfaced when the account has a genuine political-label
+        # signal (real engagement or an onboarding answer) - falling back
+        # silently to bias_political_label (which can just be the currently
+        # viewed seed post's own label) would present that incidental value
+        # as "your" lean, e.g. always showing "rechts" while tied 50/50.
+        show_political_score = preferred_political_label is not None
 
         db_post_ids = [item["post"].id for item in feed_items]
         liked_ids = db.fetch_liked_post_ids(current_user["id"], db_post_ids) if current_user else set()
@@ -243,9 +252,9 @@ def index():
         current_user=current_user,
         fediverse_posts=fediverse_posts,
         fediverse_topic=fediverse_topic,
-        preferred_perspective=preferred_perspective,
+        preferred_perspective_by_topic=preferred_perspective_by_topic,
         preferred_political_label=preferred_political_label,
-        onboarding_perspective_used=onboarding_perspective_used,
+        onboarding_topics_used=onboarding_topics_used,
         onboarding_political_label_used=onboarding_political_label_used,
         bubble_trend_data=bubble_trend_data,
         latest_post_id=posts[0].id if posts else None,
@@ -268,16 +277,14 @@ def register():
             if user is None:
                 error = "Registrierung fehlgeschlagen (E-Mail evtl. schon vergeben, oder Supabase nicht erreichbar)."
             else:
-                # Survey is entirely optional - unanswered/tied questions
-                # just leave onboarding_perspective as None (see
-                # ranking.dominant_perspective()), same as skipping it outright.
-                quiz_answers = [
-                    request.form.get(f"onboarding_q{i}")
-                    for i in range(len(ONBOARDING_QUESTIONS))
-                ]
-                onboarding_perspective = dominant_perspective(
-                    [answer for answer in quiz_answers if answer in KNOWN_PERSPECTIVES]
-                )
+                # Survey is entirely optional - unanswered questions for a
+                # topic just leave that topic out of the map, same as
+                # skipping the whole thing outright.
+                onboarding_perspective_by_topic = {}
+                for question in ONBOARDING_QUESTIONS:
+                    answer = request.form.get(f"onboarding_q_{question['topic']}")
+                    if answer in KNOWN_PERSPECTIVES:
+                        onboarding_perspective_by_topic[question["topic"]] = answer
                 onboarding_political_label = request.form.get("onboarding_political_label")
                 if onboarding_political_label not in KNOWN_POLITICAL_LABELS:
                     onboarding_political_label = None
@@ -285,7 +292,7 @@ def register():
                 handle = db.create_unique_profile(
                     user["id"],
                     display_name,
-                    onboarding_perspective=onboarding_perspective,
+                    onboarding_perspective_by_topic=onboarding_perspective_by_topic,
                     onboarding_political_label=onboarding_political_label,
                 )
                 session["user_id"] = user["id"]
