@@ -11,13 +11,13 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 08.09.2026 (per GitHub-API geprüft) – 11 offene Issues, alle aus dem DTEW-Workshop (Digitale Demokratie / Feed-Diversity-Prototyp), siehe [[DTEW Hamburg - Übersicht]] und das [Kanban-Board](https://47felix.github.io/RasberryPI-Team-13/DTEW-Workshop/kanban-board/):
+Stand 09.09.2026 (per GitHub-API geprüft) – weiterhin 11 offene Issues, alle aus dem DTEW-Workshop (Digitale Demokratie / Feed-Diversity-Prototyp), siehe [[DTEW Hamburg - Übersicht]] und das [Kanban-Board](https://47felix.github.io/RasberryPI-Team-13/DTEW-Workshop/kanban-board/):
 
 - [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.)
-- [#93](https://github.com/47Felix/RasberryPI-Team-13/issues/93) Prototyp-Arbeitstitel/Namen entscheiden – Logo-Entwurf "Perspektiv" liegt seit 08.09. als Datei im Repo-Root vor, Entscheidung im Team steht noch aus, siehe [[DTEW - Strategie-Praesentation]]
+- [#93](https://github.com/47Felix/RasberryPI-Team-13/issues/93) Prototyp-Arbeitstitel/Namen entscheiden – Logo-Entwurf "Perspektiv" liegt seit 08.09. als Datei im Repo-Root vor, seit 09.09. zusätzlich drei eigene Logo-Konzepte unter `DTEW-Workshop/logo-concepts/`, Entscheidung im Team steht noch aus, siehe [[DTEW - Strategie-Praesentation]]
 - [#94](https://github.com/47Felix/RasberryPI-Team-13/issues/94) Social Business Model Canvas im Team abstimmen
 - [#95](https://github.com/47Felix/RasberryPI-Team-13/issues/95) Onboarding-Entwurf gegen aktuellen Prototyp-Code-Stand abgleichen
-- [#96](https://github.com/47Felix/RasberryPI-Team-13/issues/96) Logo visuell gestalten – siehe #93, gleicher Entwurf "Perspektiv" betrifft auch dieses Issue
+- [#96](https://github.com/47Felix/RasberryPI-Team-13/issues/96) Logo visuell gestalten – seit 09.09. drei Logo-Konzepte (Split-Bubble, Kompass, Overlap-Circles, je SVG+PNG) unter `DTEW-Workshop/logo-concepts/` abgelegt, Team-Entscheidung steht noch aus, siehe [[DTEW - Strategie-Praesentation]]
 - [#97](https://github.com/47Felix/RasberryPI-Team-13/issues/97) Donnerstag (03.09.) rückwirkend dokumentieren
 - [#98](https://github.com/47Felix/RasberryPI-Team-13/issues/98) Retrospektive vorbereiten (Sprint-Ende Montag 07.09.)
 - [#99](https://github.com/47Felix/RasberryPI-Team-13/issues/99) Rollen im Team festlegen (Scrum Master / Product Owner)

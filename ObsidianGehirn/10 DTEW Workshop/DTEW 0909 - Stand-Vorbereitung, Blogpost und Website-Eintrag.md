@@ -91,6 +91,7 @@ This week we are preparing to present the prototype and are looking forward to t
 
 ## Was noch fehlt
 
+- [ ] **Prototyp komplett auf Englisch umstellen** (UI-Templates, `app.py`-Strings, Supabase-Inhalte wie Kategorien/Posts/Autoren) – Team-Entscheidung vom 09.09.2026 per Chat, da das Publikum vor Ort ausschließlich englischsprachig ist. Wird schrittweise von der Nacht-Automation umgesetzt, aktueller Stand/Migrations-Ansatz in [`Code/feed-diversity-prototype/NIGHTLY_TASK.md`](https://github.com/47Felix/RasberryPI-Team-13/blob/main/Code/feed-diversity-prototype/NIGHTLY_TASK.md).
 - [ ] **Board-Zugriffsproblem der Nacht-Automation beheben** ([#100](https://github.com/47Felix/RasberryPI-Team-13/issues/100)) — seit 04.09. wiederholt aufgetreten, tritt weiterhin auf
 - [ ] Morgens klären, ob "Final presentation"-Input heute noch aussteht oder bereits Dienstag erledigt war (siehe Warnkasten)
 - [ ] Name + E-Mail ins Website-Google-Sheet eintragen (Link nur auf dem Board)
