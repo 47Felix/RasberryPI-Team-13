@@ -419,11 +419,22 @@ def dashboard():
     prototype is reachable from the public internet (see deploy/README.md).
     Unset/empty token means "not configured", not "open" - the dashboard
     stays locked either way, never defaults to accessible.
+
+    A correct ?token=... is remembered in the session, so the plain
+    "Dashboard" nav link (templates/index.html, no token attached - it's
+    shown to every visitor, not just admins) works on every visit after the
+    first one instead of hitting "falscher Zugangs-Token" every time. Only
+    downside: rotating ADMIN_DASHBOARD_TOKEN doesn't retroactively log out
+    sessions that already authorized under the old value - acceptable here,
+    not worth a session-versioning scheme for a demo admin view.
     """
     admin_token = os.environ.get("ADMIN_DASHBOARD_TOKEN", "")
-    authorized = bool(admin_token) and secrets.compare_digest(request.args.get("token", ""), admin_token)
+    configured = bool(admin_token)
+    if configured and secrets.compare_digest(request.args.get("token", ""), admin_token):
+        session["dashboard_authorized"] = True
+    authorized = configured and session.get("dashboard_authorized", False)
     if not authorized:
-        return render_template("dashboard.html", authorized=False, configured=bool(admin_token), accounts=[])
+        return render_template("dashboard.html", authorized=False, configured=configured, accounts=[])
 
     accounts = []
     for profile in db.fetch_all_profiles():
