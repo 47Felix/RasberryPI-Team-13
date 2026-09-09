@@ -238,6 +238,18 @@ TF-IDF gegen alle vorhandenen Posts und schlägt das Thema des ähnlichsten
 Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
 angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
 
+**Themen-Liste ist live, nicht hartkodiert:** `app.py:known_topics()` liest
+alle Themen aus der `categories`-Tabelle (`db.fetch_categories()`). Eine
+neue Zeile dort (z.B. per Supabase SQL-Editor) taucht beim nächsten Request
+automatisch überall auf – Post-Formular-Dropdown, `/dashboard`-Chips und die
+Validierung beim Post-Erstellen –, ohne Code-Änderung. Nur falls Supabase
+nicht konfiguriert/erreichbar ist, fällt das auf die hartkodierte
+`DEFAULT_TOPICS`-Liste zurück (Demo-Modus mit dem statischen Datensatz). Der
+Einstiegs-Fragebogen (`ONBOARDING_QUESTIONS`) bleibt bewusst manuell
+kuratiert, weil jede Frage eine eigens formulierte pro/contra-Aussage
+braucht – neue Themen ohne eigene Frage werden im Fragebogen einfach
+ausgelassen (Fragebogen ist ohnehin optional, siehe oben).
+
 **Likes:** Toggle pro Account (`(post_id, user_id)` in der DB, verlangt
 Login). Fließt seit `dominant_perspective()`/`dominant_political_label()`
 (siehe oben) direkt ins Ranking ein, nicht mehr nur reine Anzeige.
@@ -253,6 +265,22 @@ python app.py
 ```
 
 Dann `http://localhost:5050` öffnen.
+
+## Team-Dashboard: welcher Account bekommt wieso welchen Feed (`/dashboard`)
+
+Zeigt für jeden Account nebeneinander den aktuellen Feed-Bias pro Thema
+(pro/contra) und das politische Lager, inklusive Quelle (echtes
+Likes/Kommentare-Engagement, das immer gewinnt sobald vorhanden, vs.
+Einstiegs-Fragebogen als Fallback ohne Engagement) - siehe
+`app.py:compute_preferences()`, gemeinsam genutzt von `index()` und
+`/dashboard`, damit beide Ansichten nicht auseinanderlaufen können. Die
+Begründung für ein einzelnes Post im eigenen Feed steht direkt am Post
+selbst (🛈-Zeile, `app.py:_feed_item_reason()`).
+
+Hinter `ADMIN_DASHBOARD_TOKEN` (`.env`) statt öffentlich erreichbar, weil das
+zwangsläufig jedes Accounts abgeleitetes politisches Lager offenlegt - Aufruf
+über `/dashboard?token=…`. Leeres/fehlendes Token deaktiviert die Seite
+komplett (zeigt einen Hinweis statt eines Fehlers), nie offen per Default.
 
 ## Deployment (öffentlich erreichbar machen)
 

@@ -39,7 +39,8 @@ sudo -u feeddiversity python3 -m venv venv
 sudo -u feeddiversity venv/bin/pip install -r requirements.txt
 
 # 4. .env anlegen (SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY/SUPABASE_SECRET_KEY,
-#    FLASK_SECRET_KEY - siehe README.md des Prototyps). NIE ins Repo committen.
+#    FLASK_SECRET_KEY, optional ADMIN_DASHBOARD_TOKEN fuer /dashboard -
+#    siehe README.md des Prototyps). NIE ins Repo committen.
 sudo -u feeddiversity nano /opt/feed-diversity-prototype/.env
 
 # 5. Supabase-Migrationen einmalig anwenden, falls noch nicht geschehen
