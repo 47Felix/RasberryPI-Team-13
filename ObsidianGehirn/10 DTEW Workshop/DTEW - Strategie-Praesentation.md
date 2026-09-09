@@ -37,7 +37,7 @@ Liegt außerhalb des Vaults unter [`DTEW-Workshop/strategy-presentation/`](https
 ## Was noch fehlt
 
 - [ ] Folien im Team gegenlesen, kürzen und auf den tatsächlichen Vortrag verteilen (alle sollen reden)
-- [ ] Arbeitstitel "Perspektivenkompass" bestätigen oder ersetzen, Logo gestalten
+- [ ] Arbeitstitel "Perspektivenkompass" bestätigen oder ersetzen, Logo gestalten – seit 08.09.2026 liegt ein Entwurf vor: `ChatGPT Image 8. Sept. 2026, 12_08_41.png` (per GitHub-Web-Upload von dnbk72 lose im Repo-Root abgelegt, nicht in `DTEW-Workshop/`), zeigt Name "Perspektiv" + Claim "Mehr Perspektiven. Weniger Filterblasen." Noch keine Team-Entscheidung/Einarbeitung ins Deck, betrifft auch [#93](https://github.com/47Felix/RasberryPI-Team-13/issues/93) und [#96](https://github.com/47Felix/RasberryPI-Team-13/issues/96)
 - [ ] 1-Minuten-Pitch (Raum 23, keine Slides) aus Folie 2/4/8 ableiten
 - [ ] Business-Model-Teil auf 2-3 Sätze für den Pitch eindampfen (offen seit [[DTEW 0809 - Weiterarbeit am Prototyp und Final-Presentation-Input]])
 - [ ] Poster/Flyer für den Marktstand gestalten
