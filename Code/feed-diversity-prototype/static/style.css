@@ -423,6 +423,17 @@ a {
   font-size: 0.6rem;
 }
 
+/* Sub-label inside a topic chip: spells out what "pro"/"contra" means for
+   that topic ("· mehr Klimaschutz, schneller"). Deliberately not uppercase
+   / not letter-spaced like the chip itself, so it reads as prose, and it
+   inherits the chip's pro/contra colour. */
+.chip-stance {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
 /* Political compass: a small three-segment bar, one segment per label,
    the post's own label lit up and the other two dimmed - a compact stand-in
    for the "Perspektiven-Kompass" idea from the team brain dump, without a

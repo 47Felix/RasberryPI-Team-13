@@ -38,6 +38,27 @@ zu durchbrechen statt nur die des aktuellen Ausgangs-Posts. Ohne Account
 oder ohne bisherige Likes (bzw. bei einem exakten Unentschieden) bleibt das
 alte Verhalten erhalten: Perspektive des Ausgangs-Posts entscheidet.
 
+### Position statt nur „pro/contra"
+
+Ein nacktes `pro`/`contra` (z.B. „klima: pro") sagt ohne den Post davor
+wenig aus. `app.TOPIC_STANCES` ordnet deshalb jedem Thema **eine feste
+Richtung** zu, was „pro" bzw. „contra" dort bedeuten (grob: „pro" = mehr
+Ambition / mehr Schutz / mehr Offenheit, „contra" = mehr Gewicht auf Kosten,
+Markt oder Status quo), und `stance_label(topic, perspective)` liefert die
+Kurzformel dazu – z.B. `klima/pro` → „mehr Klimaschutz, schneller",
+`wirtschaft/contra` → „Vorrang für Betriebe und Standort". Feed-Chips, das
+`/dashboard` und die „Warum siehst du das?"-Zeile am Post zeigen diese
+Formel statt nur das Wort. Themen ohne Eintrag (später hinzugefügte
+Kategorien) fallen auf das bloße `pro`/`contra` zurück.
+
+Damit die Formel nicht lügt, ist `perspective` im Seed-Datensatz
+(`seed_demo_accounts.py`) **pro Thema als konsistente Achse** gepflegt: alle
+„pro"-Posts eines Themas lehnen in dieselbe Richtung, alle „contra"-Posts in
+die andere. Neue Posts bitte auf derselben Achse wie der Rest ihres Themas
+anlegen. Die Formulierungen sind bewusst knapp und als Lesehilfe gedacht,
+keine formale Definition – Einzelfälle können unscharf sein, der Post-Titel
+steht ja daneben.
+
 ## Politische Einordnung (links/mitte/rechts) als zweite, unabhängige Dimension
 
 Bisher gab es pro Post nur eine Achse: `perspective` (pro/contra zum jeweiligen
@@ -376,6 +397,16 @@ werden vor der Anzeige zu Klartext reduziert (`fediverse._strip_html`),
 statt sie ungefiltert ins Template zu rendern – sonst wäre das ein
 XSS-Risiko über fremde, nicht moderierte Inhalte.
 
+**Themen-Abdeckung & Qualitätsfilter:** `TOPIC_HASHTAGS` deckt jetzt alle 12
+Themen ab; für ein Thema ohne Eintrag (z.B. eine später hinzugefügte
+Kategorie) fällt `_hashtag_for()` auf den bereinigten Themennamen als Hashtag
+zurück, statt die Sektion leer zu lassen. Beim Verarbeiten der Timeline
+werden **Boosts/Reblogs** (`reblog`-Feld gesetzt – der eigentliche Beitrag
+ist nur ein Wrapper) und **textlose Posts** (nur Medien) übersprungen; die
+API-Abfrage holt entsprechend mehr als `limit` Einträge, um nach dem Filtern
+trotzdem `limit` lesbare zu haben. Sehr lange Beiträge werden auf ~280
+Zeichen gekürzt.
+
 **Caching statt live pro Seitenaufruf:** `index()` ruft `fetch_public_posts()`
 bei jedem `/`-Aufruf auf, ein Hashtag-Timeline ändert sich aber nicht schnell
 genug, um jedes Mal einen frischen Mastodon-Request zu rechtfertigen. Seit
@@ -445,6 +476,12 @@ für diesen Zweck unkritisch ist.
 - [x] Feed rotiert beim Neuladen auf noch nicht gezeigte Beiträge
       (`seen_post_ids` in der Session, `exclude_ids` in `ranking.py`), damit
       „Aktualisieren“ neue Posts bringt – siehe "Rotation beim Neuladen"
+- [x] `pro`/`contra` wird als konkrete Position gezeigt (`TOPIC_STANCES`/
+      `stance_label()`) statt nur als Wort, im Feed-Chip, `/dashboard` und
+      der Reason-Zeile; Seed-`perspective` pro Thema als konsistente Achse
+      gepflegt – siehe „Position statt nur pro/contra"
+- [x] Fediverse: alle 12 Themen mit Hashtag + Namens-Fallback für neue
+      Kategorien, Boosts/textlose Posts werden gefiltert (`fediverse.py`)
 - [x] Erster, risikoarmer Fediverse-Schritt: öffentliche Mastodon-Posts zu
       einem themenabhängigen Hashtag rein lesend im Feed anzeigen
       (`fediverse.py`, siehe eigenen Abschnitt unten). Ein vollständiger

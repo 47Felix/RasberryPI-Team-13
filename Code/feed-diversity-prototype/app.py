@@ -75,6 +75,45 @@ ONBOARDING_QUESTIONS = [
     },
 ]
 
+# What "pro" / "contra" actually mean per topic. On its own a bare
+# "pro"/"contra" ("klima: pro") says almost nothing without the post in
+# front of you, so every place that shows a stance (feed chip, /dashboard,
+# the per-post reason line) runs it through stance_label() for a short
+# phrase instead. Framing follows the seed posts / ONBOARDING_QUESTIONS:
+# "pro" = more ambition / more protection / more openness on the topic,
+# "contra" = more weight on cost, feasibility, the market or the status quo.
+# A topic with no entry (e.g. a category added later) just falls back to the
+# bare word.
+TOPIC_STANCES = {
+    "klima":         {"pro": "mehr Klimaschutz, schneller",        "contra": "mehr Rücksicht auf Kosten/Bezahlbarkeit"},
+    "verkehr":       {"pro": "Vorrang für Rad, ÖPNV und Schiene",   "contra": "Vorrang fürs Auto / Status quo"},
+    "wirtschaft":    {"pro": "mehr Umverteilung und Schutz für Beschäftigte", "contra": "Vorrang für Betriebe und Standort"},
+    "digital":       {"pro": "Grundrechte und Datenschutz zuerst",  "contra": "weniger Regeln / mehr Ermittlungsbefugnisse"},
+    "bildung":       {"pro": "mehr Umverteilung, längeres gemeinsames Lernen", "contra": "mehr Leistung und Gliederung"},
+    "gesundheit":    {"pro": "solidarisch, mehr staatliche Steuerung", "contra": "mehr Wettbewerb und Eigenanteil"},
+    "migration":     {"pro": "offener, mehr Aufnahme und Teilhabe",  "contra": "stärker begrenzen und kontrollieren"},
+    "wohnen":        {"pro": "mehr Mietregulierung und Sozialbau",   "contra": "weniger Auflagen, auf Neubau setzen"},
+    "sicherheit":    {"pro": "mehr Präsenz und Befugnisse",          "contra": "Prävention und Bürgerrechte zuerst"},
+    "soziales":      {"pro": "höhere, verlässlichere Leistungen",    "contra": "mehr Eigenverantwortung und Anreize"},
+    "europa":        {"pro": "mehr gemeinsame EU-Zuständigkeit",     "contra": "mehr nationale Kontrolle"},
+    "aussenpolitik": {"pro": "Diplomatie und zivile Mittel zuerst",  "contra": "Abschreckung und Verteidigung zuerst"},
+}
+
+
+def stance_label(topic: str, perspective: str) -> str:
+    """Short human phrase for a (topic, perspective) pair - "mehr Klimaschutz,
+    schneller" instead of just "pro". Falls back to the bare perspective for
+    topics not in TOPIC_STANCES."""
+    entry = TOPIC_STANCES.get(topic)
+    if entry and perspective in entry:
+        return entry[perspective]
+    return perspective
+
+
+# Templates (feed chips, /dashboard) call this directly.
+app.jinja_env.globals["stance_label"] = stance_label
+
+
 DEFAULT_DIVERSITY_EVERY = 3
 MIN_DIVERSITY_EVERY = 2
 MAX_DIVERSITY_EVERY = 6
@@ -229,14 +268,15 @@ def _feed_item_reason(item: dict, preferred_perspective_by_topic: dict, perspect
     post = item["post"]
     bias = preferred_perspective_by_topic.get(post.topic)
     if item.get("is_diverse_pick"):
-        return f"Diversity-Pick: bewusste Gegenmeinung zu {post.topic}"
+        return f"Diversity-Pick: bewusste Gegenmeinung zu {post.topic} („{stance_label(post.topic, post.perspective)}“)"
     if bias is None:
         return f"kein Signal zu {post.topic} – nach inhaltlicher Ähnlichkeit sortiert"
     source = perspective_source.get(post.topic)
     source_label = "Fragebogen-Angabe" if source == "onboarding" else "Likes/Kommentare"
+    bias_phrase = stance_label(post.topic, bias)
     if post.perspective == bias:
-        return f"verstärkt dein {source_label}-basiertes {bias}-Interesse bei {post.topic}"
-    return f"widerspricht deinem {source_label}-basierten {bias}-Interesse bei {post.topic}"
+        return f"verstärkt deine {source_label}-basierte Neigung bei {post.topic}: „{bias_phrase}“"
+    return f"widerspricht deiner {source_label}-basierten Neigung bei {post.topic}: „{bias_phrase}“"
 
 
 @app.route("/")

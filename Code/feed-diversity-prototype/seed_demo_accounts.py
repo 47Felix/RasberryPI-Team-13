@@ -55,14 +55,22 @@ ADMIN_ACCOUNT = {"prefix": "DEMO_ADMIN", "display_name": "Team 13 Admin"}
 # to show a clear bias without the history looking like a wall of likes.
 MAX_LIKES_PER_TOPIC = 1
 
-# Seed posts covering both perspectives (pro/contra on the topic's central
-# proposal) and all three political labels per topic, so every demo account
-# finds enough same-leaning content to like on every topic. Posted under the
-# admin account so the demo accounts' own like histories stay clean/
-# interpretable. ~100 posts across 12 topics (the four defaults plus the
-# eight from supabase/migrations/0006_more_categories.sql); each topic has at
-# least one "contra/links" and one "pro/rechts" post so DEMO_ACCOUNTS below
-# always has a target. Content is intentionally civil and states each side
+# Seed posts covering both perspectives and all three political labels per
+# topic, so every demo account finds enough same-leaning content to like on
+# every topic. Posted under the admin account so the demo accounts' own like
+# histories stay clean/interpretable. ~100 posts across 12 topics (the four
+# defaults plus the eight from supabase/migrations/0006_more_categories.sql);
+# each topic has at least one "contra/links" and one "pro/rechts" post so
+# DEMO_ACCOUNTS below always has a target.
+#
+# `perspective` is a consistent axis *per topic*, not just "pro/contra the
+# post's own headline": within a topic, every "pro" post leans the same way
+# (roughly: more ambition / more protection / more openness), every "contra"
+# post the other way (more weight on cost, the market or the status quo).
+# app.TOPIC_STANCES spells that direction out per topic ("klima pro" =
+# "mehr Klimaschutz, schneller"), and the feed/dashboard show that phrase
+# instead of a bare "pro"/"contra". Keep new posts on the same axis as the
+# rest of their topic. Content is intentionally civil and states each side
 # fairly - this is a filter-bubble demo, not a place to model inflammatory
 # posting.
 SEED_POSTS = [
@@ -89,13 +97,13 @@ SEED_POSTS = [
     # --- wirtschaft ----------------------------------------------------
     Post("", "Mindestlohn deutlich anheben", "Ein hoeherer Mindestlohn staerkt die Kaufkraft und wirkt gegen Armut.", "wirtschaft", "pro", "links"),
     Post("", "Mindestlohn gefaehrdet Arbeitsplaetze", "Ein zu hoher Mindestlohn ueberfordert kleine Betriebe und kostet Arbeitsplaetze.", "wirtschaft", "contra", "rechts"),
-    Post("", "Buerokratie fuer Betriebe abbauen", "Weniger Meldepflichten und schnellere Genehmigungen verschaffen kleinen Firmen Luft.", "wirtschaft", "pro", "rechts"),
-    Post("", "Buerokratieabbau darf Schutz nicht kippen", "Vereinfachung ist gut, solange Umwelt- und Arbeitsschutz nicht als Buerokratie wegdefiniert werden.", "wirtschaft", "contra", "links"),
-    Post("", "Fachkraeftezuwanderung erleichtern", "Schnellere Anerkennung auslaendischer Abschluesse hilft gegen den Arbeitskraeftemangel.", "wirtschaft", "pro", "mitte"),
-    Post("", "Erst inlaendisches Potenzial heben", "Vor mehr Zuwanderung sollten Weiterbildung und Teilzeitkraefte staerker aktiviert werden.", "wirtschaft", "contra", "mitte"),
+    Post("", "Buerokratie fuer Betriebe abbauen", "Weniger Meldepflichten und schnellere Genehmigungen verschaffen kleinen Firmen Luft.", "wirtschaft", "contra", "rechts"),
+    Post("", "Buerokratieabbau darf Schutz nicht kippen", "Umwelt- und Arbeitsschutz duerfen nicht als Buerokratie wegdefiniert werden.", "wirtschaft", "pro", "links"),
+    Post("", "Zuwanderung darf Loehne nicht druecken", "Neue Zuwanderung in den Arbeitsmarkt darf Loehne und Tarifstandards nicht unterlaufen.", "wirtschaft", "contra", "links"),
+    Post("", "Erst inlaendisches Potenzial heben", "Statt auf mehr Zuwanderung zu setzen, sollten Weiterbildung und bessere Erwerbsanreize Vorrang haben.", "wirtschaft", "pro", "rechts"),
     Post("", "Uebergewinne staerker besteuern", "In Krisenzeiten koennen Abgaben auf Zufallsgewinne Entlastungen fuer alle gegenfinanzieren.", "wirtschaft", "pro", "links"),
     Post("", "Sondersteuern schrecken Investoren ab", "Kurzfristige Sondersteuern machen den Standort unberechenbar und bremsen Investitionen.", "wirtschaft", "contra", "rechts"),
-    Post("", "Unternehmenssteuern senken", "Wettbewerbsfaehige Steuersaetze halten Wertschoepfung und Arbeitsplaetze im Land.", "wirtschaft", "pro", "rechts"),
+    Post("", "Unternehmenssteuern senken", "Niedrigere Unternehmenssteuern entlasten vor allem Betriebe und Kapital.", "wirtschaft", "contra", "rechts"),
     # --- digital ------------------------------------------------------
     Post("", "Digitale Buergerrechte staerken", "Datenschutz und digitale Selbstbestimmung muessen gegenueber Konzernen gestaerkt werden.", "digital", "pro", "links"),
     Post("", "Weniger Regulierung fuer Tech-Standort", "Zu strenge Digitalregulierung schadet dem Innovationsstandort und der Wettbewerbsfaehigkeit.", "digital", "contra", "rechts"),
@@ -136,11 +144,11 @@ SEED_POSTS = [
     # --- wohnen ---------------------------------------------
     Post("", "Mietpreisbremse verschaerfen", "Strengere Obergrenzen bei Neuvermietung bremsen die Verdraengung in angespannten Lagen.", "wohnen", "pro", "links"),
     Post("", "Mietregulierung bremst den Neubau", "Zu enge Mietregeln senken die Rendite und damit die Zahl neuer Wohnungen.", "wohnen", "contra", "rechts"),
-    Post("", "Mehr sozialen Wohnungsbau foerdern", "Dauerhafte Foerderung und laengere Bindungsfristen sichern bezahlbare Wohnungen.", "wohnen", "pro", "mitte"),
+    Post("", "Mehr sozialen Wohnungsbau foerdern", "Dauerhafte Foerderung und laengere Bindungsfristen sichern bezahlbare Wohnungen.", "wohnen", "pro", "rechts"),
     Post("", "Foerderung ohne Bauland verpufft", "Zuschuesse helfen wenig, solange Kommunen kein bezahlbares Bauland bereitstellen.", "wohnen", "contra", "mitte"),
     Post("", "Bodenspekulation staerker besteuern", "Eine Abgabe auf ungenutztes Bauland bringt Grundstuecke schneller in Nutzung.", "wohnen", "pro", "links"),
     Post("", "Neue Grundsteuer trifft am Ende Mieter", "Steigende Grundsteuern werden ueber die Nebenkosten weitergereicht.", "wohnen", "contra", "rechts"),
-    Post("", "Bauvorschriften entschlacken", "Einheitliche, schlankere Bauordnungen senken Kosten und verkuerzen die Bauzeit.", "wohnen", "pro", "rechts"),
+    Post("", "Bauvorschriften entschlacken statt Auflagen erhoehen", "Schlankere Bauordnungen und weniger Auflagen sollen Kosten senken - Regulierung tritt zurueck.", "wohnen", "contra", "rechts"),
     Post("", "Standards senken geht auf Kosten der Qualitaet", "Beim Laerm-, Brand- und Waermeschutz zu sparen raecht sich ueber die Lebensdauer.", "wohnen", "contra", "links"),
     # --- sicherheit --------------------------------------
     Post("", "Sichtbare Polizeipraesenz erhoehen", "Mehr Streifen an belebten Orten beugt Straftaten vor und staerkt das Sicherheitsgefuehl.", "sicherheit", "pro", "rechts"),
@@ -149,7 +157,7 @@ SEED_POSTS = [
     Post("", "Neue Befugnisse brauchen strenge Kontrolle", "Ausweitungen von Ueberwachung gehoeren an unabhaengige richterliche Aufsicht gebunden.", "sicherheit", "contra", "mitte"),
     Post("", "Videoueberwachung an Brennpunkten ausweiten", "Kameras an wenigen klar benannten Orten helfen bei Aufklaerung und Abschreckung.", "sicherheit", "pro", "rechts"),
     Post("", "Kameras verdraengen Kriminalitaet nur", "Ueberwachung verlagert Straftaten oft nur, statt sie zu verhindern.", "sicherheit", "contra", "links"),
-    Post("", "Unabhaengige Polizei-Beschwerdestelle einrichten", "Eine externe Stelle fuer Beschwerden staerkt Vertrauen und entlastet die Polizei selbst.", "sicherheit", "pro", "links"),
+    Post("", "Unabhaengige Polizei-Beschwerdestelle einrichten", "Statt mehr Befugnisse braucht es externe Kontrolle: eine unabhaengige Beschwerdestelle staerkt Vertrauen.", "sicherheit", "contra", "links"),
     Post("", "Zusaetzliche Kontrollstellen ueberfordern die Justiz", "Neue Aufsichtsgremien binden Personal, das bei Gerichten und Polizei schon fehlt.", "sicherheit", "contra", "rechts"),
     # --- soziales ----------------------------------
     Post("", "Kindergrundsicherung ausbauen", "Eine gebuendelte, unbuerokratische Leistung erreicht mehr arme Kinder als der heutige Flickenteppich.", "soziales", "pro", "links"),
@@ -172,7 +180,7 @@ SEED_POSTS = [
     # --- aussenpolitik ----------
     Post("", "Entwicklungszusammenarbeit ausbauen", "Verlaessliche Mittel fuer Bildung, Gesundheit und Klimaanpassung wirken langfristig stabilisierend.", "aussenpolitik", "pro", "links"),
     Post("", "Entwicklungshilfe an klare Bedingungen knuepfen", "Zahlungen sollten an Reformfortschritte und Rueckuebernahme-Abkommen gekoppelt sein.", "aussenpolitik", "contra", "rechts"),
-    Post("", "Verteidigungsausgaben verlaesslich planen", "Ein stetiger Aufwuchs statt Ruck-Zuck-Etats macht Beschaffung guenstiger und planbar.", "aussenpolitik", "pro", "mitte"),
+    Post("", "Verteidigungsausgaben verlaesslich hochfahren", "Ein stetiger Aufwuchs des Wehretats hat Vorrang, damit Beschaffung planbar wird.", "aussenpolitik", "contra", "mitte"),
     Post("", "Hoehere Wehretats brauchen klare Prioritaeten", "Mehr Geld hilft wenig ohne Reform von Beschaffung und Struktur.", "aussenpolitik", "contra", "mitte"),
     Post("", "Diplomatie vor militaerischen Optionen", "Vermittlung und zivile Krisenpraevention sollten den Vorrang vor Eskalation haben.", "aussenpolitik", "pro", "links"),
     Post("", "Glaubwuerdige Abschreckung sichert Frieden", "Nur wer verteidigungsfaehig ist, kann glaubwuerdig verhandeln.", "aussenpolitik", "contra", "rechts"),

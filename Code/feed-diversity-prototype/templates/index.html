@@ -105,10 +105,12 @@
               <p class="post-text">{{ item.post.text }}</p>
               <div class="post-footer">
                 <div class="tags">
-                  <span class="chip {{ item.post.perspective }}" title="Perspektive: {{ item.post.perspective }}">
+                  <span class="chip {{ item.post.perspective }}"
+                        title="{{ item.post.topic }} – Position: {{ stance_label(item.post.topic, item.post.perspective) }} ({{ item.post.perspective }})">
                     <span class="chip-mark" aria-hidden="true">{{ '▲' if item.post.perspective == 'pro' else '▼' }}</span>
                     {{ item.post.topic }}
-                    <span class="sr-only">, Perspektive: {{ item.post.perspective }}</span>
+                    <span class="chip-stance">· {{ stance_label(item.post.topic, item.post.perspective) }}</span>
+                    <span class="sr-only">, Position: {{ stance_label(item.post.topic, item.post.perspective) }}</span>
                   </span>
                   <span class="compass-wrap" title="Politische Einordnung (von der Autorin/dem Autor selbst gewählt): {{ item.post.political_label or 'nicht angegeben' }}">
                     <span class="compass">

@@ -26,6 +26,9 @@
         kommt – "Likes/Kommentare" (echtes Engagement, gewinnt immer sobald
         vorhanden) oder "Fragebogen" (Einstiegs-Fragebogen bei der
         Registrierung, nur solange kein Engagement zu diesem Thema existiert).
+        Jeder Themen-Chip nennt statt nur "pro"/"contra" die konkrete Position
+        (z.&nbsp;B. "klima ▲ · mehr Klimaschutz, schneller"), damit die
+        Zuordnung ohne den Post davor lesbar ist.
         Standardmäßig nur der eigene, eingeloggte Account ("Nur ich") –
         "Alle Accounts" zeigt zum Vergleich das ganze Team. Die Begründung für
         ein einzelnes Post im eigenen Feed steht direkt am Post selbst
@@ -74,14 +77,14 @@
                   <div class="tags">
                     {% for topic in known_topics %}
                       {% if topic in account.perspective_by_topic %}
-                        <span class="chip {{ account.perspective_by_topic[topic] }}"
-                              title="{{ 'Fragebogen-Angabe' if account.perspective_source[topic] == 'onboarding' else 'aus Likes/Kommentaren' }}">
-                          <span class="chip-mark" aria-hidden="true">{{ '▲' if account.perspective_by_topic[topic] == 'pro' else '▼' }}</span>
+                        {% set persp = account.perspective_by_topic[topic] %}
+                        {% set src = 'Fragebogen' if account.perspective_source[topic] == 'onboarding' else 'Likes/Kommentare' %}
+                        <span class="chip {{ persp }}"
+                              title="{{ topic }}: {{ stance_label(topic, persp) }} ({{ persp }}) — Quelle: {{ src }}">
+                          <span class="chip-mark" aria-hidden="true">{{ '▲' if persp == 'pro' else '▼' }}</span>
                           {{ topic }}
-                          <span class="sr-only">
-                            , {{ account.perspective_by_topic[topic] }}, Quelle:
-                            {{ 'Fragebogen' if account.perspective_source[topic] == 'onboarding' else 'Likes/Kommentare' }}
-                          </span>
+                          <span class="chip-stance">· {{ stance_label(topic, persp) }}</span>
+                          <span class="sr-only">, {{ persp }} ({{ stance_label(topic, persp) }}), Quelle: {{ src }}</span>
                         </span>
                       {% else %}
                         <span class="chip" title="kein Signal">{{ topic }}: –</span>
