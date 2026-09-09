@@ -8,9 +8,16 @@ Track J: Formular zum Aendern des Tresor-Codes (eigenes Admin-Passwort,
          nicht zu verwechseln mit dem Tresor-Code selbst).
 Stretch: Discord-Alarm-Meldung, Live-Ampel + Versuchszaehler.
 
+Recht: /impressum + /datenschutz (DDG / DSGVO), Sicherheits-Header und
+       gehaertete Session-Cookies. Betreiber- und Kontaktdaten kommen aus
+       Env-Vars (DASHBOARD_IMPRESSUM_*), damit keine Privatadresse im
+       oeffentlichen Repo landet. Siehe
+       ObsidianGehirn/01 Projekt/Rechtliches - Dashboard-Website.md
+
 Siehe ObsidianGehirn/01 Projekt/Erweiterung - Raspberry Pi Dashboard.md
 """
 import json
+import logging
 import os
 import sqlite3
 import threading
@@ -36,8 +43,62 @@ SERIAL_BAUD = 9600
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 DISCORD_ALARM_CHANNEL_ID = os.environ.get("DISCORD_ALARM_CHANNEL_ID")
 
+# --- Rechtliches / Datenschutz -------------------------------------------------
+# Impressumspflichtige Angaben (§ 5 DDG, § 18 MStV) kommen aus der .env auf dem
+# Pi, nicht aus dem Repo - so landet keine ladungsfaehige Privatanschrift im
+# oeffentlichen GitHub-Repo. Fehlt ein Wert, zeigt die /impressum-Seite an der
+# Stelle einen deutlichen "noch auszufuellen"-Hinweis.
+IMPRESSUM = {
+    "betreiber": os.environ.get("DASHBOARD_IMPRESSUM_NAME"),
+    "anschrift": os.environ.get("DASHBOARD_IMPRESSUM_ADDRESS"),
+    "kontakt": os.environ.get("DASHBOARD_IMPRESSUM_CONTACT")
+    or os.environ.get("DASHBOARD_CONTACT_EMAIL"),
+    "verantwortlich": os.environ.get("DASHBOARD_IMPRESSUM_RESPONSIBLE"),
+    "aufsichtsbehoerde": os.environ.get("DASHBOARD_DATENSCHUTZ_AUFSICHT"),
+}
+
+# Laeuft das Dashboard hinter HTTPS (z.B. Reverse-Proxy / Tailscale-Serve)?
+# Steuert das Secure-Flag der Session-Cookies und den HSTS-Header. Default aus,
+# weil der Pi aktuell nur ueber http:// im WLAN/Tailnet erreichbar ist - mit
+# Secure-Flag wuerde das Login-Cookie ueber http nie gesetzt.
+USE_HTTPS = os.environ.get("DASHBOARD_HTTPS", "").lower() in ("1", "true", "yes")
+
+# Der Werkzeug-Server loggt sonst pro Request eine Zeile inkl. Client-IP nach
+# journalctl. Fuer den Normalbetrieb nicht noetig (Datenminimierung, Art. 5
+# Abs. 1 lit. c DSGVO) - nur Warnungen/Fehler behalten. Mit
+# DASHBOARD_ACCESS_LOG=1 wieder einschaltbar, falls man Zugriffe debuggen muss.
+if os.environ.get("DASHBOARD_ACCESS_LOG", "").lower() not in ("1", "true", "yes"):
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=USE_HTTPS,
+)
+
+
+@app.after_request
+def set_security_headers(resp):
+    # Minimaler Satz an Sicherheits-Headern ("Stand der Technik", Art. 32 DSGVO).
+    # Die Templates nutzen bewusst Inline-Styles und ein Inline-Skript, daher
+    # muss die CSP 'unsafe-inline' erlauben; externe Quellen sind komplett
+    # gesperrt (kein CDN, keine Fonts, kein Tracker - siehe /datenschutz).
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resp.headers.setdefault("X-Frame-Options", "DENY")
+    resp.headers.setdefault("Referrer-Policy", "no-referrer")
+    resp.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; "
+        "form-action 'self'; frame-ancestors 'none'",
+    )
+    if USE_HTTPS:
+        resp.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    return resp
 
 serial_lock = threading.Lock()
 serial_conn = {"port": None, "obj": None}
@@ -221,6 +282,20 @@ def admin():
 def logout():
     session.pop("admin_ok", None)
     return redirect(url_for("dashboard"))
+
+
+@app.route("/impressum")
+def impressum():
+    return render_template("impressum.html", impressum=IMPRESSUM)
+
+
+@app.route("/datenschutz")
+def datenschutz():
+    return render_template(
+        "datenschutz.html",
+        impressum=IMPRESSUM,
+        discord_aktiv=bool(DISCORD_BOT_TOKEN and DISCORD_ALARM_CHANNEL_ID),
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Strategy Presentation &ndash; Team 13 &ndash; DTEW Hamburg 2026</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #1a1a2e;
+    background: #e7e9f0;
+    margin: 0;
+    padding: 28px 0;
+    line-height: 1.45;
+  }
+  .slide {
+    width: 297mm;
+    min-height: 209mm;
+    background: #fff;
+    margin: 0 auto 24px;
+    padding: 20mm 22mm;
+    page-break-after: always;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .slide:last-child { page-break-after: auto; }
+  .eyebrow { color: #55607a; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-size: 34px; margin: 0 0 18px; line-height: 1.2; }
+  h2 { font-size: 24px; color: #1a3a8f; margin: 0 0 16px; }
+  p { font-size: 15px; margin: 0 0 12px; }
+  ul { margin: 4px 0 12px; padding-left: 22px; }
+  li { font-size: 15px; margin-bottom: 9px; }
+  ul ul { margin-top: 6px; }
+  ul ul li { font-size: 14px; margin-bottom: 5px; }
+  .lead { font-size: 17px; color: #33394a; }
+  .panel {
+    border: 1px solid #cfd6e4;
+    background: #eef1f8;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 6px 0 14px;
+    font-size: 14.5px;
+  }
+  .panel b { color: #1a3a8f; }
+  .note {
+    border: 1px solid #e8c674;
+    background: #fdf6e3;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    color: #33394a;
+  }
+  .note b { color: #8a6d1a; }
+  .foot {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid #cfd6e4;
+    font-size: 12px;
+    color: #55607a;
+    display: flex;
+    justify-content: space-between;
+  }
+  .cols { display: flex; gap: 26px; }
+  .cols > div { flex: 1; }
+  .cols h3 { font-size: 15px; margin: 0 0 6px; color: #1a1a2e; }
+  code { background: #eef1f8; padding: 1px 5px; border-radius: 3px; font-size: 13px; }
+  @media print { body { background: #fff; padding: 0; } .slide { margin: 0 auto; box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<section class="slide">
+  <div class="eyebrow">DTEW Hamburg 2026 &middot; Team 13 &middot; Strategy Presentation</div>
+  <h1>Perspective Compass<br><span style="font-size:20px;color:#55607a;font-weight:400;">Case 3: feed and recommender design against filter-bubble reinforcement</span></h1>
+  <p class="lead">How can a recommender inform users in a way that is varied but still topically relevant, instead of reinforcing bubbles?</p>
+  <ul>
+    <li>Team 13, BHH: Felix, Erik, Dogan</li>
+    <li>International Design Thinking &amp; Entrepreneurship Workshop Hamburg, 31.08.&ndash;12.09.2026</li>
+    <li>Topic partner: digi&amp;demo e.V. (project "pleenum")</li>
+  </ul>
+  <div class="note"><b>Working title.</b> "Perspective Compass" is a working name only. The final product name and the logo are still a team decision and are not part of this deck.</div>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>1 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">The problem &middot; the Why</div>
+  <h2>Engagement-optimised feeds reinforce bubbles</h2>
+  <ul>
+    <li>"For You" feeds on the big platforms are optimised for engagement, not for a balanced picture. That reinforces filter bubbles and self-selected echo chambers.</li>
+    <li>Two different failure modes in the same target group:
+      <ul>
+        <li>Some users do not notice they are in a bubble and consider their feed balanced.</li>
+        <li>Others do notice, try to break out, and the algorithm keeps pulling them back to similar content.</li>
+      </ul>
+    </li>
+    <li>Why it matters: reduced exposure to diverse but relevant perspectives weakens healthy democratic discourse. This is the core concern of digi&amp;demo e.V.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>2 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Who it is for</div>
+  <h2>Two personas, one target group</h2>
+  <div class="cols">
+    <div>
+      <h3>Mia, 20, "The Everyperson"</h3>
+      <p>Checks Instagram and TikTok many times a day, mostly follows accounts that match her views, sees herself as informed. Does not connect the occasional surprise at a friend's opinion to her feed.</p>
+      <p><b>Need:</b> the bubble made visible without having to look for it.</p>
+    </div>
+    <div>
+      <h3>Tom, 22, "The Seeker"</h3>
+      <p>More media-literate, follows a few accounts on purpose to diversify, feels like he is fighting the algorithm.</p>
+      <p><b>Need:</b> a tool that reliably supplies topically relevant counter-perspectives without flooding him with irrelevant content.</p>
+    </div>
+  </div>
+  <ul>
+    <li><b>Primary:</b> young adults (18&ndash;25) who consume political and societal content mainly through algorithmic feeds.</li>
+    <li><b>Secondary:</b> educators, associations and initiatives (digi&amp;demo e.V., "Netz Macht Politik") who could use the tool as demonstration and media-literacy material.</li>
+  </ul>
+  <div class="note">Personas are a target-group description, not validated by real interviews yet.</div>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>3 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">The solution &middot; the How</div>
+  <h2>One feed, two switchable modes</h2>
+  <p>Flask frontend, classic content-based filtering (TF-IDF and cosine similarity), no self-trained ML model.</p>
+  <ul>
+    <li><b>Standard mode:</b> bubble-reinforcing. For a logged-in account it reads the like history, so the majority perspective of everything liked so far steers the feed and it self-reinforces with every further like, on purpose without a built-in way out. This is the key demo scene.</li>
+    <li><b>Diversity-aware mode:</b> same similarity basis, but every few positions it deliberately mixes in the closest post with the same topic and the opposing perspective, marked "Suggested", and uses the same account tendency to break it.</li>
+    <li><b>Two independent axes made visible:</b> pro/contra perspective on the topic, plus a self-declared political label (left/centre/right), chosen by the author, not guessed by the app.</li>
+    <li><b>Visible diversity score</b> per feed view, our answer to the "we need a metric" critical issue.</li>
+    <li><b>Real accounts, likes and comments</b> (Supabase), plus a read-only section of public Mastodon posts on the current topic.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>4 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Scope</div>
+  <h2>What we deliberately left out</h2>
+  <ul>
+    <li>No self-trained ML recommender. Classic content-based filtering is enough for the core question and realistic in two weeks without ML experience in the team.</li>
+    <li>No automatic left/right classifier. Reliable political classification from free text is an unsolved, contested problem, and an app that silently claims "this is objectively left" would reproduce exactly the invisible algorithmic judgement the case is about. Users self-label instead.</li>
+    <li>Not a replacement for anyone's TikTok or Instagram feed. It is a standalone demonstrator that shows the mechanism.</li>
+    <li>No full ActivityPub implementation. The Fediverse section is read-only via Mastodon's public API. A full client/server stays a concept sketch.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>5 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Onboarding concept</div>
+  <h2>Feel the bubble before the fix is named</h2>
+  <p>Four steps, built so "Mia" types experience the problem before the solution is shown:</p>
+  <ul>
+    <li><b>1. Topic selection:</b> the user picks 2&ndash;3 topics from the curated example set to create a realistic starting feed.</li>
+    <li><b>2. Standard feed first:</b> the "Standard" mode without any explanation, so the bubble effect is experienced rather than described.</li>
+    <li><b>3. Perspective compass:</b> after a little interaction, a simple visualisation of how one-sided the feed has been so far (the diversity metric).</li>
+    <li><b>4. Diversity mode offered:</b> only then the switch to "Diversity-aware", with visible marking of which posts were mixed in as counter-perspectives.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>6 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Positioning and marketing strategy</div>
+  <h2>A transparency tool, not another social app</h2>
+  <div class="panel"><b>Core message:</b> "Your feed helps decide which opinions you see. We show you how, and what a fairer feed could look like instead."</div>
+  <ul>
+    <li><b>Positioning:</b> it shows the difference between bubble-reinforcing and diversity-aware ranking side by side instead of just claiming to be fair.</li>
+    <li><b>Persona-split messaging:</b>
+      <ul>
+        <li>For "Mia" types: low-threshold and curiosity-driven ("test how one-sided your feed really is"), not lecturing.</li>
+        <li>For "Tom" types: concrete and tool-oriented ("finally a feed that does not pull you back").</li>
+      </ul>
+    </li>
+    <li><b>Channels:</b> digi&amp;demo e.V. and the "pleenum" community as the first fitting multiplier, the "Netz Macht Politik" network, the Innovation Fair (10./11.09.), the workshop blog post, the market stand.</li>
+    <li><b>Honest reach framing:</b> currently a standalone demo. Marketing promises "shows the mechanism", not "replaces your feed".</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>7 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Social Business Model Canvas &middot; condensed</div>
+  <h2>Business model</h2>
+  <div class="cols">
+    <div>
+      <p><b>Value proposition:</b> makes visible how strongly a ranking algorithm reinforces your bubble, and shows a topically relevant alternative. Visibility for Mia, break-out for Tom.</p>
+      <p><b>Beneficiaries:</b> young adults (18&ndash;25) with mostly algorithmic news consumption; secondary educational institutions and associations such as digi&amp;demo e.V.</p>
+      <p><b>Channels:</b> direct via digi&amp;demo e.V., the Bürgerhaus action-day network, the workshop's own channels.</p>
+      <p><b>Customer relationship:</b> open and explanatory, transparency as the core promise.</p>
+      <p><b>Key partners:</b> digi&amp;demo e.V. (content, expertise, reach), possibly Bürgerhaus Wilhelmsburg, ITECH-BS14 as the first test context.</p>
+    </div>
+    <div>
+      <p><b>Key activities:</b> curating and labelling the example dataset, maintaining the two ranking modes, developing the comparison frontend, outreach.</p>
+      <p><b>Key resources:</b> the Flask stack and team know-how from the Pi-Dashboard project, the curated dataset, the digi&amp;demo contact.</p>
+      <p><b>Cost structure:</b> development time (unpaid within the workshop), hosting for a later demo version, dataset upkeep.</p>
+      <p><b>Funding:</b> no direct revenue planned (non-profit, awareness). For a real continuation: funding through digi&amp;demo e.V. or similar initiatives, or licensing the comparison logic to open platforms (Bluesky custom feeds).</p>
+      <p><b>Social impact:</b> makes bubble mechanisms visible to a group that does not notice them, gives the other group a tool to break out. Media literacy and digital participation.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>8 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Competition and differentiation</div>
+  <h2>Complement, not competitor</h2>
+  <ul>
+    <li><b>digi&amp;demo e.V. "pleenum":</b> focuses on discourse format and moderation. We focus on the feed ranking itself. Communicate as a complement.</li>
+    <li><b>Community-Notes-style and "bridging" recommender experiments:</b> adjacent research direction. Our niche is making the mechanism visible plus a switchable alternative in the same interface.</li>
+    <li><b>Big platforms:</b> optimise for engagement by design. We deliberately show the opposite and make it legible.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>9 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Roadmap</div>
+  <h2>Next steps</h2>
+  <ul>
+    <li><b>Near term:</b> apply the political-label migration against the live database, seed demo accounts with opposing like histories, verify the Fediverse section against the real Mastodon API, add a diversity-over-time view.</li>
+    <li><b>Medium term:</b> pilot with digi&amp;demo e.V. as teaching and demonstration material, gather real user feedback, decide on a final name and visual identity.</li>
+    <li><b>Longer term:</b> explore integration as a Bluesky custom feed so the diversity-aware ranking can run on a real platform instead of only in the demo.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>10 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">The team</div>
+  <h2>Team 13, BHH</h2>
+  <ul>
+    <li>Felix, Erik, Dogan.</li>
+    <li>Roles (Scrum Master, Product Owner) to be finalised and entered on the team board.</li>
+    <li>"An A-team with a B-idea is better than a B-team with an A-idea." Everyone is involved in the presentation.</li>
+  </ul>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>11 / 12</span></div>
+</section>
+
+<section class="slide">
+  <div class="eyebrow">Open decisions</div>
+  <h2>Left to the team, not in this deck</h2>
+  <ul>
+    <li>Final product name and logo.</li>
+    <li>The 1-minute pitch script (10./11.09., Room 23, no slides).</li>
+    <li>Stand budget and material (poster, flyer) for the Innovation Fair.</li>
+    <li>Final role assignment and the retrospective.</li>
+  </ul>
+  <div class="note">This deck is the strategy narrative. It still needs trimming into the 1-minute pitch and a separate stand poster/flyer design.</div>
+  <div class="foot"><span>Team 13 &middot; Perspective Compass</span><span>12 / 12</span></div>
+</section>
+
+</body>
+</html>

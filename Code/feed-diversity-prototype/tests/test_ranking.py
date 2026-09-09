@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ranking import (
@@ -11,6 +13,7 @@ from ranking import (
     diversity_score_for_political_label,
     dominant_perspective,
     dominant_political_label,
+    political_bubble_trend,
     standard_feed,
     suggest_category,
 )
@@ -158,9 +161,10 @@ def test_dominant_perspective_is_none_without_signal_or_on_a_tie():
 
 
 def test_standard_feed_follows_preferred_perspective_over_the_seed_posts_own():
-    # Seed post is "pro", but the account's like history leans "contra" -
-    # the feed must reinforce the account's history, not just this one post,
-    # otherwise the bubble wouldn't be self-sustaining across seed posts.
+    # Seed post is "pro", but the account's like history leans "contra" on
+    # the seed's own topic ("klima") - the feed must reinforce the account's
+    # history, not just this one post, otherwise the bubble wouldn't be
+    # self-sustaining across seed posts.
     feed = standard_feed(POSTS, seed_id="seed", preferred_perspective_by_topic={"klima": "contra"})
     assert feed[0]["post"].perspective == "contra"
 
@@ -271,3 +275,36 @@ def test_bubble_trend_drops_back_toward_fifty_when_a_counter_like_comes_in():
 def test_bubble_trend_treats_a_tie_as_fifty_fifty():
     trend = bubble_trend(["pro", "contra"])
     assert trend[-1]["dominant_share"] == 50.0
+
+
+def test_political_bubble_trend_is_empty_without_any_likes():
+    assert political_bubble_trend([]) == []
+
+
+def test_political_bubble_trend_climbs_toward_one_hundred_as_one_side_reinforces():
+    trend = political_bubble_trend(["links", "links", "links"])
+    assert [point["dominant_share"] for point in trend] == [100.0, 100.0, 100.0]
+    assert [point["index"] for point in trend] == [1, 2, 3]
+
+
+def test_political_bubble_trend_drops_back_when_a_counter_like_comes_in():
+    trend = political_bubble_trend(["links", "links", "links", "rechts"])
+    assert trend[2]["dominant_share"] == 100.0
+    assert trend[3]["dominant_share"] == 75.0
+
+
+def test_political_bubble_trend_handles_three_way_splits():
+    # links/mitte/rechts each once - no majority yet, current like's own
+    # count (1) is still the running max, same "not yet dominant" signal as
+    # bubble_trend()'s two-way tie.
+    trend = political_bubble_trend(["links", "mitte", "rechts"])
+    assert [point["dominant_share"] for point in trend] == [100.0, 50.0, pytest.approx(33.3, abs=0.1)]
+
+
+def test_political_bubble_trend_skips_unlabeled_likes():
+    # A like on a post from before political_label existed (or left unset)
+    # carries no signal for this axis - skipped entirely, not counted as a
+    # fourth "no label" bucket and not consuming an index slot.
+    trend = political_bubble_trend(["links", None, "links"])
+    assert [point["index"] for point in trend] == [1, 2]
+    assert [point["dominant_share"] for point in trend] == [100.0, 100.0]

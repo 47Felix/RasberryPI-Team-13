@@ -21,6 +21,7 @@ from ranking import (
     diversity_score_for_political_label,
     dominant_perspective_by_topic,
     dominant_political_label,
+    political_bubble_trend,
     standard_feed,
     suggest_category,
 )
@@ -180,7 +181,7 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
     commented_history = db.fetch_commented_history(user_id)
     engagement_by_topic = dominant_perspective_by_topic(liked_history + commented_history)
     engagement_political_label = dominant_political_label(
-        db.fetch_liked_political_labels(user_id) + db.fetch_commented_political_labels(user_id)
+        [item["political_label"] for item in liked_history] + db.fetch_commented_political_labels(user_id)
     )
 
     profile = db.fetch_profile(user_id) or {}
@@ -245,12 +246,14 @@ def index():
     fediverse_topic = None
     onboarding_topics_used = set()
     onboarding_political_label_used = False
-    # One query covers both the account's per-topic lean
-    # (dominant_perspective_by_topic doesn't care about order) and the
-    # like-history trend below, instead of fetching the same likes/posts
-    # join twice per request.
+    # One query covers the account's per-topic perspective lean, its
+    # political-label lean and both trend views below, instead of fetching
+    # the same likes/posts join multiple times per request.
     liked_history = db.fetch_liked_history(current_user["id"]) if current_user else []
     bubble_trend_data = bubble_trend([item["perspective"] for item in liked_history])
+    political_bubble_trend_data = political_bubble_trend(
+        [item["political_label"] for item in liked_history]
+    )
 
     if posts:
         seed_id = request.args.get("seed_id")
@@ -326,6 +329,7 @@ def index():
         onboarding_topics_used=onboarding_topics_used,
         onboarding_political_label_used=onboarding_political_label_used,
         bubble_trend_data=bubble_trend_data,
+        political_bubble_trend_data=political_bubble_trend_data,
         latest_post_id=posts[0].id if posts else None,
     )
 

@@ -360,14 +360,18 @@ def fetch_commented_political_labels(user_id: str) -> list[str]:
 
 
 def fetch_liked_history(user_id: str) -> list[dict]:
-    """Topic+perspective of every post the account has liked, oldest first -
-    feeds both ranking.dominant_perspective_by_topic() (order doesn't matter
-    there) and ranking.bubble_trend() (order is the whole point, and only
-    cares about the "perspective" field of each item), so callers get the
-    account's per-topic lean and its like-history trend from a single query
-    instead of fetching the same likes/posts join twice. Each item:
-    {"topic":..., "perspective":...}. [] if there's no history yet or
-    Supabase is unreachable."""
+    """Topic+perspective+political_label of every post the account has
+    liked, oldest first - feeds ranking.dominant_perspective_by_topic()
+    (order doesn't matter there), ranking.dominant_political_label() (same),
+    ranking.bubble_trend() (order is the whole point, only cares about
+    "perspective") and ranking.political_bubble_trend() (same, only cares
+    about "political_label"), so callers get all four from one query instead
+    of fetching the same likes/posts join twice - political_label used to be
+    its own separate fetch_liked_political_labels() query until this
+    session, when NIGHTLY_TASK.md's political-axis trend work made that
+    duplication one query too many. Each item: {"topic":..., "perspective":
+    ..., "political_label":...}. [] if there's no history yet or Supabase is
+    unreachable."""
     if not is_configured():
         return []
     try:
@@ -375,7 +379,7 @@ def fetch_liked_history(user_id: str) -> list[dict]:
             "likes",
             {
                 "user_id": f"eq.{user_id}",
-                "select": "created_at,posts(perspective,categories(name))",
+                "select": "created_at,posts(perspective,political_label,categories(name))",
                 "order": "created_at.asc",
             },
         )
@@ -387,23 +391,14 @@ def fetch_liked_history(user_id: str) -> list[dict]:
         if not post:
             continue
         category = post.get("categories") or {}
-        result.append({"topic": category.get("name"), "perspective": post.get("perspective")})
+        result.append(
+            {
+                "topic": category.get("name"),
+                "perspective": post.get("perspective"),
+                "political_label": post.get("political_label"),
+            }
+        )
     return result
-
-
-def fetch_liked_political_labels(user_id: str) -> list[str]:
-    """Same idea as fetch_liked_perspectives(), for the independent
-    political_label axis - feeds ranking.dominant_political_label(). Posts
-    liked before this field existed (or where the author left it unset)
-    have political_label=None and are simply skipped, same as
-    dominant_political_label() already does for any None entries."""
-    if not is_configured():
-        return []
-    try:
-        rows = _get("likes", {"user_id": f"eq.{user_id}", "select": "posts(political_label)"})
-    except requests.RequestException:
-        return []
-    return [row["posts"]["political_label"] for row in rows if row.get("posts")]
 
 
 def fetch_liked_post_ids(user_id: str, post_ids: list[str]) -> set[str]:

@@ -20,6 +20,9 @@ Code/pi-dashboard/venv/
 Code/pi-dashboard/tresor.db
 Code/pi-dashboard/.env
 
+# Python-Bytecode-Cache (entsteht z.B. beim lokalen Testen der Flask-App)
+__pycache__/
+*.pyc
 # Feed-Diversity-Prototyp: .env mit Supabase-Keys, nie committen
 Code/feed-diversity-prototype/.env
 Code/feed-diversity-prototype/venv/

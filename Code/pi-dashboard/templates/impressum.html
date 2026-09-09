@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Impressum{% endblock %}
+{% block crumb %}Impressum{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="panel-head"><span>Impressum</span></div>
+  <div class="panel-body prose">
+    <p class="muted">Angaben gemaess § 5 Digitale-Dienste-Gesetz (DDG) und § 18 Medienstaatsvertrag (MStV).</p>
+
+    <h2>Betreiber des Dienstes</h2>
+    {% if impressum.betreiber %}
+      <p>
+        {{ impressum.betreiber }}<br>
+        {{ impressum.anschrift or "" }}
+      </p>
+    {% else %}
+      <span class="todo">Noch auszufuellen: verantwortliche Person (bzw. Schule / Ausbildungstraeger)
+      mit ladungsfaehiger Anschrift. Wird ueber die Umgebungsvariablen
+      <code>DASHBOARD_IMPRESSUM_NAME</code> und <code>DASHBOARD_IMPRESSUM_ADDRESS</code>
+      in der <code>.env</code> auf dem Pi gesetzt, damit keine Privatanschrift ins
+      oeffentliche Repo kommt.</span>
+    {% endif %}
+
+    <h2>Kontakt</h2>
+    {% if impressum.kontakt %}
+      <p>{{ impressum.kontakt }}</p>
+    {% else %}
+      <span class="todo">Noch auszufuellen: E-Mail-Adresse und ein zweiter schneller Kontaktweg
+      (Telefonnummer oder Kontaktformular). Umgebungsvariable
+      <code>DASHBOARD_IMPRESSUM_CONTACT</code> bzw. <code>DASHBOARD_CONTACT_EMAIL</code>.</span>
+    {% endif %}
+
+    <h2>Inhaltlich verantwortlich nach § 18 Abs. 2 MStV</h2>
+    {% if impressum.verantwortlich %}
+      <p>{{ impressum.verantwortlich }}</p>
+    {% else %}
+      <span class="todo">Noch auszufuellen: Name und Anschrift der inhaltlich verantwortlichen
+      Person. Umgebungsvariable <code>DASHBOARD_IMPRESSUM_RESPONSIBLE</code>.</span>
+    {% endif %}
+
+    <h2>Art des Dienstes</h2>
+    <p>
+      Dieses Dashboard ist ein nicht-oeffentliches Schulprojekt (Lernfeld Smart Systems,
+      Team 13) und dient ausschliesslich der Ueberwachung des selbstgebauten
+      "Digitalen Tresors". Es werden keine fremden Inhalte gehostet, keine
+      nutzergenerierten Beitraege veroeffentlicht und keine externen Links
+      redaktionell eingebunden.
+    </p>
+
+    <h2>Haftung fuer Inhalte</h2>
+    <p>
+      Die Inhalte dieser Seiten wurden mit Sorgfalt erstellt. Fuer die Richtigkeit,
+      Vollstaendigkeit und Aktualitaet wird jedoch keine Gewaehr uebernommen. Als
+      Diensteanbieter sind wir nach § 7 Abs. 1 DDG fuer eigene Inhalte auf diesen
+      Seiten verantwortlich, nach §§ 8 bis 10 DDG jedoch nicht verpflichtet,
+      uebermittelte oder gespeicherte fremde Informationen zu ueberwachen.
+    </p>
+
+    <p class="muted">Stand: September 2026</p>
+  </div>
+</div>
+{% endblock %}

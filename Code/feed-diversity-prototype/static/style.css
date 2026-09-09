@@ -44,6 +44,16 @@
   box-sizing: border-box;
 }
 
+/* .refresh-banner, .comments-list and .comment-form each set an unconditional
+   `display` below for their visible state, which would otherwise override the
+   browser's own `[hidden] { display: none }` UA rule (author styles always
+   win over UA styles, regardless of selector specificity) - without this,
+   the "new posts" banner and every post's collapsed comment box/form would
+   render permanently visible instead of toggled via the hidden attribute. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -708,6 +718,15 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 1px;
   background: var(--brand);
   opacity: 0.75;
+}
+
+/* Political-axis trend panel reuses .trend-sparkline/.trend-bar, distinguished
+   from the perspective one only by color (var(--accent-ink), the same warm
+   accent used for the site's masthead rule) - a second brand-colored panel
+   right below the first would read as one repeated widget instead of two
+   distinct axes. */
+.trend-bar--political {
+  background: var(--accent-ink);
 }
 
 .trend-caption {
