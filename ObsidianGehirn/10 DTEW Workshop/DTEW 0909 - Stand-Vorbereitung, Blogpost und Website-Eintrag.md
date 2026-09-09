@@ -44,7 +44,7 @@ Kein fertiges visuelles Design (Layout/Gestaltung ist Teamarbeit vor Ort, siehe 
 - Kein erfundenes "objektiv links/rechts"-Label – Nutzer:innen labeln politische Einordnung selbst
 - Klassisches Content-Based Filtering (TF-IDF/Cosine Similarity), kein Blackbox-ML
 
-**Call to Action:** QR-Code auf das Repo/README (`Code/feed-diversity-prototype/`) bzw. auf eine spätere gehostete Demo-URL, sobald `deploy/` angewendet ist (siehe README-Abschnitt "Deployment" – Stand heute Nacht noch nicht live). **Solange keine öffentliche Demo-URL existiert, sollte der QR-Code auf das GitHub-Repo zeigen, nicht auf eine noch nicht existierende Live-Seite.**
+**Call to Action:** QR-Code auf die Demo-URL – **inzwischen live** (Stand 09.09., Vormittag, siehe [[Feed-Diversity-Prototyp - Deployment]] für Hosting/Deploy-Regeln), diese Notiz wurde nachts von der Automation vor dem Deploy erstellt und ist an dieser Stelle veraltet. Aktuelle Live-URL vor Ort erfragen statt aus dieser Notiz übernehmen, falls sich die VM-IP zwischenzeitlich geändert hat.
 
 **Footer:** Team 13, BHH — DTEW Hamburg 2026 — in Zusammenarbeit mit digi&demo e.V.
 
