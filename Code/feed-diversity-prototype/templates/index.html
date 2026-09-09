@@ -79,6 +79,10 @@
       ↑ Neue Beiträge – aktualisieren
     </button>
 
+    {% if rotation_active %}
+      <p class="rotate-note">Jedes Neuladen rückt den Feed auf noch nicht gezeigte Beiträge – „Aktualisieren“ bringt also neue Posts.</p>
+    {% endif %}
+
     <div class="feed">
       {% for item in feed_items %}
         <article class="feed-item {{ item.post.perspective }} {{ 'is-diverse' if item.is_diverse_pick }}">

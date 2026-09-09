@@ -261,6 +261,14 @@ a {
   background: var(--paper);
 }
 
+/* Shown when a plain reload rotates the feed on to unseen posts (index()). */
+.rotate-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.76rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* ---------- Feed ---------- */
 
 .feed {

@@ -82,6 +82,17 @@ MAX_DIVERSITY_EVERY = 6
 DEFAULT_MODE = "standard"
 VALID_MODES = {"standard", "diversity"}
 
+# How many posts one feed view shows, and how many recently-shown post ids
+# to keep in the session so a plain browser reload rotates on to posts the
+# viewer hasn't seen yet (see index()). The cap stays well below a typical
+# dataset size so there are always unseen posts to rotate to; oldest ids
+# fall off first once it's full.
+FEED_SIZE = 8
+SEEN_HISTORY_CAP = 60
+# Below this many unseen posts, skip the rotation filter and just show the
+# normal top slice - otherwise a tiny dataset would starve the feed.
+MIN_UNSEEN_FOR_ROTATION = 12
+
 # Feed order == recency, like a real timeline: the top post is "just now",
 # further down is "older". Purely cosmetic, no real clock involved.
 TIME_LABELS = ["gerade eben", "2 Std", "4 Std", "7 Std", "10 Std", "1 Tag", "1 Tag", "2 Tage"]
@@ -255,10 +266,28 @@ def index():
         [item["political_label"] for item in liked_history]
     )
 
+    rotation_active = False
     if posts:
-        seed_id = request.args.get("seed_id")
-        if seed_id not in {p.id for p in posts}:
-            seed_id = posts[0].id
+        post_ids = [p.id for p in posts]
+        post_id_set = set(post_ids)
+        # Post ids shown in recent reloads, kept in the session. A plain
+        # browser reload (no ?seed_id=) then rotates the feed on to posts the
+        # viewer hasn't seen yet, so "aktualisieren" brings up new content
+        # instead of the identical top slice every time.
+        seen_post_ids = [pid for pid in session.get("seen_post_ids", []) if pid in post_id_set]
+        explicit_seed = request.args.get("seed_id")
+        if explicit_seed in post_id_set:
+            # An explicit ?seed_id= (tab switch, settings, "Ausgangs-Post"
+            # dropdown) pins the feed - only a plain reload rotates.
+            seed_id = explicit_seed
+        else:
+            unseen = [pid for pid in post_ids if pid not in seen_post_ids]
+            if not unseen:
+                # Whole catalogue has been shown once - start the rotation
+                # over so reloading keeps surfacing "new" posts.
+                seen_post_ids = []
+                unseen = post_ids
+            seed_id = unseen[0]
         seed_post = next(p for p in posts if p.id == seed_id)
         fediverse_topic = seed_post.topic
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
@@ -274,20 +303,32 @@ def index():
         bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
         bias_political_label = preferred_political_label or seed_post.political_label
 
+        unseen_count = sum(1 for pid in post_ids if pid not in seen_post_ids)
+        # Only drop seen posts from the feed body on a plain reload, and only
+        # while there's still a healthy pool of unseen ones - a pinned seed
+        # (explicit ?seed_id=) keeps the body stable so the two modes stay
+        # comparable.
+        rotation_active = explicit_seed not in post_id_set and unseen_count >= MIN_UNSEEN_FOR_ROTATION
+        exclude_ids = set(seen_post_ids) if rotation_active else None
+
         if mode == "diversity":
             active_feed = diversity_aware_feed(
                 posts,
                 seed_id,
+                limit=FEED_SIZE,
                 diversity_every=diversity_every,
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
+                exclude_ids=exclude_ids,
             )
         else:
             active_feed = standard_feed(
                 posts,
                 seed_id,
+                limit=FEED_SIZE,
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
+                exclude_ids=exclude_ids,
             )
 
         feed_items = _decorate_feed(active_feed, extra_meta)
@@ -306,6 +347,13 @@ def index():
             item["liked"] = item["post"].id in liked_ids
             if current_user:
                 item["reason"] = _feed_item_reason(item, preferred_perspective_by_topic, perspective_source)
+
+        # Remember the seed plus everything just shown, so the next plain
+        # reload rotates further. Cap keeps the session cookie small; oldest
+        # ids drop off first.
+        shown_now = [seed_id] + db_post_ids
+        merged_seen = seen_post_ids + [pid for pid in shown_now if pid not in seen_post_ids]
+        session["seen_post_ids"] = merged_seen[-SEEN_HISTORY_CAP:]
 
     return render_template(
         "index.html",
@@ -331,6 +379,7 @@ def index():
         bubble_trend_data=bubble_trend_data,
         political_bubble_trend_data=political_bubble_trend_data,
         latest_post_id=posts[0].id if posts else None,
+        rotation_active=rotation_active,
     )
 
 

@@ -64,6 +64,25 @@ def test_standard_feed_reinforces_the_bubble():
     assert all(item["is_diverse_pick"] is False for item in feed)
 
 
+def test_standard_feed_exclude_ids_drops_seen_posts():
+    # app.py passes exclude_ids so a plain page reload rotates the feed on to
+    # posts the viewer hasn't been shown yet.
+    feed = standard_feed(POSTS, seed_id="seed", exclude_ids={"same-perspective"})
+    assert all(item["post"].id != "same-perspective" for item in feed)
+    assert {"counter-perspective", "unrelated"} & {item["post"].id for item in feed}
+
+
+def test_exclude_ids_none_changes_nothing():
+    assert [i["post"].id for i in standard_feed(POSTS, seed_id="seed")] == [
+        i["post"].id for i in standard_feed(POSTS, seed_id="seed", exclude_ids=None)
+    ]
+
+
+def test_diversity_aware_feed_exclude_ids_drops_seen_posts():
+    feed = diversity_aware_feed(POSTS, seed_id="seed", limit=3, exclude_ids={"counter-perspective"})
+    assert all(item["post"].id != "counter-perspective" for item in feed)
+
+
 def test_standard_feed_stays_within_seed_perspective_even_when_the_topic_runs_out():
     # Only one other same-topic/same-perspective post exists, so a naive
     # global similarity ranking would have to pad the rest of the feed with
