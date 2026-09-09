@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <clipPath id="bubbleClip">
+      <path d="M40 48 h176 a24 24 0 0 1 24 24 v104 a24 24 0 0 1 -24 24 h-100 l-38 34 v-34 h-38 a24 24 0 0 1 -24 -24 v-104 a24 24 0 0 1 24 -24 z"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#bubbleClip)">
+    <rect x="0" y="0" width="128" height="256" fill="#2563eb"/>
+    <rect x="128" y="0" width="128" height="256" fill="#f97316"/>
+  </g>
+
+  <path d="M40 48 h176 a24 24 0 0 1 24 24 v104 a24 24 0 0 1 -24 24 h-100 l-38 34 v-34 h-38 a24 24 0 0 1 -24 -24 v-104 a24 24 0 0 1 24 -24 z"
+        fill="none" stroke="#0b1220" stroke-width="4"/>
+
+  <circle cx="128" cy="118" r="26" fill="#ffffff" stroke="#0b1220" stroke-width="4"/>
+  <path d="M116 118 l9 9 l16 -18" fill="none" stroke="#0b1220" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
