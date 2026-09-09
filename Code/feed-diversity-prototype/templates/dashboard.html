@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard – Perspektiv</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark">Perspektiv</span>
+        <span class="brand-tag">Team-Dashboard</span>
+      </div>
+      <div class="auth-status">
+        <a href="{{ url_for('index') }}">Zurück zum Feed</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+    <details class="disclosure about" open>
+      <summary>ⓘ Was ist das hier?</summary>
+      <p class="about-text">
+        Zeigt für jeden Account, welchen Feed-Bias er aktuell hat und woher der
+        kommt – "Likes/Kommentare" (echtes Engagement, gewinnt immer sobald
+        vorhanden) oder "Fragebogen" (Einstiegs-Fragebogen bei der
+        Registrierung, nur solange kein Engagement zu diesem Thema existiert).
+        Die Begründung für ein einzelnes Post im eigenen Feed steht direkt am
+        Post selbst (🛈-Zeile). Nur mit gültigem Token sichtbar, siehe
+        <code>ADMIN_DASHBOARD_TOKEN</code> in <code>.env</code>.
+      </p>
+    </details>
+
+    {% if not configured %}
+      <div class="empty-state">
+        <code>ADMIN_DASHBOARD_TOKEN</code> ist nicht gesetzt – Dashboard ist deaktiviert, bis das in <code>.env</code> konfiguriert ist.
+      </div>
+    {% elif not authorized %}
+      <div class="empty-state">
+        Kein/falscher Zugangs-Token. Aufruf mit <code>?token=…</code> (siehe <code>.env</code>).
+      </div>
+    {% else %}
+      <div class="feed">
+        {% for account in accounts %}
+          <article class="feed-item">
+            <div class="feed-row">
+              <div class="feed-body">
+                <div class="post-header">
+                  <span class="author">{{ account.display_name }}</span>
+                  <span class="handle">{{ account.handle }}</span>
+                </div>
+                <div class="post-footer" style="flex-wrap:wrap;">
+                  <div class="tags">
+                    {% for topic in known_topics %}
+                      {% if topic in account.perspective_by_topic %}
+                        <span class="chip {{ account.perspective_by_topic[topic] }}"
+                              title="{{ 'Fragebogen-Angabe' if account.perspective_source[topic] == 'onboarding' else 'aus Likes/Kommentaren' }}">
+                          <span class="chip-mark" aria-hidden="true">{{ '▲' if account.perspective_by_topic[topic] == 'pro' else '▼' }}</span>
+                          {{ topic }}
+                          <span class="sr-only">
+                            , {{ account.perspective_by_topic[topic] }}, Quelle:
+                            {{ 'Fragebogen' if account.perspective_source[topic] == 'onboarding' else 'Likes/Kommentare' }}
+                          </span>
+                        </span>
+                      {% else %}
+                        <span class="chip" title="kein Signal">{{ topic }}: –</span>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                </div>
+                <p class="tab-caption" style="border:none;padding:0.4rem 0 0;">
+                  {% if account.political_label %}
+                    Politisches Lager: <strong>{{ account.political_label }}</strong>
+                    ({{ 'Fragebogen' if account.political_label_source == 'onboarding' else 'Likes/Kommentare' }})
+                  {% else %}
+                    Politisches Lager: kein Signal
+                  {% endif %}
+                </p>
+              </div>
+            </div>
+          </article>
+        {% else %}
+          <div class="empty-state">Noch keine Accounts.</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>

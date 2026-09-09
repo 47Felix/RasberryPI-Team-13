@@ -6,6 +6,7 @@ full problem statements.
 """
 
 import os
+import secrets
 from functools import wraps
 
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
@@ -30,9 +31,12 @@ app = Flask(__name__)
 # fixed dev fallback lets sessions survive a restart but isn't a secret.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-not-secret")
 
-# Known (topic, perspective) pairs so the "new post" form offers a dropdown
-# instead of free-text topics fragmenting the feed into one-off categories.
-KNOWN_TOPICS = ["klima", "verkehr", "wirtschaft", "digital"]
+# Fallback topic list for when Supabase isn't configured/reachable (static
+# dataset demo mode) - otherwise known_topics() below reads the live list
+# from the categories table, so a category added there (e.g. via the
+# Supabase SQL editor) shows up in the dropdown/dashboard/validation on the
+# next request without touching this file.
+DEFAULT_TOPICS = ["klima", "verkehr", "wirtschaft", "digital"]
 KNOWN_PERSPECTIVES = ["pro", "contra"]
 # Self-chosen political label, independent of the topic's pro/contra
 # perspective - see README ("Politische Einordnung") for why this is a
@@ -80,6 +84,15 @@ VALID_MODES = {"standard", "diversity"}
 # Feed order == recency, like a real timeline: the top post is "just now",
 # further down is "older". Purely cosmetic, no real clock involved.
 TIME_LABELS = ["gerade eben", "2 Std", "4 Std", "7 Std", "10 Std", "1 Tag", "1 Tag", "2 Tage"]
+
+
+def known_topics() -> list[str]:
+    """Live topic list from Supabase (falls back to DEFAULT_TOPICS if
+    unconfigured/unreachable/empty) - the single source every view/route
+    that needs "all topics" reads from, so a category added directly in
+    Supabase appears in the post form, /dashboard and validation together
+    instead of only some of them."""
+    return db.fetch_categories() or DEFAULT_TOPICS
 
 
 def _current_user() -> dict | None:
@@ -143,6 +156,77 @@ def _parse_diversity_every(raw: str | None) -> int:
     return max(MIN_DIVERSITY_EVERY, min(value, MAX_DIVERSITY_EVERY))
 
 
+def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -> dict:
+    """The full "why does this account's feed look like this" breakdown -
+    shared by index() (biases/explains one account's own feed) and
+    /dashboard (explains every account's feed side by side), so the two
+    views can't quietly drift apart on how a preference is derived.
+
+    Returns:
+      perspective_by_topic: {topic: "pro"/"contra"}, merged from real
+        engagement (likes/comments, wins per topic) and the registration
+        survey (fills in topics engagement has no majority for yet).
+      perspective_source: {topic: "engagement"/"onboarding"} - which of the
+        two backed each entry above.
+      political_label: "links"/"mitte"/"rechts"/None, same
+        engagement-wins-over-onboarding rule, but account-wide rather than
+        per topic (see ranking.dominant_political_label()).
+      political_label_source: "engagement"/"onboarding"/None.
+      liked_history: passed through (or freshly fetched) so callers that
+        also need it for bubble_trend() don't fetch it twice.
+    """
+    if liked_history is None:
+        liked_history = db.fetch_liked_history(user_id)
+    commented_history = db.fetch_commented_history(user_id)
+    engagement_by_topic = dominant_perspective_by_topic(liked_history + commented_history)
+    engagement_political_label = dominant_political_label(
+        db.fetch_liked_political_labels(user_id) + db.fetch_commented_political_labels(user_id)
+    )
+
+    profile = db.fetch_profile(user_id) or {}
+    onboarding_by_topic = profile.get("onboarding_perspective_by_topic") or {}
+    onboarding_political_label = profile.get("onboarding_political_label")
+
+    perspective_by_topic = dict(engagement_by_topic)
+    perspective_source = {topic: "engagement" for topic in engagement_by_topic}
+    for topic, perspective in onboarding_by_topic.items():
+        if topic not in perspective_by_topic:
+            perspective_by_topic[topic] = perspective
+            perspective_source[topic] = "onboarding"
+
+    if engagement_political_label is not None:
+        political_label, political_label_source = engagement_political_label, "engagement"
+    elif onboarding_political_label is not None:
+        political_label, political_label_source = onboarding_political_label, "onboarding"
+    else:
+        political_label, political_label_source = None, None
+
+    return {
+        "perspective_by_topic": perspective_by_topic,
+        "perspective_source": perspective_source,
+        "political_label": political_label,
+        "political_label_source": political_label_source,
+        "liked_history": liked_history,
+    }
+
+
+def _feed_item_reason(item: dict, preferred_perspective_by_topic: dict, perspective_source: dict) -> str:
+    """One short, human-readable sentence for why this specific post is in
+    the feed at this position - the per-post half of "was welcher User
+    wieso angezeigt bekommt", the account-wide half is /dashboard."""
+    post = item["post"]
+    bias = preferred_perspective_by_topic.get(post.topic)
+    if item.get("is_diverse_pick"):
+        return f"Diversity-Pick: bewusste Gegenmeinung zu {post.topic}"
+    if bias is None:
+        return f"kein Signal zu {post.topic} – nach inhaltlicher Ähnlichkeit sortiert"
+    source = perspective_source.get(post.topic)
+    source_label = "Fragebogen-Angabe" if source == "onboarding" else "Likes/Kommentare"
+    if post.perspective == bias:
+        return f"verstärkt dein {source_label}-basiertes {bias}-Interesse bei {post.topic}"
+    return f"widerspricht deinem {source_label}-basierten {bias}-Interesse bei {post.topic}"
+
+
 @app.route("/")
 def index():
     posts, extra_meta = load_posts()
@@ -176,31 +260,14 @@ def index():
         fediverse_topic = seed_post.topic
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
+        perspective_source = {}
         if current_user:
-            # Comments count as an engagement signal alongside likes - someone
-            # who mostly comments on "pro" posts on a topic leans "pro" on
-            # that topic the same way a liker would, even without hitting
-            # the like button.
-            commented_history = db.fetch_commented_history(current_user["id"])
-            commented_labels = db.fetch_commented_political_labels(current_user["id"])
-            preferred_perspective_by_topic = dominant_perspective_by_topic(liked_history + commented_history)
-            preferred_political_label = dominant_political_label(
-                db.fetch_liked_political_labels(current_user["id"]) + commented_labels
-            )
-            # Fill in topics with no engagement majority yet (or none at all)
-            # from the account's own registration-survey answer for that
-            # topic, if it gave one - instead of leaving those topics with
-            # zero signal until the first like/comment on them. Real
-            # engagement above always wins per topic once it exists.
-            profile = db.fetch_profile(current_user["id"]) or {}
-            onboarding_perspective_by_topic = profile.get("onboarding_perspective_by_topic") or {}
-            for topic, perspective in onboarding_perspective_by_topic.items():
-                if topic not in preferred_perspective_by_topic:
-                    preferred_perspective_by_topic[topic] = perspective
-                    onboarding_topics_used.add(topic)
-            if preferred_political_label is None:
-                preferred_political_label = profile.get("onboarding_political_label")
-                onboarding_political_label_used = preferred_political_label is not None
+            prefs = compute_preferences(current_user["id"], liked_history=liked_history)
+            preferred_perspective_by_topic = prefs["perspective_by_topic"]
+            perspective_source = prefs["perspective_source"]
+            preferred_political_label = prefs["political_label"]
+            onboarding_topics_used = {t for t, s in perspective_source.items() if s == "onboarding"}
+            onboarding_political_label_used = prefs["political_label_source"] == "onboarding"
         bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
         bias_political_label = preferred_political_label or seed_post.political_label
 
@@ -234,6 +301,8 @@ def index():
         liked_ids = db.fetch_liked_post_ids(current_user["id"], db_post_ids) if current_user else set()
         for item in feed_items:
             item["liked"] = item["post"].id in liked_ids
+            if current_user:
+                item["reason"] = _feed_item_reason(item, preferred_perspective_by_topic, perspective_source)
 
     return render_template(
         "index.html",
@@ -245,7 +314,7 @@ def index():
         feed_score=feed_score,
         political_feed_score=political_feed_score,
         show_political_score=show_political_score,
-        known_topics=KNOWN_TOPICS,
+        known_topics=known_topics(),
         known_perspectives=KNOWN_PERSPECTIVES,
         known_political_labels=KNOWN_POLITICAL_LABELS,
         db_configured=db.is_configured(),
@@ -332,6 +401,49 @@ def logout():
     return redirect(url_for("index"))
 
 
+@app.route("/dashboard")
+def dashboard():
+    """Team-facing transparency view: every account side by side with its
+    current per-topic bias and where each came from (real engagement vs.
+    onboarding survey) - the account-wide half of "was welcher User wieso
+    angezeigt bekommt", the per-post half is the "reason" tag on each feed
+    item in index() (see _feed_item_reason()).
+
+    Gated behind ADMIN_DASHBOARD_TOKEN (.env) instead of being open to any
+    visitor: this necessarily exposes every account's derived political
+    lean, which is sensitive even for demo accounts, doubly so once the
+    prototype is reachable from the public internet (see deploy/README.md).
+    Unset/empty token means "not configured", not "open" - the dashboard
+    stays locked either way, never defaults to accessible.
+    """
+    admin_token = os.environ.get("ADMIN_DASHBOARD_TOKEN", "")
+    authorized = bool(admin_token) and secrets.compare_digest(request.args.get("token", ""), admin_token)
+    if not authorized:
+        return render_template("dashboard.html", authorized=False, configured=bool(admin_token), accounts=[])
+
+    accounts = []
+    for profile in db.fetch_all_profiles():
+        prefs = compute_preferences(profile["id"])
+        accounts.append(
+            {
+                "display_name": profile["display_name"],
+                "handle": profile["handle"],
+                "perspective_by_topic": prefs["perspective_by_topic"],
+                "perspective_source": prefs["perspective_source"],
+                "political_label": prefs["political_label"],
+                "political_label_source": prefs["political_label_source"],
+            }
+        )
+    return render_template(
+        "dashboard.html",
+        authorized=True,
+        configured=True,
+        accounts=accounts,
+        known_topics=known_topics(),
+        token=admin_token,
+    )
+
+
 @app.route("/posts", methods=["POST"])
 def create_post():
     if "user_id" not in session:
@@ -346,7 +458,7 @@ def create_post():
     if (
         title
         and content
-        and topic in KNOWN_TOPICS
+        and topic in known_topics()
         and perspective in KNOWN_PERSPECTIVES
         and political_label in KNOWN_POLITICAL_LABELS
     ):

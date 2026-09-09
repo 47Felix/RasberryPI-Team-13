@@ -13,6 +13,7 @@
         <span class="brand-tag">Dein Feed</span>
       </div>
       <div class="auth-status">
+        <a href="{{ url_for('dashboard') }}" title="Team-Dashboard: welcher Account bekommt wieso welchen Feed-Bias (Zugangs-Token noetig)">Dashboard</a>
         {% if current_user %}
           <span>{{ current_user.display_name }} ({{ current_user.handle }})</span>
           <a href="{{ url_for('logout') }}">Logout</a>
@@ -83,6 +84,9 @@
         <article class="feed-item {{ item.post.perspective }} {{ 'is-diverse' if item.is_diverse_pick }}">
           {% if item.is_diverse_pick %}
             <p class="suggested-label">✨ Vorgeschlagen · andere Perspektive zu „{{ item.post.topic }}“</p>
+          {% endif %}
+          {% if item.reason %}
+            <p class="feed-reason" title="Warum du das hier siehst">🛈 {{ item.reason }}</p>
           {% endif %}
           <div class="feed-row">
             <div class="avatar avatar-{{ item.post.perspective }}">{{ item.avatar }}</div>

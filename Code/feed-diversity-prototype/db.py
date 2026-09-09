@@ -193,6 +193,41 @@ def fetch_profile(user_id: str) -> dict | None:
     return rows[0] if rows else None
 
 
+def fetch_categories() -> list[str]:
+    """All topic names from the categories table, so the "new post" dropdown,
+    the /dashboard chip list and post validation all track whatever
+    categories actually exist in Supabase - add a row to `categories` and it
+    shows up everywhere on the next request, no code change/deploy needed.
+    [] if Supabase isn't configured/unreachable, in which case app.py falls
+    back to its hardcoded default topic list."""
+    if not is_configured():
+        return []
+    try:
+        rows = _get("categories", {"select": "name", "order": "name.asc"})
+    except requests.RequestException:
+        return []
+    return [row["name"] for row in rows]
+
+
+def fetch_all_profiles() -> list[dict]:
+    """Every account, for the /dashboard feed-transparency view (see
+    app.py) - includes the same onboarding columns as fetch_profile() so the
+    dashboard doesn't need a second per-account query just for those."""
+    if not is_configured():
+        return []
+    try:
+        rows = _get(
+            "profiles",
+            {
+                "select": "id,display_name,handle,onboarding_perspective_by_topic,onboarding_political_label",
+                "order": "display_name.asc",
+            },
+        )
+    except requests.RequestException:
+        return []
+    return rows
+
+
 def fetch_posts() -> list[dict]:
     """Returns [] on any error (missing config, network, table not created
     yet) so the demo keeps working off the static dataset alone. Each item:
