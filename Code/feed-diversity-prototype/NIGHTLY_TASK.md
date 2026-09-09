@@ -6,6 +6,59 @@ dem letzten Lauf offen ist und was der sinnvollste nächste Schritt wäre,
 damit die Arbeit von Nacht zu Nacht fortgesetzt wird statt bei null
 anzufangen.
 
+## Stand nach dem Lauf vom 09.09.2026 (dritte Nacht-Session)
+
+Der scheduled-task-Prompt für diese Session war diesmal besonders stark veraltet:
+er verwies als "heutige Top-Priorität" auf Nutzer-Feedback vom 03.09. zur
+Zwei-Spalten-UI aus PR #83 (Segmented Control/Regler/Score-Pille, "sieht nach
+Claude Design aus") und forderte, die komplette Layout-Struktur nochmal
+umzubauen ("nicht nur Styling"). Vor dem Umsetzen geprüft (Git-Log,
+`list_pull_requests`, README/`ObsidianGehirn`-Notizen) statt den Prompt
+blind zu befolgen: dieses Feedback ist **doppelt** bereits umgesetzt -
+einmal am 04.09. (PR #86, Single-Feed + Tabs statt Zwei-Spalten-Vergleich,
+siehe README "UI: ein Feed, zwei Modi") und ein zweites Mal in einer
+weiteren Nacht-Session, als dasselbe "Claude Design"-Feedback zur konkreten
+Umsetzung kam (Indigo-Verlauf/weiße Karten/Sans-Serif) und zur aktuellen
+redaktionellen Optik (Papier-Hintergrund, Serif-Nameplate, Monospace-Metadaten,
+Trennlinien statt Karten) führte. Seitdem sind fünf weitere Nächte
+Feature-Arbeit auf dieser Struktur aufgebaut (echte Accounts, Likes/Kommentare,
+politische Achse, Bubble-Trend-Sparklines, Fediverse-Vorschau) - ein erneuter
+Strukturumbau hätte das ohne echten Grund riskiert. Per Screenshot (Playwright,
+gemockte Posts, siehe unten) selbst gegengeprüft statt nur den Notizen zu
+vertrauen: die aktuelle UI liest sich als echter Feed, nicht als generisches
+KI-Demo-Tool.
+
+**Trotzdem ein konkreter, bisher unbemerkter UI-Bug beim Gegenprüfen gefunden
+und behoben:** `static/style.css` setzte für `.refresh-banner`,
+`.comments-list` und `.comment-form` jeweils ein unbedingtes `display`
+(`block`/`flex`), das das `hidden`-Attribut dieser drei Elemente in
+`templates/index.html` wirkungslos machte - Autoren-Stylesheets überstimmen
+die `[hidden] { display: none }`-Regel des Browsers unabhängig von der
+Spezifität. Sichtbare Folge: der "↑ Neue Beiträge"-Banner war auf jeder
+Seite dauerhaft eingeblendet (obwohl nie neue Posts erkannt wurden), und
+unter jedem Post erschien eine leere Box (das eigentlich eingeklappte
+Kommentar-Feld) - für eingeloggte Nutzer:innen zusätzlich ein dauerhaft
+offenes Kommentar-Formular unter jedem Post. Genau die Art von Detail, die
+eine sonst gut gestaltete Seite wieder nach unfertiger Demo aussehen lässt.
+Fix: eine globale `[hidden] { display: none !important; }`-Regel direkt nach
+dem Reset. Per Playwright-Screenshot vor/nach verglichen (Banner und leere
+Boxen weg) und die Toggle-Interaktion (Kommentare aufklappen) weiterhin
+funktionsfähig bestätigt (Klick entfernt `hidden`, Inhalt erscheint korrekt).
+
+Dieselben zwei Blocker wie in den letzten Läufen bestehen weiterhin
+unverändert (keine Supabase-Zugangsdaten, kein Internetzugriff zu externen
+Domains) - deshalb wie in der Prioritätenliste unten vorgesehen eine kleinere,
+in dieser Sandbox tatsächlich verifizierbare Verbesserung statt eines der
+beiden blockierten Schritte.
+
+**Nicht in dieser Session gemacht:** der in der Top-Priorität geforderte
+Struktur-Neubau des Feeds - siehe Begründung oben, aus Sicht dieser Session
+wäre das ein Rückschritt ohne aktuellen Anlass gewesen. Falls das Team das
+anders sieht (z.B. weil doch noch reales Peer-Feedback zur aktuellen Version
+aussteht), bitte NIGHTLY_TASK.md oder den Scheduled-Prompt entsprechend
+aktualisieren, damit der nächste Lauf nicht wieder denselben veralteten Stand
+prüfen muss.
+
 ## Stand nach dem Lauf vom 08.09.2026 (zweite Nacht-Session)
 
 Der scheduled-task-Prompt für diese Session war wieder auf einem veralteten

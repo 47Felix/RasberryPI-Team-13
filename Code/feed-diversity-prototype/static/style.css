@@ -44,6 +44,16 @@
   box-sizing: border-box;
 }
 
+/* .refresh-banner, .comments-list and .comment-form each set an unconditional
+   `display` below for their visible state, which would otherwise override the
+   browser's own `[hidden] { display: none }` UA rule (author styles always
+   win over UA styles, regardless of selector specificity) - without this,
+   the "new posts" banner and every post's collapsed comment box/form would
+   render permanently visible instead of toggled via the hidden attribute. */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);
