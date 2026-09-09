@@ -6,6 +6,42 @@ dem letzten Lauf offen ist und was der sinnvollste nächste Schritt wäre,
 damit die Arbeit von Nacht zu Nacht fortgesetzt wird statt bei null
 anzufangen.
 
+## Anweisungen vom Team (09.09.2026, per Chat) - höchste Priorität
+
+Zwei ausdrückliche Anweisungen, bitte vor allem andere in dieser Datei
+Gelistete einordnen:
+
+1. **Komplett auf Englisch umstellen - UI und Datenbank-Inhalte.** Publikum
+   vor Ort ist ausschließlich englischsprachig, Deutsch ist für die
+   Präsentation nicht mehr geeignet. Betrifft alles Sichtbare:
+   - `templates/*.html` (Labels, Buttons, Überschriften, Platzhalter-Texte,
+     Fehlermeldungen)
+   - Python-seitige Strings in `app.py` (z.B. `TIME_LABELS`, `TOPIC_STANCES`/
+     `stance_label()`, Fehlermeldungen in `register()`/`login()`)
+   - `ONBOARDING_QUESTIONS`/`COMPASS_QUESTIONS` in `app.py`
+   - Alle Supabase-Inhalte: `categories.name` (Themen-Namen wie "klima" ->
+     "climate"), alle `posts`-Zeilen (title/content), `authors`
+     (name/handle), bestehende `profiles`-Testaccounts falls sinnvoll
+   - `seed_demo_accounts.py`s `SEED_POSTS` (~100 Posts) - eher neu auf
+     Englisch schreiben/übersetzen als nur die Variablennamen
+   - README.md kann/sollte ebenfalls auf Englisch, ist aber nachrangig
+     gegenüber der eigentlichen App/den Daten (Team-interne Doku, kein
+     Besucher-Publikum)
+
+   Migrations-Ansatz: neue Kategorie-Namen bedeuten neue `category_id`s -
+   entweder bestehende `categories`-Zeilen per `UPDATE` umbenennen (Posts
+   bleiben verknüpft, einfacher) oder sauber neu migrieren. Vor dem
+   Umsetzen einmal beide Wege gegeneinander abwägen und die gewählte
+   Variante hier dokumentieren, nicht stillschweigend eine wählen.
+
+2. **Allgemein weiter verbessern, so lange wie möglich.** Kein einzelner
+   Punkt mehr - einfach den Prototyp in jeder Nacht-Session weiter
+   verfeinern (UI-Politur, Bugs, Testabdeckung, README-Aktualität,
+   Accessibility, Performance, was auch immer beim genauen Hinsehen als
+   nächstes am meisten bringt), bis nichts Sinnvolles mehr zu verbessern
+   ist. Wie gehabt: jede Session dokumentiert hier ehrlich, was geprüft und
+   was verändert wurde, bevor sie behauptet, etwas sei "erledigt".
+
 ## Stand nach dem Lauf vom 09.09.2026 (dritte Nacht-Session)
 
 Der scheduled-task-Prompt für diese Session war diesmal besonders stark veraltet:
