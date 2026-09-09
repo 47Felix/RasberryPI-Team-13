@@ -7,6 +7,7 @@ full problem statements.
 
 import os
 import secrets
+from datetime import timedelta
 from functools import wraps
 
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
@@ -31,6 +32,19 @@ app = Flask(__name__)
 # set FLASK_SECRET_KEY in .env for anything longer-lived than a demo, the
 # fixed dev fallback lets sessions survive a restart but isn't a secret.
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-not-secret")
+# Without session.permanent=True, Flask issues a plain browser-session
+# cookie (no Expires/Max-Age) that vanishes the moment the browser fully
+# closes - not just login, but also the /dashboard token (see dashboard())
+# had to be re-entered after that, which read as "randomly logs me out".
+# before_request instead of setting this in each of login()/register()/
+# dashboard() individually, so any future session-touching route gets the
+# same 30-day lifetime automatically.
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
+
+
+@app.before_request
+def _make_session_permanent():
+    session.permanent = True
 
 # Fallback topic list for when Supabase isn't configured/reachable (static
 # dataset demo mode) - otherwise known_topics() below reads the live list
@@ -72,6 +86,72 @@ ONBOARDING_QUESTIONS = [
         "topic": "digital",
         "pro": "Digitalisierung von Behörden/Open-Source sollte Vorrang vor Datenschutzbedenken bekommen.",
         "contra": "Datenschutzbedenken sollten Vorrang vor schnellerer Digitalisierung bekommen.",
+    },
+]
+
+# Registration-time "Perspektiven-Kompass": replaces the old plain
+# links/mitte/rechts dropdown with a small two-axis quiz (register.html
+# renders these as 5-point Likert radios, scores/plots them client-side in
+# JS - see the <script> block there). Deliberately separate from
+# ONBOARDING_QUESTIONS above: those feed perspective_by_topic per topic,
+# these feed only the single account-wide onboarding_political_label, same
+# form field name as the old dropdown so app.py:register() needed no
+# changes at all.
+#
+# axis="economic" sums into the x-position (links <-> rechts, the axis the
+# stored label is actually derived from - see register.html's
+# COMPASS_THRESHOLD); axis="social" sums into y (progressiv <-> konservativ)
+# purely for the visual - the app has no separate social-axis field
+# anywhere downstream, this isn't secretly a second stored dimension.
+# direction is which end of its axis "stimme zu" moves the dot toward.
+COMPASS_QUESTIONS = [
+    {
+        "id": "e1",
+        "axis": "economic",
+        "direction": "rechts",
+        "text": "Niedrigere Steuern und weniger staatliche Regulierung sollten Vorrang vor einem groß angelegten Sozialstaat haben.",
+    },
+    {
+        "id": "e2",
+        "axis": "economic",
+        "direction": "links",
+        "text": "Der Staat sollte Einkommen und Vermögen stärker umverteilen, um Ungleichheit zu verringern.",
+    },
+    {
+        "id": "e3",
+        "axis": "economic",
+        "direction": "rechts",
+        "text": "Unternehmen sollten möglichst frei wirtschaften können, ohne zu viele Auflagen.",
+    },
+    {
+        "id": "e4",
+        "axis": "economic",
+        "direction": "links",
+        "text": "Grundlegende Dienstleistungen wie Wohnen, Energie und Nahverkehr gehören eher in öffentliche als in private Hand.",
+    },
+    {
+        "id": "s1",
+        "axis": "social",
+        "direction": "konservativ",
+        "text": "Traditionen und gesellschaftliche Ordnung sind mir wichtiger als schnelle gesellschaftliche Veränderung.",
+    },
+    {
+        "id": "s2",
+        "axis": "social",
+        "direction": "progressiv",
+        "text": "Vielfalt an Lebensentwürfen und Offenheit gegenüber Veränderung sind für eine Gesellschaft ein Gewinn.",
+    },
+    {
+        "id": "s3",
+        "axis": "social",
+        "direction": "konservativ",
+        "text": "Klare nationale Grenzen und ein starker Staat geben mehr Sicherheit als offene internationale Zusammenarbeit.",
+    },
+    {
+        "id": "s4",
+        "axis": "social",
+        "direction": "progressiv",
+        "text": "Internationale Zusammenarbeit ist wichtiger als nationale Alleingänge, auch wenn das Kompromisse bedeutet.",
     },
 ]
 
@@ -377,7 +457,7 @@ def register():
         error=error,
         auth_configured=db.auth_configured(),
         onboarding_questions=ONBOARDING_QUESTIONS,
-        known_political_labels=KNOWN_POLITICAL_LABELS,
+        compass_questions=COMPASS_QUESTIONS,
     )
 
 
