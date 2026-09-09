@@ -1,12 +1,25 @@
 import sys
+import time
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import fediverse
+
+
+@pytest.fixture(autouse=True)
+def _clear_fediverse_cache():
+    # Every test below calls fetch_public_posts("klima", ...) - without
+    # this, whichever test runs first would populate the cache and every
+    # later test would silently get its result back instead of hitting the
+    # mocked requests.get() they each set up.
+    fediverse.clear_cache()
+    yield
+    fediverse.clear_cache()
 
 
 class _FakeResponse:
@@ -82,3 +95,40 @@ def test_fetch_public_posts_respects_the_limit(mock_get):
     )
     posts = fediverse.fetch_public_posts("klima", limit=2)
     assert len(posts) == 2
+
+
+@patch("fediverse.requests.get")
+def test_fetch_public_posts_uses_the_cache_on_a_second_call(mock_get):
+    mock_get.return_value = _FakeResponse(
+        [{"content": "a", "url": "", "account": {}, "created_at": ""}]
+    )
+    first = fediverse.fetch_public_posts("klima")
+    second = fediverse.fetch_public_posts("klima")
+    assert first == second
+    assert mock_get.call_count == 1
+
+
+@patch("fediverse.requests.get")
+def test_fetch_public_posts_refetches_after_the_cache_expires(mock_get):
+    mock_get.return_value = _FakeResponse(
+        [{"content": "a", "url": "", "account": {}, "created_at": ""}]
+    )
+    fediverse.fetch_public_posts("klima")
+    with patch("fediverse.time.monotonic", return_value=time.monotonic() + fediverse.CACHE_TTL_SECONDS + 1):
+        fediverse.fetch_public_posts("klima")
+    assert mock_get.call_count == 2
+
+
+@patch("fediverse.requests.get")
+def test_fetch_public_posts_serves_stale_cache_when_a_later_fetch_fails(mock_get):
+    mock_get.return_value = _FakeResponse(
+        [{"content": "a", "url": "", "account": {}, "created_at": ""}]
+    )
+    first = fediverse.fetch_public_posts("klima")
+
+    mock_get.side_effect = requests.ConnectionError
+    with patch("fediverse.time.monotonic", return_value=time.monotonic() + fediverse.CACHE_TTL_SECONDS + 1):
+        second = fediverse.fetch_public_posts("klima")
+
+    assert second == first
+    assert second != []
