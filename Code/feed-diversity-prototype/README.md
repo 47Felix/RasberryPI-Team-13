@@ -38,6 +38,27 @@ zu durchbrechen statt nur die des aktuellen Ausgangs-Posts. Ohne Account
 oder ohne bisherige Likes (bzw. bei einem exakten Unentschieden) bleibt das
 alte Verhalten erhalten: Perspektive des Ausgangs-Posts entscheidet.
 
+### Position statt nur „pro/contra"
+
+Ein nacktes `pro`/`contra` (z.B. „klima: pro") sagt ohne den Post davor
+wenig aus. `app.TOPIC_STANCES` ordnet deshalb jedem Thema **eine feste
+Richtung** zu, was „pro" bzw. „contra" dort bedeuten (grob: „pro" = mehr
+Ambition / mehr Schutz / mehr Offenheit, „contra" = mehr Gewicht auf Kosten,
+Markt oder Status quo), und `stance_label(topic, perspective)` liefert die
+Kurzformel dazu – z.B. `klima/pro` → „mehr Klimaschutz, schneller",
+`wirtschaft/contra` → „Vorrang für Betriebe und Standort". Feed-Chips, das
+`/dashboard` und die „Warum siehst du das?"-Zeile am Post zeigen diese
+Formel statt nur das Wort. Themen ohne Eintrag (später hinzugefügte
+Kategorien) fallen auf das bloße `pro`/`contra` zurück.
+
+Damit die Formel nicht lügt, ist `perspective` im Seed-Datensatz
+(`seed_demo_accounts.py`) **pro Thema als konsistente Achse** gepflegt: alle
+„pro"-Posts eines Themas lehnen in dieselbe Richtung, alle „contra"-Posts in
+die andere. Neue Posts bitte auf derselben Achse wie der Rest ihres Themas
+anlegen. Die Formulierungen sind bewusst knapp und als Lesehilfe gedacht,
+keine formale Definition – Einzelfälle können unscharf sein, der Post-Titel
+steht ja daneben.
+
 ## Politische Einordnung (links/mitte/rechts) als zweite, unabhängige Dimension
 
 Bisher gab es pro Post nur eine Achse: `perspective` (pro/contra zum jeweiligen
@@ -159,6 +180,22 @@ echter Wechsel zwischen zwei Feeds in einer App:
 - Eigener Ausgangs-Post und Vielfalt-Regler sind in ein eingeklapptes
   "Feed-Einstellungen"-Element verschoben – sichtbar/bedienbar, aber nicht
   mehr die Hauptfläche der Seite.
+
+### Rotation beim Neuladen
+
+Damit „Aktualisieren“ tatsächlich **neue Beiträge** bringt und nicht immer
+denselben Top-Ausschnitt, merkt sich `index()` in der Flask-Session die
+zuletzt gezeigten Post-IDs (`seen_post_ids`, gedeckelt auf
+`SEEN_HISTORY_CAP`). Ein einfacher Browser-Reload (ohne `?seed_id=`) wählt
+dann den nächsten noch nicht gezeigten Post als Ausgangs-Post und blendet die
+bereits gezeigten aus dem Feed-Body aus (`ranking.standard_feed()`/
+`diversity_aware_feed()` haben dafür einen optionalen `exclude_ids`-Parameter,
+`None` = altes Verhalten). Ist der ganze Bestand einmal durch, fängt die
+Rotation von vorn an. Ein **explizit gesetzter** `?seed_id=` (Tab-Wechsel,
+„Feed-Einstellungen“, Ausgangs-Post-Dropdown) rotiert bewusst nicht – so
+bleiben die zwei Modi für denselben Post vergleichbar. Der bestehende
+„Neue Beiträge“-Poll (`/posts/latest-id`, alle ~15 s) bleibt zusätzlich für
+Posts, die *andere* währenddessen anlegen.
 
 ## Accounts, Posts, Kommentare, Likes & Kategorie-Vorschlag (Supabase)
 
@@ -306,6 +343,21 @@ konsequent "contra"/"links" bzw. "pro"/"rechts") sowie einen Admin-Account an,
 der die Seed-Posts veröffentlicht, und lässt die Beispiel-Accounts passende
 Posts liken.
 
+Der Seed-Datensatz (`SEED_POSTS` im Skript) umfasst rund **100 Posts über 12
+Themen** (die vier Default-Themen plus `bildung`, `gesundheit`, `migration`,
+`wohnen`, `sicherheit`, `soziales`, `europa`, `aussenpolitik` – deren
+`categories`-Zeilen legt `supabase/migrations/0006_more_categories.sql` an,
+danach ziehen sie `known_topics()`/Dropdown/`/dashboard`/Validierung
+automatisch mit). Pro Thema gibt es je Perspektive/politischem Label mehrere
+Posts, mindestens einen "contra/links" und einen "pro/rechts", damit jeder
+Beispiel-Account auf jedem Thema passende Inhalte findet. Damit die
+Like-Historie trotz des großen Datensatzes lesbar bleibt, liked jeder Account
+höchstens `MAX_LIKES_PER_TOPIC` (Default 1) passende Posts pro Thema – im
+Ergebnis rund ein Dutzend gleichgerichteter Likes pro Account. Die Inhalte
+sind bewusst sachlich formuliert und geben beide Seiten fair wieder.
+`0006_more_categories.sql` muss (wie 0003–0005) einmalig gegen die echte
+Supabase-Instanz angewendet werden, **bevor** das Seed-Skript läuft.
+
 **Zugangsdaten kommen ausschließlich aus der Umgebung/`.env`** (`DEMO_ACCOUNT_A_EMAIL`/
 `_PASSWORD` bis `DEMO_ACCOUNT_D_EMAIL`/`_PASSWORD`, `DEMO_ADMIN_EMAIL`/`_PASSWORD`,
 zusätzlich zu den bestehenden `SUPABASE_*`-Variablen) - das Skript bricht ohne
@@ -344,6 +396,16 @@ Supabase. Externe Post-Inhalte kommen als HTML von der API zurück und
 werden vor der Anzeige zu Klartext reduziert (`fediverse._strip_html`),
 statt sie ungefiltert ins Template zu rendern – sonst wäre das ein
 XSS-Risiko über fremde, nicht moderierte Inhalte.
+
+**Themen-Abdeckung & Qualitätsfilter:** `TOPIC_HASHTAGS` deckt jetzt alle 12
+Themen ab; für ein Thema ohne Eintrag (z.B. eine später hinzugefügte
+Kategorie) fällt `_hashtag_for()` auf den bereinigten Themennamen als Hashtag
+zurück, statt die Sektion leer zu lassen. Beim Verarbeiten der Timeline
+werden **Boosts/Reblogs** (`reblog`-Feld gesetzt – der eigentliche Beitrag
+ist nur ein Wrapper) und **textlose Posts** (nur Medien) übersprungen; die
+API-Abfrage holt entsprechend mehr als `limit` Einträge, um nach dem Filtern
+trotzdem `limit` lesbare zu haben. Sehr lange Beiträge werden auf ~280
+Zeichen gekürzt.
 
 **Caching statt live pro Seitenaufruf:** `index()` ruft `fetch_public_posts()`
 bei jedem `/`-Aufruf auf, ein Hashtag-Timeline ändert sich aber nicht schnell
@@ -405,6 +467,21 @@ für diesen Zweck unkritisch ist.
 - [ ] Beispiel-Accounts mit gegensätzlicher Like-Historie für die Demo
       (Skript vorbereitet, noch nicht ausgeführt – siehe `seed_demo_accounts.py`
       und NIGHTLY_TASK.md)
+- [ ] `0006_more_categories.sql` gegen die echte Supabase-Instanz anwenden
+      (acht zusätzliche Themen-Kategorien für den erweiterten ~100-Post-Seed-
+      Datensatz)
+- [x] Seed-Datensatz von 8 auf ~100 Posts über 12 Themen erweitert
+      (`SEED_POSTS` in `seed_demo_accounts.py`), Demo-Likes pro Thema
+      gedeckelt (`MAX_LIKES_PER_TOPIC`), damit die Like-Historie lesbar bleibt
+- [x] Feed rotiert beim Neuladen auf noch nicht gezeigte Beiträge
+      (`seen_post_ids` in der Session, `exclude_ids` in `ranking.py`), damit
+      „Aktualisieren“ neue Posts bringt – siehe "Rotation beim Neuladen"
+- [x] `pro`/`contra` wird als konkrete Position gezeigt (`TOPIC_STANCES`/
+      `stance_label()`) statt nur als Wort, im Feed-Chip, `/dashboard` und
+      der Reason-Zeile; Seed-`perspective` pro Thema als konsistente Achse
+      gepflegt – siehe „Position statt nur pro/contra"
+- [x] Fediverse: alle 12 Themen mit Hashtag + Namens-Fallback für neue
+      Kategorien, Boosts/textlose Posts werden gefiltert (`fediverse.py`)
 - [x] Erster, risikoarmer Fediverse-Schritt: öffentliche Mastodon-Posts zu
       einem themenabhängigen Hashtag rein lesend im Feed anzeigen
       (`fediverse.py`, siehe eigenen Abschnitt unten). Ein vollständiger

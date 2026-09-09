@@ -112,6 +112,7 @@ def standard_feed(
     limit: int = 8,
     preferred_perspective_by_topic: dict[str, str] | None = None,
     preferred_political_label: str | None = None,
+    exclude_ids: set[str] | None = None,
 ):
     """Bubble-reinforcing ranking, like a typical 'For You' feed: posts that
     match the account's own stance *for their own topic* first, before
@@ -149,11 +150,18 @@ def standard_feed(
     without a political_label (legacy rows, or bias_political being None
     because there's no signal yet) simply skip this extra split and behave
     exactly as before.
+
+    `exclude_ids` drops those post ids from the candidate pool before
+    ranking - used by app.py to rotate a plain page reload on to posts the
+    viewer hasn't been shown yet (see index()). None/empty keeps every post,
+    so existing callers and tests are unaffected.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
     preferred_perspective_by_topic = preferred_perspective_by_topic or {}
     bias_political = preferred_political_label or seed_post.political_label
     candidates = _similarities_to_seed(posts, seed_id)
+    if exclude_ids:
+        candidates = [c for c in candidates if c[0].id not in exclude_ids]
 
     def topic_bias(post: Post) -> str | None:
         by_topic = preferred_perspective_by_topic.get(post.topic)
@@ -201,6 +209,7 @@ def diversity_aware_feed(
     diversity_every: int = 3,
     preferred_perspective_by_topic: dict[str, str] | None = None,
     preferred_political_label: str | None = None,
+    exclude_ids: set[str] | None = None,
 ):
     """Same similarity base, but deliberately mixes in topically-related
     counter-perspective posts every `diversity_every`-th slot, so the feed
@@ -227,12 +236,17 @@ def diversity_aware_feed(
     strongest available counter-signal wins the slot. A post lacking a
     political_label counts as "differs" from any bias_political value
     (there's nothing to match), never as agreeing by default.
+
+    `exclude_ids` drops those post ids before ranking, same as in
+    standard_feed() - lets a plain reload rotate on to unseen posts.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
     preferred_perspective_by_topic = preferred_perspective_by_topic or {}
     bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
     bias_political = preferred_political_label or seed_post.political_label
     candidates = _similarities_to_seed(posts, seed_id)
+    if exclude_ids:
+        candidates = [c for c in candidates if c[0].id not in exclude_ids]
 
     def same_topic(p):
         return p.topic == seed_post.topic
