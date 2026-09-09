@@ -64,6 +64,26 @@ TLS-Zertifikat automatisch (Let's Encrypt), solange die Domain per DNS auf
 diesen Server zeigt und Port 80/443 von außen erreichbar sind (siehe
 Firewall-Hinweis unten).
 
+## Updates deployen (`deploy/update.sh`)
+
+Auf der aktuellen Ziel-VM (`ClaudeDiscord`) liegt der laufende Code unter
+`/home/team13/feed-diversity` als reine Dateikopie, kein Git-Checkout (damit
+`.env`/`venv` dort bleiben können, ohne im Repo zu landen). Statt jedes Mal
+von Hand zu klonen/kopieren:
+
+```bash
+# einmalig: persistenten Quell-Checkout anlegen
+git clone https://github.com/47Felix/RasberryPI-Team-13.git /home/team13/feed-diversity-src
+
+# bei jedem Deploy danach:
+bash /home/team13/feed-diversity-src/Code/feed-diversity-prototype/deploy/update.sh
+```
+
+Das Skript zieht `main`, rsynct `Code/feed-diversity-prototype/` in
+`/home/team13/feed-diversity` (lässt `.env`/`venv`/`__pycache__` unangetastet),
+installiert `requirements.txt` neu und startet den `feed-diversity`-Service
+neu.
+
 ## Azure-NSG-Firewall: Ports 80/443 öffnen
 
 Falls die Ziel-VM in Azure läuft (Network Security Group blockt eingehenden
