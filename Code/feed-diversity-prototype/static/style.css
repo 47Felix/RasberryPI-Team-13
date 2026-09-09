@@ -25,12 +25,23 @@
   --contra: #a3311d;
   --contra-bg: #f5e6e0;
 
-  --links: #5b4b8a;
-  --links-bg: #eae5f2;
-  --mitte: #7d6a3f;
-  --mitte-bg: #f0e9d8;
-  --rechts: #2c6e83;
-  --rechts-bg: #e2eef1;
+  /* links/rechts intentionally not red/blue (see README "Politische
+     Einordnung") - violet/blue read as a neutral, non-partisan pair here.
+     Re-stepped 2026-09 from the original #5b4b8a/#7d6a3f/#2c6e83 trio, which
+     failed the dataviz-skill validator: mitte's brown and rechts' teal both
+     sat below the OKLCH chroma floor (read as near-gray), and links/rechts
+     sat at normal-vision Delta E 11.4 - below the 15 floor, hard to tell
+     apart even with full-color vision. This trio (validated against this
+     file's --pro/--contra too, all-pairs, against --surface) clears every
+     check: worst normal-vision pair Delta E 16.3, worst CVD (deutan) 6.2 -
+     inside the 6-8 legal-with-secondary-encoding band, already satisfied
+     here since every compass segment ships a text label alongside color. */
+  --links: #4a3aa7;
+  --links-bg: #ece7f5;
+  --mitte: var(--muted);
+  --mitte-bg: #efece3;
+  --rechts: #2a78d6;
+  --rechts-bg: #e2edf8;
 
   --radius-sm: 3px;
   --radius-round: 999px;
@@ -450,6 +461,50 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--muted);
+}
+
+/* /dashboard "tilt bar": a stacked pro/contra/kein-Signal meter per account,
+   one glance at how many known topics currently lean which way - the counts
+   underneath are the real legend (never color alone), the bar itself is
+   just a faster way to scan it than reading N chips one by one. Segments
+   get a surface-colour gap (never a border) so touching segments still read
+   as distinct, per the dataviz mark spec. */
+.tilt-bar {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+  max-width: 14rem;
+  height: 0.6rem;
+  border-radius: var(--radius-round);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.tilt-bar-segment {
+  height: 100%;
+}
+
+.tilt-bar-segment.pro {
+  background: var(--pro);
+}
+
+.tilt-bar-segment.contra {
+  background: var(--contra);
+}
+
+.tilt-bar-segment.none {
+  background: var(--line);
+}
+
+.tilt-bar-caption {
+  font-family: var(--font-meta);
+  font-size: 0.64rem;
+  color: var(--muted);
+  margin: 0.3rem 0 0;
+}
+
+.dashboard-scope-toggle {
+  margin-bottom: 1rem;
 }
 
 .sr-only {

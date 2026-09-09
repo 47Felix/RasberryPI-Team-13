@@ -427,6 +427,13 @@ def dashboard():
     downside: rotating ADMIN_DASHBOARD_TOKEN doesn't retroactively log out
     sessions that already authorized under the old value - acceptable here,
     not worth a session-versioning scheme for a demo admin view.
+
+    Defaults to showing only the logged-in account's own row (?scope=me,
+    implicit) - the all-accounts comparison is still there (?scope=all) for
+    when someone actually wants the team-wide transparency view, just not
+    the first thing every admin sees every time they only want their own
+    feed-bias breakdown. Falls back to "all" if nobody's logged in, since
+    there's no "own row" to show then.
     """
     admin_token = os.environ.get("ADMIN_DASHBOARD_TOKEN", "")
     configured = bool(admin_token)
@@ -436,17 +443,31 @@ def dashboard():
     if not authorized:
         return render_template("dashboard.html", authorized=False, configured=configured, accounts=[])
 
+    current_user = _current_user()
+    scope = "all" if request.args.get("scope") == "all" or not current_user else "me"
+    topics = known_topics()
+
+    profiles = db.fetch_all_profiles()
+    if scope == "me":
+        profiles = [profile for profile in profiles if profile["id"] == current_user["id"]]
+
     accounts = []
-    for profile in db.fetch_all_profiles():
+    for profile in profiles:
         prefs = compute_preferences(profile["id"])
+        perspective_by_topic = prefs["perspective_by_topic"]
+        pro_count = sum(1 for topic in topics if perspective_by_topic.get(topic) == "pro")
+        contra_count = sum(1 for topic in topics if perspective_by_topic.get(topic) == "contra")
         accounts.append(
             {
                 "display_name": profile["display_name"],
                 "handle": profile["handle"],
-                "perspective_by_topic": prefs["perspective_by_topic"],
+                "perspective_by_topic": perspective_by_topic,
                 "perspective_source": prefs["perspective_source"],
                 "political_label": prefs["political_label"],
                 "political_label_source": prefs["political_label_source"],
+                "pro_count": pro_count,
+                "contra_count": contra_count,
+                "none_count": len(topics) - pro_count - contra_count,
             }
         )
     return render_template(
@@ -454,7 +475,9 @@ def dashboard():
         authorized=True,
         configured=True,
         accounts=accounts,
-        known_topics=known_topics(),
+        known_topics=topics,
+        scope=scope,
+        can_show_mine=bool(current_user),
         token=admin_token,
     )
 
