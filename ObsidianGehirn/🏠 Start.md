@@ -51,6 +51,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 ## 🌍 DTEW Workshop Hamburg (zusätzliches Projekt, 31.08.–12.09.2026)
 - [[DTEW Hamburg - Übersicht]]
 - [[Team 13 - Digitale Demokratie]]
+- [[Feed-Diversity-Prototyp - Deployment]] – Live-Deploy-Regeln + Befehl
 
 ## 🔐 Sonstiges
 - [[Zugangsdaten - Hinweis]]
