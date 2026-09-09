@@ -294,7 +294,24 @@ def fetch_posts() -> list[dict]:
     return result
 
 
-def insert_post(title: str, content: str, topic: str, perspective: str, user_id: str, political_label: str | None = None) -> bool:
+def insert_post(
+    title: str,
+    content: str,
+    topic: str,
+    perspective: str,
+    user_id: str | None,
+    political_label: str | None = None,
+    author_id: str | None = None,
+) -> bool:
+    """user_id is the normal path (a real logged-in account, via the "new
+    post" form or seed_demo_accounts.py) - author_id is the legacy path,
+    for fictional/topic-themed bylines (see supabase/migrations/0001_init.sql
+    seed data, ensure_author()) that aren't tied to a
+    real Supabase Auth account. fetch_posts() falls back to `authors` for
+    display whenever a row has no user_id, so passing author_id without a
+    user_id is the normal way to seed bulk demo content without creating
+    real accounts for it.
+    """
     if not is_configured():
         return False
     try:
@@ -305,12 +322,35 @@ def insert_post(title: str, content: str, topic: str, perspective: str, user_id:
             "perspective": perspective,
             "political_label": political_label,
             "user_id": user_id,
+            "author_id": author_id,
         }
         response = requests.post(f"{SUPABASE_URL}/rest/v1/posts", headers=_headers(), json=payload, timeout=5)
         response.raise_for_status()
     except requests.RequestException:
         return False
     return True
+
+
+def ensure_author(name: str, handle: str, avatar: str) -> str | None:
+    """Upserts a legacy fictional byline into `authors` (on_conflict=handle,
+    merge-duplicates) and returns its id - idempotent, so seeding scripts
+    can declare the same persona every run without creating duplicates.
+    None if Supabase isn't configured/reachable."""
+    if not is_configured():
+        return None
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/authors",
+            headers={**_headers(), "Prefer": "resolution=merge-duplicates,return=representation"},
+            params={"on_conflict": "handle"},
+            json={"name": name, "handle": handle, "avatar": avatar},
+            timeout=5,
+        )
+        response.raise_for_status()
+        rows = response.json()
+    except (requests.RequestException, ValueError):
+        return None
+    return rows[0]["id"] if rows else None
 
 
 def fetch_latest_post_id() -> str | None:

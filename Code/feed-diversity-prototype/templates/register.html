@@ -53,13 +53,37 @@
             </fieldset>
           {% endfor %}
 
-          <label for="onboarding_political_label">Politisch würdest du dich eher einordnen als</label>
-          <select name="onboarding_political_label" id="onboarding_political_label">
-            <option value="" selected>Keine Angabe</option>
-            {% for label in known_political_labels %}
-              <option value="{{ label }}">{{ label }}</option>
-            {% endfor %}
-          </select>
+          <p class="tab-caption" style="border:none;padding:0.9rem 0 0.4rem;">
+            <strong>Perspektiven-Kompass</strong> – beantworte ein paar Aussagen,
+            der Punkt unten bewegt sich live mit. Daraus wird automatisch dein
+            politisches Lager (links/mitte/rechts) abgeleitet, genau wie oben
+            bei den Themen bleibt alles optional und wird von echten
+            Likes/Kommentaren sofort überschrieben.
+          </p>
+
+          {% for q in compass_questions %}
+            <fieldset class="settings-row compass-question" data-axis="{{ q.axis }}" data-direction="{{ q.direction }}" style="border:none;padding:0;margin:0 0 0.6rem;">
+              <legend class="tab-caption" style="border:none;padding:0 0 0.3rem;">{{ q.text }}</legend>
+              <label><input type="radio" name="compass_{{ q.id }}" value="2"> Stimme voll zu</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="1"> Stimme eher zu</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="0" checked> Neutral / keine Angabe</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="-1"> Stimme eher nicht zu</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="-2"> Stimme gar nicht zu</label>
+            </fieldset>
+          {% endfor %}
+
+          <div class="compass-plot">
+            <span class="compass-plot-axis-label top">progressiv</span>
+            <span class="compass-plot-axis-label bottom">konservativ</span>
+            <div class="compass-plot-grid">
+              <span class="compass-plot-axis-label left">links</span>
+              <span class="compass-plot-axis-label right">rechts</span>
+              <div class="compass-plot-dot" id="compass-plot-dot"></div>
+            </div>
+          </div>
+          <p class="compass-plot-readout" id="compass-plot-readout">Noch keine Angabe</p>
+
+          <input type="hidden" name="onboarding_political_label" id="compass-result-label" value="">
         </details>
 
         <button type="submit" {{ 'disabled' if not auth_configured }}>Account erstellen</button>
@@ -68,5 +92,56 @@
       <p class="tab-caption">Schon registriert? <a href="{{ url_for('login') }}">Einloggen</a></p>
     </div>
   </main>
+
+  <script>
+    var COMPASS_QUESTIONS = {{ compass_questions | tojson }};
+    // Out of a possible +-8 per axis (4 questions * max 2 each) - a
+    // 3.75-wide "mitte" band around zero (-1.5..1.5 out of a -8..8 range).
+    var COMPASS_THRESHOLD = 1.5;
+
+    function computeCompass() {
+      var x = 0, y = 0, interacted = false;
+      COMPASS_QUESTIONS.forEach(function (q) {
+        var checked = document.querySelector('input[name="compass_' + q.id + '"]:checked');
+        if (!checked) return;
+        var value = parseInt(checked.value, 10);
+        if (value !== 0) interacted = true;
+        var sign = (q.direction === 'rechts' || q.direction === 'progressiv') ? 1 : -1;
+        if (q.axis === 'economic') x += sign * value;
+        else y += sign * value;
+      });
+      return { x: x, y: y, interacted: interacted };
+    }
+
+    function updateCompassPlot() {
+      var result = computeCompass();
+      var dot = document.getElementById('compass-plot-dot');
+      var readout = document.getElementById('compass-plot-readout');
+      var hiddenInput = document.getElementById('compass-result-label');
+      if (!dot || !readout || !hiddenInput) return;
+
+      var leftPercent = Math.max(6, Math.min(94, 50 + (result.x / 8) * 50));
+      var topPercent = Math.max(6, Math.min(94, 50 - (result.y / 8) * 50));
+      dot.style.left = leftPercent + '%';
+      dot.style.top = topPercent + '%';
+
+      dot.classList.remove('links', 'mitte', 'rechts');
+      if (!result.interacted) {
+        readout.textContent = 'Noch keine Angabe';
+        hiddenInput.value = '';
+        return;
+      }
+
+      var label = result.x > COMPASS_THRESHOLD ? 'rechts' : result.x < -COMPASS_THRESHOLD ? 'links' : 'mitte';
+      dot.classList.add(label);
+      readout.textContent = 'Aktuell: ' + label;
+      hiddenInput.value = label;
+    }
+
+    document.querySelectorAll('.compass-question input[type="radio"]').forEach(function (radio) {
+      radio.addEventListener('change', updateCompassPlot);
+    });
+    updateCompassPlot();
+  </script>
 </body>
 </html>

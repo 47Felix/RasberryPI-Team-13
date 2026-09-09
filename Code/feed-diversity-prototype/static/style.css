@@ -526,6 +526,98 @@ a {
   margin-bottom: 1rem;
 }
 
+/* Registration "Perspektiven-Kompass" (register.html): a live two-axis
+   plot, dot position/color set by JS as the compass questions are
+   answered. Left/right axis labels sit inside the grid (not pushed outside
+   it) so they never clip against the narrow registration form. */
+.compass-plot {
+  position: relative;
+  width: 200px;
+  max-width: 100%;
+  margin: 0.6rem auto 0;
+  padding: 1.3rem 0;
+}
+
+.compass-plot-grid {
+  position: relative;
+  width: 200px;
+  max-width: 100%;
+  height: 200px;
+  margin: 0 auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) center / 100% 50% no-repeat,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) center / 50% 100% no-repeat;
+}
+
+.compass-plot-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--faint);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line-strong);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: left 0.25s ease, top 0.25s ease, background 0.25s ease;
+}
+
+.compass-plot-dot.links {
+  background: var(--links);
+}
+
+.compass-plot-dot.mitte {
+  background: var(--mitte);
+}
+
+.compass-plot-dot.rechts {
+  background: var(--rechts);
+}
+
+.compass-plot-axis-label {
+  position: absolute;
+  font-family: var(--font-meta);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.compass-plot-axis-label.top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-plot-axis-label.bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compass-plot-axis-label.left {
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-plot-axis-label.right {
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compass-plot-readout {
+  text-align: center;
+  font-family: var(--font-meta);
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin: 0.4rem 0 1rem;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
