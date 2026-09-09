@@ -1,5 +1,5 @@
 -- Feed-diversity prototype (Case 3): short opt-in onboarding survey at
--- registration ("wo stehst du bei diesen Themen?"), so the feed has an
+-- registration ("where do you stand on these topics?"), so the feed has an
 -- initial lean before an account has liked/commented on anything - without
 -- it, standard_feed()/dominant_perspective() have zero signal for a brand
 -- new account and just fall back to the seed post's own perspective.
@@ -15,4 +15,4 @@ alter table profiles add column if not exists onboarding_perspective text
   check (onboarding_perspective in ('pro', 'contra'));
 
 alter table profiles add column if not exists onboarding_political_label text
-  check (onboarding_political_label in ('links', 'mitte', 'rechts'));
+  check (onboarding_political_label in ('left', 'center', 'right'));

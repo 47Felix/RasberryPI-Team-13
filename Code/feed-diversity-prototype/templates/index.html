@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Perspektiv – Feed Diversity Lab (Case 3 DTEW)</title>
+  <title>Perspektiv - Feed Diversity Lab (Case 3 DTEW)</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -10,16 +10,16 @@
     <div class="topbar-inner">
       <div class="brand">
         <span class="brand-mark">Perspektiv</span>
-        <span class="brand-tag">Dein Feed</span>
+        <span class="brand-tag">Your Feed</span>
       </div>
       <div class="auth-status">
-        <a href="{{ url_for('dashboard') }}" title="Team-Dashboard: welcher Account bekommt wieso welchen Feed-Bias (Zugangs-Token noetig)">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" title="Team dashboard: which account gets which feed bias and why (needs an access token)">Dashboard</a>
         {% if current_user %}
           <span>{{ current_user.display_name }} ({{ current_user.handle }})</span>
           <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
           <a href="{{ url_for('login') }}">Login</a>
-          <a href="{{ url_for('register') }}">Registrieren</a>
+          <a href="{{ url_for('register') }}">Register</a>
         {% endif %}
       </div>
     </div>
@@ -27,18 +27,18 @@
 
   <main class="app">
     <details class="disclosure about">
-      <summary>ⓘ Was ist das hier?</summary>
+      <summary>ⓘ What is this?</summary>
       <p class="about-text">
-        Ein Feed, zwei Ranking-Modi für denselben Ausgangs-Post: <strong>Standard</strong>
-        sortiert rein nach inhaltlicher Ähnlichkeit – bubble-verstärkend, wie ein
-        typischer „For You“-Feed. <strong>Diversity-aware</strong> mischt bewusst
-        thematisch verwandte Gegenperspektiven ein. Zwischen beiden wechseln und den
-        Unterschied beim Scrollen spüren, nicht nur an einer Zahl ablesen.
-        Prototyp für Case 3 (DTEW Hamburg 2026, digi&amp;demo e.V.).
+        One feed, two ranking modes for the same seed post: <strong>Standard</strong>
+        sorts purely by content similarity - bubble-reinforcing, like a
+        typical "For You" feed. <strong>Diversity-aware</strong> deliberately
+        mixes in topically related counter-perspectives. Switch between the two
+        and feel the difference while scrolling, not just as a single number.
+        Prototype for Case 3 (DTEW Hamburg 2026, digi&amp;demo e.V.).
       </p>
     </details>
 
-    <nav class="tabs" aria-label="Feed-Modus">
+    <nav class="tabs" aria-label="Feed mode">
       <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='standard') }}"
          class="tab {{ 'active' if mode == 'standard' }}">Standard</a>
       <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='diversity') }}"
@@ -47,50 +47,50 @@
     <div class="tab-caption">
       <p style="margin:0;">
         {% if mode == 'diversity' %}
-          Bewusst eingemischte Gegenperspektiven/-lager, damit der Feed thematisch relevant bleibt statt nur zu bestätigen.
+          Deliberately mixed-in counter-perspectives/-camps, so the feed stays topically relevant instead of just confirming your view.
         {% else %}
-          Reine Ähnlichkeits-Rangfolge, kein Eingriff – wie ein typischer bubble-verstärkender "For You"-Feed.
+          Pure similarity ranking, no intervention - like a typical bubble-reinforcing "For You" feed.
         {% endif %}
       </p>
       <p class="score-row">
-        <span><span class="score-label">Perspektive (pro/contra):</span> <span class="score-value">{{ feed_score }}%</span> Gegenmeinung</span>
+        <span><span class="score-label">Perspective (pro/contra):</span> <span class="score-value">{{ feed_score }}%</span> opposing view</span>
         {% if show_political_score %}
-          <span><span class="score-label">Politisch (links/mitte/rechts):</span> <span class="score-value">{{ political_feed_score }}%</span> anderes Lager</span>
+          <span><span class="score-label">Political (left/center/right):</span> <span class="score-value">{{ political_feed_score }}%</span> other camp</span>
         {% endif %}
       </p>
       {% if preferred_perspective_by_topic or preferred_political_label %}
         <p class="bias-note">
-          Basierend auf deinen bisherigen Likes/Kommentaren (und, wo du noch keine
-          hast, deiner Angabe im Einstiegs-Fragebogen) bevorzugt dein Feed aktuell
-          pro Thema:
+          Based on your likes/comments so far (and, where you don't have any
+          yet, your answer in the sign-up survey), your feed currently
+          favors, per topic:
           {% for topic, perspective in preferred_perspective_by_topic.items() %}
-            <strong>{{ topic }}</strong>&rarr;<strong>{{ perspective }}</strong>{{ ' (Fragebogen)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
+            <strong>{{ topic }}</strong>&rarr;<strong>{{ perspective }}</strong>{{ ' (survey)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
           {% endfor %}
           {% if preferred_political_label %}
-            {{ ' – ' if preferred_perspective_by_topic }}außerdem das Lager <strong>{{ preferred_political_label }}</strong>{{ ' (Fragebogen)' if onboarding_political_label_used }}
+            {{ ' - ' if preferred_perspective_by_topic }}also the <strong>{{ preferred_political_label }}</strong> camp{{ ' (survey)' if onboarding_political_label_used }}
           {% endif %}
-          – das verstärkt sich pro Thema mit jedem weiteren Like/Kommentar dazu in diese Richtung.
-          Wechsle zu "Diversity-aware", um das gezielt zu durchbrechen.
+          - this reinforces itself per topic with every further like/comment in that direction.
+          Switch to "Diversity-aware" to deliberately break that pattern.
         </p>
       {% endif %}
     </div>
 
     <button type="button" id="refresh-banner" class="refresh-banner" hidden onclick="window.location.reload()">
-      ↑ Neue Beiträge – aktualisieren
+      ↑ New posts - refresh
     </button>
 
     {% if rotation_active %}
-      <p class="rotate-note">Jedes Neuladen rückt den Feed auf noch nicht gezeigte Beiträge – „Aktualisieren“ bringt also neue Posts.</p>
+      <p class="rotate-note">Every reload moves the feed on to posts you haven't seen yet - so "refresh" brings up new posts.</p>
     {% endif %}
 
     <div class="feed">
       {% for item in feed_items %}
         <article class="feed-item {{ item.post.perspective }} {{ 'is-diverse' if item.is_diverse_pick }}">
           {% if item.is_diverse_pick %}
-            <p class="suggested-label">✨ Vorgeschlagen · andere Perspektive zu „{{ item.post.topic }}“</p>
+            <p class="suggested-label">✨ Suggested · another perspective on "{{ item.post.topic }}"</p>
           {% endif %}
           {% if item.reason %}
-            <p class="feed-reason" title="Warum du das hier siehst">🛈 {{ item.reason }}</p>
+            <p class="feed-reason" title="Why you're seeing this">ⓘ {{ item.reason }}</p>
           {% endif %}
           <div class="feed-row">
             <div class="avatar avatar-{{ item.post.perspective }}">{{ item.avatar }}</div>
@@ -106,19 +106,19 @@
               <div class="post-footer">
                 <div class="tags">
                   <span class="chip {{ item.post.perspective }}"
-                        title="{{ item.post.topic }} – Position: {{ stance_label(item.post.topic, item.post.perspective) }} ({{ item.post.perspective }})">
+                        title="{{ item.post.topic }} - position: {{ stance_label(item.post.topic, item.post.perspective) }} ({{ item.post.perspective }})">
                     <span class="chip-mark" aria-hidden="true">{{ '▲' if item.post.perspective == 'pro' else '▼' }}</span>
                     {{ item.post.topic }}
                     <span class="chip-stance">· {{ stance_label(item.post.topic, item.post.perspective) }}</span>
-                    <span class="sr-only">, Position: {{ stance_label(item.post.topic, item.post.perspective) }}</span>
+                    <span class="sr-only">, position: {{ stance_label(item.post.topic, item.post.perspective) }}</span>
                   </span>
-                  <span class="compass-wrap" title="Politische Einordnung (von der Autorin/dem Autor selbst gewählt): {{ item.post.political_label or 'nicht angegeben' }}">
+                  <span class="compass-wrap" title="Political label (self-chosen by the author): {{ item.post.political_label or 'not given' }}">
                     <span class="compass">
-                      <span class="compass-segment links {{ 'active' if item.post.political_label == 'links' }}"></span>
-                      <span class="compass-segment mitte {{ 'active' if item.post.political_label == 'mitte' }}"></span>
-                      <span class="compass-segment rechts {{ 'active' if item.post.political_label == 'rechts' }}"></span>
+                      <span class="compass-segment left {{ 'active' if item.post.political_label == 'left' }}"></span>
+                      <span class="compass-segment center {{ 'active' if item.post.political_label == 'center' }}"></span>
+                      <span class="compass-segment right {{ 'active' if item.post.political_label == 'right' }}"></span>
                     </span>
-                    <span class="compass-label">{{ item.post.political_label or 'unmarkiert' }}</span>
+                    <span class="compass-label">{{ item.post.political_label or 'unlabeled' }}</span>
                   </span>
                 </div>
                 <div class="engagement">
@@ -134,12 +134,12 @@
               </div>
 
               <div class="comments" data-post-id="{{ item.post.id }}">
-                <button type="button" class="comments-toggle" onclick="toggleComments(this)">💬 {{ item.comments }} Kommentare</button>
+                <button type="button" class="comments-toggle" onclick="toggleComments(this)">💬 {{ item.comments }} comments</button>
                 <div class="comments-list" hidden></div>
                 {% if current_user %}
                   <form class="comment-form" hidden onsubmit="return submitComment(event, this)">
-                    <input type="text" name="content" maxlength="300" placeholder="Kommentieren als {{ current_user.handle }}…" required>
-                    <button type="submit">Senden</button>
+                    <input type="text" name="content" maxlength="300" placeholder="Comment as {{ current_user.handle }}…" required>
+                    <button type="submit">Send</button>
                   </form>
                 {% endif %}
               </div>
@@ -147,36 +147,36 @@
           </div>
         </article>
       {% else %}
-        <div class="empty-state">Keine Posts gefunden.</div>
+        <div class="empty-state">No posts found.</div>
       {% endfor %}
     </div>
 
     {% if fediverse_topic %}
       <details class="disclosure fediverse">
-        <summary>Aus dem Fediverse zu „{{ fediverse_topic }}“</summary>
+        <summary>From the Fediverse on "{{ fediverse_topic }}"</summary>
         {% if fediverse_posts %}
           {% for post in fediverse_posts %}
             <div class="fediverse-item">
               {{ post.content }}
               <span class="fediverse-meta">
                 {{ post.account_handle }}
-                {% if post.url %} · <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">Original ansehen</a>{% endif %}
+                {% if post.url %} · <a href="{{ post.url }}" target="_blank" rel="noopener noreferrer">View original</a>{% endif %}
               </span>
             </div>
           {% endfor %}
         {% else %}
-          <p class="fediverse-empty">Aktuell keine öffentlichen Fediverse-Posts zu diesem Thema erreichbar.</p>
+          <p class="fediverse-empty">No public Fediverse posts on this topic are reachable right now.</p>
         {% endif %}
       </details>
     {% endif %}
 
     <details class="disclosure settings">
-      <summary>Feed-Einstellungen</summary>
+      <summary>Feed settings</summary>
 
       <form class="settings-row" method="get">
         <input type="hidden" name="mode" value="{{ mode }}">
         <input type="hidden" name="mix" value="{{ mix }}">
-        <label for="seed_id">Eigener Ausgangs-Post</label>
+        <label for="seed_id">Your own seed post</label>
         <select name="seed_id" id="seed_id" onchange="this.form.submit()">
           {% for post in posts %}
             <option value="{{ post.id }}" {{ 'selected' if post.id == seed_id }}>
@@ -184,13 +184,13 @@
             </option>
           {% endfor %}
         </select>
-        <noscript><button type="submit">Anzeigen</button></noscript>
+        <noscript><button type="submit">Show</button></noscript>
       </form>
 
       <form class="settings-row mix-block" method="get">
         <input type="hidden" name="mode" value="{{ mode }}">
         <input type="hidden" name="seed_id" value="{{ seed_id }}">
-        <label for="mix">Vielfalt-Stärke im Diversity-aware Feed</label>
+        <label for="mix">Diversity strength in the diversity-aware feed</label>
         <div class="mix-row">
           <input
             type="range" name="mix" id="mix"
@@ -199,72 +199,72 @@
             onchange="this.form.submit()">
           <span class="mix-value" id="mix-label"></span>
         </div>
-        <noscript><button type="submit">Anzeigen</button></noscript>
+        <noscript><button type="submit">Show</button></noscript>
       </form>
     </details>
 
     {% if current_user and bubble_trend_data|length >= 2 %}
       <details class="disclosure settings">
-        <summary>📈 Deine Bubble-Entwicklung ({{ bubble_trend_data|length }} Likes)</summary>
+        <summary>📈 Your bubble over time ({{ bubble_trend_data|length }} likes)</summary>
         <p class="tab-caption">
-          Anteil deiner Likes, der jeweils zur gerade vorherrschenden Perspektive gehört –
-          je näher an 100%, desto enger deine Bubble bisher. Ein Ausschlag nach unten heißt:
-          du hast (wieder) etwas von der Gegenseite geliked.
+          Share of your likes that belong to whichever perspective was dominant at that
+          point - the closer to 100%, the tighter your bubble has been so far. A dip
+          downward means you've liked something from the other side again.
         </p>
         <div class="trend-sparkline"
              role="img"
-             aria-label="Bubble-Anteil über deine letzten {{ bubble_trend_data|length }} Likes, von {{ bubble_trend_data[0].dominant_share }}% auf zuletzt {{ bubble_trend_data[-1].dominant_share }}%">
+             aria-label="Bubble share over your last {{ bubble_trend_data|length }} likes, from {{ bubble_trend_data[0].dominant_share }}% to most recently {{ bubble_trend_data[-1].dominant_share }}%">
           {% for point in bubble_trend_data %}
             <span class="trend-bar" style="height: {{ point.dominant_share }}%"
-                  title="Like #{{ point.index }} ({{ point.perspective }}): {{ point.dominant_share }}% Bubble-Anteil"></span>
+                  title="Like #{{ point.index }} ({{ point.perspective }}): {{ point.dominant_share }}% bubble share"></span>
           {% endfor %}
         </div>
-        <p class="trend-caption">Aktuell <strong>{{ bubble_trend_data[-1].dominant_share }}%</strong> in einer Bubble.</p>
+        <p class="trend-caption">Currently <strong>{{ bubble_trend_data[-1].dominant_share }}%</strong> in a bubble.</p>
       </details>
     {% endif %}
 
     {% if current_user and political_bubble_trend_data|length >= 2 %}
       <details class="disclosure settings">
-        <summary>🧭 Deine politische Bubble-Entwicklung ({{ political_bubble_trend_data|length }} gelabelte Likes)</summary>
+        <summary>🧭 Your political bubble over time ({{ political_bubble_trend_data|length }} labeled likes)</summary>
         <p class="tab-caption">
-          Dasselbe wie oben, aber für die politische Einordnung (links/mitte/rechts) statt
-          pro/contra – zählt nur Likes auf Posts mit gesetztem Label.
+          Same idea as above, but for the political label (left/center/right) instead of
+          pro/contra - only counts likes on posts with a label set.
         </p>
         <div class="trend-sparkline"
              role="img"
-             aria-label="Politischer Bubble-Anteil über deine letzten {{ political_bubble_trend_data|length }} gelabelten Likes, von {{ political_bubble_trend_data[0].dominant_share }}% auf zuletzt {{ political_bubble_trend_data[-1].dominant_share }}%">
+             aria-label="Political bubble share over your last {{ political_bubble_trend_data|length }} labeled likes, from {{ political_bubble_trend_data[0].dominant_share }}% to most recently {{ political_bubble_trend_data[-1].dominant_share }}%">
           {% for point in political_bubble_trend_data %}
             <span class="trend-bar trend-bar--political" style="height: {{ point.dominant_share }}%"
-                  title="Like #{{ point.index }} ({{ point.political_label }}): {{ point.dominant_share }}% Bubble-Anteil"></span>
+                  title="Like #{{ point.index }} ({{ point.political_label }}): {{ point.dominant_share }}% bubble share"></span>
           {% endfor %}
         </div>
-        <p class="trend-caption">Aktuell <strong>{{ political_bubble_trend_data[-1].dominant_share }}%</strong> in einer politischen Bubble.</p>
+        <p class="trend-caption">Currently <strong>{{ political_bubble_trend_data[-1].dominant_share }}%</strong> in a political bubble.</p>
       </details>
     {% endif %}
 
     <details class="disclosure settings">
-      <summary>Neuen Post erstellen</summary>
+      <summary>Create new post</summary>
 
       {% if not db_configured %}
-        <p class="tab-caption">Supabase ist nicht konfiguriert – neue Posts können aktuell nicht gespeichert werden.</p>
+        <p class="tab-caption">Supabase isn't configured - new posts can't be saved right now.</p>
       {% elif not current_user %}
-        <p class="tab-caption">Bitte <a href="{{ url_for('login', next=url_for('index')) }}">einloggen</a> oder
-          <a href="{{ url_for('register') }}">registrieren</a>, um einen Post zu veröffentlichen.</p>
+        <p class="tab-caption">Please <a href="{{ url_for('login', next=url_for('index')) }}">log in</a> or
+          <a href="{{ url_for('register') }}">register</a> to publish a post.</p>
       {% endif %}
 
       <form class="settings-row" method="post" action="{{ url_for('create_post') }}">
         <input type="hidden" name="mode" value="{{ mode }}">
         <input type="hidden" name="mix" value="{{ mix }}">
 
-        <label for="title">Titel</label>
+        <label for="title">Title</label>
         <input type="text" name="title" id="title" required maxlength="120">
 
         <label for="content">Text</label>
         <textarea name="content" id="content" required maxlength="600" rows="3"></textarea>
 
         <label for="topic">
-          Kategorie
-          <button type="button" class="suggest-button" onclick="suggestCategory()">Vorschlagen</button>
+          Category
+          <button type="button" class="suggest-button" onclick="suggestCategory()">Suggest</button>
           <span id="suggest-hint" class="suggest-hint"></span>
         </label>
         <select name="topic" id="topic">
@@ -273,21 +273,21 @@
           {% endfor %}
         </select>
 
-        <label for="perspective">Perspektive (pro/contra zum Thema)</label>
+        <label for="perspective">Perspective (pro/contra on the topic)</label>
         <select name="perspective" id="perspective">
           {% for perspective in known_perspectives %}
             <option value="{{ perspective }}">{{ perspective }}</option>
           {% endfor %}
         </select>
 
-        <label for="political_label">Politische Einordnung (unabhängig von der Perspektive, selbst gewählt)</label>
+        <label for="political_label">Political label (independent of the perspective, self-chosen)</label>
         <select name="political_label" id="political_label">
           {% for label in known_political_labels %}
-            <option value="{{ label }}" {{ 'selected' if label == 'mitte' }}>{{ label }}</option>
+            <option value="{{ label }}" {{ 'selected' if label == 'center' }}>{{ label }}</option>
           {% endfor %}
         </select>
 
-        <button type="submit" {{ 'disabled' if not db_configured or not current_user }}>Post veröffentlichen</button>
+        <button type="submit" {{ 'disabled' if not db_configured or not current_user }}>Publish post</button>
       </form>
     </details>
   </main>
@@ -310,11 +310,11 @@
     setInterval(pollForNewPosts, NEW_POSTS_POLL_MS);
 
     var MIX_LABELS = {
-      2: "Hoch (jeder 2. Post)",
-      3: "Mittel-hoch (jeder 3. Post)",
-      4: "Mittel (jeder 4. Post)",
-      5: "Mittel-niedrig (jeder 5. Post)",
-      6: "Niedrig (jeder 6. Post)"
+      2: "High (every 2nd post)",
+      3: "Medium-high (every 3rd post)",
+      4: "Medium (every 4th post)",
+      5: "Medium-low (every 5th post)",
+      6: "Low (every 6th post)"
     };
     function updateMixLabel(value) {
       var el = document.getElementById("mix-label");
@@ -363,7 +363,7 @@
     function renderComments(list, comments) {
       list.textContent = "";
       if (!comments.length) {
-        list.textContent = "Noch keine Kommentare.";
+        list.textContent = "No comments yet.";
         return;
       }
       comments.forEach(function (comment) {
@@ -377,7 +377,7 @@
           var del = document.createElement("button");
           del.type = "button";
           del.className = "comment-delete";
-          del.textContent = "Löschen";
+          del.textContent = "Delete";
           del.onclick = function () { deleteComment(comment.id, list); };
           el.appendChild(del);
         }
@@ -386,7 +386,7 @@
     }
 
     function loadComments(postId, list) {
-      list.textContent = "Lädt…";
+      list.textContent = "Loading…";
       fetch("/posts/" + encodeURIComponent(postId) + "/comments")
         .then(function (response) { return response.json(); })
         .then(function (data) { renderComments(list, data.comments || []); });
@@ -405,7 +405,7 @@
           loadComments(postId, list);
           var toggle = container.querySelector(".comments-toggle");
           var current = parseInt((toggle.textContent.match(/\d+/) || ["0"])[0], 10) || 0;
-          toggle.textContent = "💬 " + Math.max(current - 1, 0) + " Kommentare";
+          toggle.textContent = "💬 " + Math.max(current - 1, 0) + " comments";
         });
     }
 
@@ -434,7 +434,7 @@
           loadComments(postId, container.querySelector(".comments-list"));
           var toggle = container.querySelector(".comments-toggle");
           var current = parseInt((toggle.textContent.match(/\d+/) || ["0"])[0], 10) || 0;
-          toggle.textContent = "💬 " + (current + 1) + " Kommentare";
+          toggle.textContent = "💬 " + (current + 1) + " comments";
         });
       return false;
     }
@@ -452,11 +452,11 @@
         .then(function (response) { return response.json(); })
         .then(function (data) {
           if (!data.topic) {
-            hint.textContent = "Kein Vorschlag (Titel/Text eingeben)";
+            hint.textContent = "No suggestion (enter a title/text)";
             return;
           }
           document.getElementById("topic").value = data.topic;
-          hint.textContent = "Vorschlag: " + data.topic;
+          hint.textContent = "Suggestion: " + data.topic;
         });
     }
   </script>

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login – Perspektiv</title>
+  <title>Login - Perspektiv</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -15,26 +15,26 @@
 
   <main class="app">
     <div class="disclosure settings" open>
-      <p class="tab-caption" style="border:none;padding:0.75rem 0 0;">Mit bestehendem Account einloggen.</p>
+      <p class="tab-caption" style="border:none;padding:0.75rem 0 0;">Log in with an existing account.</p>
 
       {% if not auth_configured %}
-        <p class="tab-caption">Supabase-Auth ist nicht konfiguriert – Login ist aktuell nicht möglich.</p>
+        <p class="tab-caption">Supabase Auth isn't configured - login isn't possible right now.</p>
       {% endif %}
       {% if error %}
         <p class="tab-caption" style="color:var(--contra);">{{ error }}</p>
       {% endif %}
 
       <form class="settings-row" method="post">
-        <label for="email">E-Mail</label>
+        <label for="email">Email</label>
         <input type="email" name="email" id="email" required>
 
-        <label for="password">Passwort</label>
+        <label for="password">Password</label>
         <input type="password" name="password" id="password" required>
 
-        <button type="submit" {{ 'disabled' if not auth_configured }}>Einloggen</button>
+        <button type="submit" {{ 'disabled' if not auth_configured }}>Log in</button>
       </form>
 
-      <p class="tab-caption">Noch keinen Account? <a href="{{ url_for('register') }}">Registrieren</a></p>
+      <p class="tab-caption">Don't have an account yet? <a href="{{ url_for('register') }}">Register</a></p>
     </div>
   </main>
 </body>

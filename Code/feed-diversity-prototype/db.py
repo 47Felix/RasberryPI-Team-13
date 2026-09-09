@@ -142,7 +142,7 @@ def create_unique_profile(
     onboarding_perspective_by_topic/onboarding_political_label are the
     optional, skippable registration-survey answers (see
     0004_onboarding_survey.sql/0005_onboarding_per_topic.sql) - the topic map
-    stores one pro/contra answer per topic (e.g. {"verkehr": "pro"}), same
+    stores one pro/contra answer per topic (e.g. {"transport": "pro"}), same
     shape as ranking.dominant_perspective_by_topic() produces from real
     engagement, so app.py can merge the two without converting between
     formats. None/{} just leaves the feed with no initial lean until real

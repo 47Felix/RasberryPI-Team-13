@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard – Perspektiv</title>
+  <title>Dashboard - Perspektiv</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -10,46 +10,46 @@
     <div class="topbar-inner">
       <div class="brand">
         <span class="brand-mark">Perspektiv</span>
-        <span class="brand-tag">Team-Dashboard</span>
+        <span class="brand-tag">Team Dashboard</span>
       </div>
       <div class="auth-status">
-        <a href="{{ url_for('index') }}">Zurück zum Feed</a>
+        <a href="{{ url_for('index') }}">Back to feed</a>
       </div>
     </div>
   </header>
 
   <main class="app">
     <details class="disclosure about" open>
-      <summary>ⓘ Was ist das hier?</summary>
+      <summary>ⓘ What is this?</summary>
       <p class="about-text">
-        Zeigt für einen Account, welchen Feed-Bias er aktuell hat und woher der
-        kommt – "Likes/Kommentare" (echtes Engagement, gewinnt immer sobald
-        vorhanden) oder "Fragebogen" (Einstiegs-Fragebogen bei der
-        Registrierung, nur solange kein Engagement zu diesem Thema existiert).
-        Jeder Themen-Chip nennt statt nur "pro"/"contra" die konkrete Position
-        (z.&nbsp;B. "klima ▲ · mehr Klimaschutz, schneller"), damit die
-        Zuordnung ohne den Post davor lesbar ist.
-        Standardmäßig nur der eigene, eingeloggte Account ("Nur ich") –
-        "Alle Accounts" zeigt zum Vergleich das ganze Team. Die Begründung für
-        ein einzelnes Post im eigenen Feed steht direkt am Post selbst
-        (🛈-Zeile). Nur mit gültigem Token sichtbar, siehe
+        Shows, for each account, what feed bias it currently has and where it
+        comes from - "likes/comments" (real engagement, always wins once it
+        exists) or "survey" (sign-up survey at registration, only as long as
+        no engagement on that topic exists yet). Each topic chip states the
+        concrete position instead of just "pro"/"contra"
+        (e.g. "climate ▲ · more climate protection, faster"), so the label
+        reads clearly without the post next to it.
+        Shows only your own logged-in account by default ("Just me") -
+        "All accounts" shows the whole team for comparison. The reasoning for
+        a single post in your own feed is shown right on the post itself
+        (ⓘ line). Only visible with a valid token, see
         <code>ADMIN_DASHBOARD_TOKEN</code> in <code>.env</code>.
       </p>
     </details>
 
     {% if not configured %}
       <div class="empty-state">
-        <code>ADMIN_DASHBOARD_TOKEN</code> ist nicht gesetzt – Dashboard ist deaktiviert, bis das in <code>.env</code> konfiguriert ist.
+        <code>ADMIN_DASHBOARD_TOKEN</code> isn't set - the dashboard is disabled until that's configured in <code>.env</code>.
       </div>
     {% elif not authorized %}
       <div class="empty-state">
-        Kein/falscher Zugangs-Token. Aufruf mit <code>?token=…</code> (siehe <code>.env</code>).
+        Missing/incorrect access token. Call with <code>?token=…</code> (see <code>.env</code>).
       </div>
     {% else %}
       {% if can_show_mine %}
-        <nav class="tabs dashboard-scope-toggle" aria-label="Ansicht">
-          <a href="{{ url_for('dashboard') }}" class="tab {{ 'active' if scope == 'me' }}">Nur ich</a>
-          <a href="{{ url_for('dashboard', scope='all') }}" class="tab {{ 'active' if scope == 'all' }}">Alle Accounts</a>
+        <nav class="tabs dashboard-scope-toggle" aria-label="View">
+          <a href="{{ url_for('dashboard') }}" class="tab {{ 'active' if scope == 'me' }}">Just me</a>
+          <a href="{{ url_for('dashboard', scope='all') }}" class="tab {{ 'active' if scope == 'all' }}">All accounts</a>
         </nav>
       {% endif %}
       <div class="feed">
@@ -62,7 +62,7 @@
                   <span class="handle">{{ account.handle }}</span>
                 </div>
 
-                <div class="tilt-bar" title="{{ account.pro_count }} Themen pro, {{ account.contra_count }} contra, {{ account.none_count }} ohne Signal">
+                <div class="tilt-bar" title="{{ account.pro_count }} topics pro, {{ account.contra_count }} contra, {{ account.none_count }} no signal">
                   {% if account.pro_count %}<span class="tilt-bar-segment pro" style="flex: {{ account.pro_count }};"></span>{% endif %}
                   {% if account.none_count %}<span class="tilt-bar-segment none" style="flex: {{ account.none_count }};"></span>{% endif %}
                   {% if account.contra_count %}<span class="tilt-bar-segment contra" style="flex: {{ account.contra_count }};"></span>{% endif %}
@@ -70,7 +70,7 @@
                 <p class="tilt-bar-caption">
                   <span style="color:var(--pro);">{{ account.pro_count }} pro</span> ·
                   <span style="color:var(--contra);">{{ account.contra_count }} contra</span> ·
-                  {{ account.none_count }} ohne Signal
+                  {{ account.none_count }} no signal
                 </p>
 
                 <div class="post-footer" style="flex-wrap:wrap;">
@@ -78,34 +78,34 @@
                     {% for topic in known_topics %}
                       {% if topic in account.perspective_by_topic %}
                         {% set persp = account.perspective_by_topic[topic] %}
-                        {% set src = 'Fragebogen' if account.perspective_source[topic] == 'onboarding' else 'Likes/Kommentare' %}
+                        {% set src = 'survey' if account.perspective_source[topic] == 'onboarding' else 'likes/comments' %}
                         <span class="chip {{ persp }}"
-                              title="{{ topic }}: {{ stance_label(topic, persp) }} ({{ persp }}) — Quelle: {{ src }}">
+                              title="{{ topic }}: {{ stance_label(topic, persp) }} ({{ persp }}) - source: {{ src }}">
                           <span class="chip-mark" aria-hidden="true">{{ '▲' if persp == 'pro' else '▼' }}</span>
                           {{ topic }}
                           <span class="chip-stance">· {{ stance_label(topic, persp) }}</span>
-                          <span class="sr-only">, {{ persp }} ({{ stance_label(topic, persp) }}), Quelle: {{ src }}</span>
+                          <span class="sr-only">, {{ persp }} ({{ stance_label(topic, persp) }}), source: {{ src }}</span>
                         </span>
                       {% else %}
-                        <span class="chip" title="kein Signal">{{ topic }}: –</span>
+                        <span class="chip" title="no signal">{{ topic }}: –</span>
                       {% endif %}
                     {% endfor %}
                   </div>
                 </div>
 
-                <span class="compass-wrap" style="margin-top:0.4rem;" title="Politisches Lager{{ ' (' + ('Fragebogen' if account.political_label_source == 'onboarding' else 'Likes/Kommentare') + ')' if account.political_label else '' }}">
+                <span class="compass-wrap" style="margin-top:0.4rem;" title="Political camp{{ ' (' + ('survey' if account.political_label_source == 'onboarding' else 'likes/comments') + ')' if account.political_label else '' }}">
                   <span class="compass">
-                    <span class="compass-segment links {{ 'active' if account.political_label == 'links' }}"></span>
-                    <span class="compass-segment mitte {{ 'active' if account.political_label == 'mitte' }}"></span>
-                    <span class="compass-segment rechts {{ 'active' if account.political_label == 'rechts' }}"></span>
+                    <span class="compass-segment left {{ 'active' if account.political_label == 'left' }}"></span>
+                    <span class="compass-segment center {{ 'active' if account.political_label == 'center' }}"></span>
+                    <span class="compass-segment right {{ 'active' if account.political_label == 'right' }}"></span>
                   </span>
-                  <span class="compass-label">{{ account.political_label or 'kein Signal' }}</span>
+                  <span class="compass-label">{{ account.political_label or 'no signal' }}</span>
                 </span>
               </div>
             </div>
           </article>
         {% else %}
-          <div class="empty-state">Noch keine Accounts.</div>
+          <div class="empty-state">No accounts yet.</div>
         {% endfor %}
       </div>
     {% endif %}

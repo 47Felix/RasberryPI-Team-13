@@ -23,13 +23,13 @@ siehe README des Prototyps, Abschnitt "Beispiel-Accounts für den Standard-Algor
 
 | Rolle | Anzeigename | Like-Verhalten (bewusst einseitig) |
 |---|---|---|
-| Demo-Account A | Nora Bergmann | konsequent "contra" + "links" |
-| Demo-Account B | Jonas Kessler | konsequent "pro" + "rechts" |
-| Demo-Account C | Lea Vogt | konsequent "contra" + "links" |
-| Demo-Account D | Tarek Aydin | konsequent "pro" + "rechts" |
+| Demo-Account A | Nora Bergmann | konsequent "contra" + "left" |
+| Demo-Account B | Jonas Kessler | konsequent "pro" + "right" |
+| Demo-Account C | Lea Vogt | konsequent "contra" + "left" |
+| Demo-Account D | Tarek Aydin | konsequent "pro" + "right" |
 | Admin | Team 13 Admin | veröffentlicht die Seed-Posts, selbst ohne Like-Historie |
 
-## Stand (07.09.2026, Nacht-Session)
+## Stand (09.09.2026, Nacht-Session)
 
 Skript ist geschrieben und lokal gegen einen fehlenden Supabase-Zugriff
 geprüft (bricht sauber ab, keine Dummy-Werte). **Noch nicht ausgeführt** –
@@ -38,6 +38,14 @@ dieser Automations-Lauf hatte keine `SUPABASE_URL`/`SUPABASE_SECRET_KEY`/
 Zugriff auf die echten Supabase-Zugangsdaten muss die `DEMO_*_EMAIL`/`_PASSWORD`-
 Variablen in einer lokalen `.env` ergänzen und das Skript einmal laufen lassen,
 siehe `Code/feed-diversity-prototype/NIGHTLY_TASK.md`.
+
+Seit dieser Session sind App/Datensatz komplett auf Englisch umgestellt
+(Team-Entscheidung vom 09.09., siehe NIGHTLY_TASK.md) – die politische
+Selbstauskunft heißt jetzt `left`/`center`/`right` statt `links`/`mitte`/`rechts`,
+die Themen-Keys sind Englisch (`climate`, `transport`, usw.). Diese Notiz bleibt
+bewusst auf Deutsch (Team-interne Doku, kein Besucher-Publikum), nur die
+zitierten Systemwerte in der Tabelle oben wurden auf die neuen englischen
+Werte aktualisiert.
 
 ## Verwandte Notizen
 - [[⚠️ Zugangsdaten - Hinweis]]
