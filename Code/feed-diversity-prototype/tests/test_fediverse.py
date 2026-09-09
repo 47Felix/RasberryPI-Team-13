@@ -35,8 +35,33 @@ class _FakeResponse:
         return self._payload
 
 
-def test_fetch_public_posts_returns_empty_for_unmapped_topic():
-    assert fediverse.fetch_public_posts("unbekanntes-thema") == []
+def test_fetch_public_posts_returns_empty_for_an_empty_topic():
+    assert fediverse.fetch_public_posts("") == []
+
+
+@patch("fediverse.requests.get")
+def test_fetch_public_posts_falls_back_to_the_topic_name_as_hashtag(mock_get):
+    # An unmapped topic (e.g. a category added after TOPIC_HASHTAGS was
+    # written) still gets a best-effort timeline from the sanitised name.
+    mock_get.return_value = _FakeResponse(
+        [{"content": "hallo", "url": "", "account": {}, "created_at": ""}]
+    )
+    posts = fediverse.fetch_public_posts("neue-kategorie")
+    assert posts and posts[0]["content"] == "hallo"
+    assert "tag/neuekategorie" in mock_get.call_args[0][0]
+
+
+@patch("fediverse.requests.get")
+def test_fetch_public_posts_skips_reblogs_and_textless_posts(mock_get):
+    mock_get.return_value = _FakeResponse(
+        [
+            {"content": "<p>echter Beitrag</p>", "url": "", "account": {"acct": "a"}, "created_at": ""},
+            {"content": "<p>ein Boost</p>", "reblog": {"id": "99"}, "url": "", "account": {}, "created_at": ""},
+            {"content": "", "url": "", "account": {}, "created_at": ""},
+        ]
+    )
+    posts = fediverse.fetch_public_posts("klima", limit=5)
+    assert [p["content"] for p in posts] == ["echter Beitrag"]
 
 
 @patch("fediverse.requests.get")
