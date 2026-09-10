@@ -139,8 +139,19 @@ of `--brand`) so the two axes don't read as one duplicated widget.
 **Schema:** `supabase/migrations/0003_political_label.sql` adds the
 `posts.political_label` column (nullable, `check` on the three allowed
 values). Needs to be applied once like 0001/0002 (SQL editor or
-`apply_schema.py`) - see "Current status" below, not possible in this
-overnight session without Supabase access.
+`apply_schema.py`).
+
+⚠️ **Found and fixed 2026-09-10:** 0003/0004 were edited after already being
+applied to the real instance, to describe them as English-only in
+hindsight - but `alter table ... add column if not exists` is a no-op once
+the column exists, so the live check constraint still only accepted the
+original German values (`links`/`mitte`/`rechts`), rejecting every English
+value every form in the app has been submitting since the English switch.
+`0010_political_label_english.sql` drops and recreates both constraints
+with the English values and translates the 133 existing posts/4 profiles
+that had a German label. Applied against the real instance - see that
+migration's comment for the full story, and don't edit an already-applied
+migration file's *behavior* again without a matching follow-up migration.
 
 ## UI: one feed, two modes (`templates/index.html`, `static/style.css`)
 
@@ -352,16 +363,31 @@ Supabase instance (like 0003-0005), **before** the seed script runs.
 (`DEMO_ACCOUNT_A_EMAIL`/`_PASSWORD` through `DEMO_ACCOUNT_D_EMAIL`/
 `_PASSWORD`, `DEMO_ADMIN_EMAIL`/`_PASSWORD`, in addition to the existing
 `SUPABASE_*` variables) - the script aborts without these variables instead
-of using placeholder values. No overnight session so far has had Supabase
-credentials available and could therefore not run the script (see
-`NIGHTLY_TASK.md`). A plain name/purpose overview of the accounts (without
-credentials) lives in the vault at `ObsidianGehirn/06
+of using placeholder values. A plain name/purpose overview of the accounts
+(without credentials) lives in the vault at `ObsidianGehirn/06
 Zugangsdaten/Feed-Diversity-Beispielaccounts.md`.
 
 ```bash
 # Add to .env (SUPABASE_* plus the DEMO_* variables above), then once:
 python3 seed_demo_accounts.py
 ```
+
+## More seed posts (`seed_more_posts.py`)
+
+Adds 50 more posts on top of `seed_demo_accounts.py`'s ~100, same 12 topics
+and the same per-topic pro/contra axis, without needing an admin Supabase
+Auth account - posted under a fictional "Community Desk" byline via
+`db.ensure_author()`/`author_id` instead (the same legacy mechanism the
+original static dataset used). Only needs `SUPABASE_URL`/
+`SUPABASE_SECRET_KEY` in `.env`.
+
+```bash
+python3 seed_more_posts.py
+```
+
+Safe to re-run for the author (upserted by handle), but posts themselves
+have no dedup key and will duplicate on a second run - only run once per
+environment.
 
 ## Fediverse display (`fediverse.py`, read-only)
 
@@ -457,17 +483,20 @@ purpose.
       migration's comment for why an `UPDATE` was chosen over re-migrating
       with new rows) rather than editing the already-applied migration file
       in place
-- [ ] Apply `0003_political_label.sql`/`0006_more_categories.sql`/
-      `0007_english_content.sql` against the real Supabase instance (not
-      possible in this overnight session without
-      `SUPABASE_MANAGEMENT_TOKEN`, see NIGHTLY_TASK.md)
-- [ ] Example accounts with an opposing like history for the demo (script
-      prepared and rewritten in English, still not executed - see
-      `seed_demo_accounts.py` and NIGHTLY_TASK.md)
+- [x] Apply `0003_political_label.sql`/`0006_more_categories.sql`/
+      `0007_english_content.sql` against the real Supabase instance
+- [x] Example accounts with an opposing like history for the demo
+      (`seed_demo_accounts.py`, executed against the real instance)
 - [x] Seed dataset expanded from 8 to ~100 posts across 12 topics
       (`SEED_POSTS` in `seed_demo_accounts.py`, now in English), demo likes
       per topic capped (`MAX_LIKES_PER_TOPIC`) so the like history stays
       readable
+- [x] 50 more posts added on top of that (`seed_more_posts.py`, posted under
+      a fictional "Community Desk" byline instead of a real account),
+      executed against the real instance - 197 posts total as of 2026-09-10
+- [x] Fixed a live check-constraint mismatch on `political_label` that
+      silently rejected every English value the app was sending
+      (`0010_political_label_english.sql`, see "Political labeling" above)
 - [x] Feed rotates on reload to not-yet-shown posts (`seen_post_ids` in the
       session, `exclude_ids` in `ranking.py`), so "refresh" brings new posts
       - see "Rotation on reload"
