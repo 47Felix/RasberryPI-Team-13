@@ -118,6 +118,7 @@
                       <span class="compass-segment center {{ 'active' if item.post.political_label == 'center' }}"></span>
                       <span class="compass-segment right {{ 'active' if item.post.political_label == 'right' }}"></span>
                     </span>
+                    <span class="compass-letter {{ item.post.political_label or '' }}" aria-hidden="true">{{ political_letter(item.post.political_label) }}</span>
                     <span class="compass-label">{{ item.post.political_label or 'unlabeled' }}</span>
                   </span>
                 </div>

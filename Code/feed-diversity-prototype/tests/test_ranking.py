@@ -239,10 +239,38 @@ def test_standard_feed_uses_preferred_political_label_over_the_seeds_own():
     assert same_perspective_ids[0] == "pro-other-label"
 
 
+def test_standard_feed_prioritizes_political_label_match_over_perspective_match():
+    # Ranking sorts primarily by political lean (left/center/right) as of
+    # 2026-09-10 (Felix) - pro/contra is now only the secondary tiebreak.
+    # contra-same-label differs on perspective but matches the seed's
+    # political label; pro-other-label matches perspective but differs
+    # politically. The political match must now win.
+    feed = standard_feed(POLITICAL_POSTS, seed_id="seed", limit=5)
+    ids = [item["post"].id for item in feed]
+    assert ids.index("contra-same-label") < ids.index("pro-other-label")
+
+
 def test_diversity_aware_feed_prefers_the_double_counter_pick():
     feed = diversity_aware_feed(POLITICAL_POSTS, seed_id="seed", limit=1, diversity_every=1)
     assert feed[0]["post"].id == "contra-other-label"
     assert feed[0]["is_diverse_pick"] is True
+
+
+def test_diversity_aware_feed_prefers_a_political_only_counter_over_a_perspective_only_counter():
+    # When both a political-only counter and a perspective-only counter are
+    # available for the same diversity slot, the political-only one must win
+    # now that political label is the primary axis (see standard_feed swap
+    # above) - pro-other-label (differs politically, same perspective)
+    # should be picked over contra-same-label (differs on perspective only).
+    posts = [
+        Post("seed", "Wind Power Expansion", "Wind power energy transition climate protection expansion", "climate", "pro", "left"),
+        Post("pro-same-label", "Grid Expansion", "Wind power energy transition climate protection grid expansion", "climate", "pro", "left"),
+        Post("pro-other-label", "Solar Expansion", "Wind power energy transition climate protection solar expansion", "climate", "pro", "right"),
+        Post("contra-same-label", "Cost of the Expansion", "Wind power energy transition climate protection cost expansion", "climate", "contra", "left"),
+    ]
+    feed = diversity_aware_feed(posts, seed_id="seed", limit=2, diversity_every=2)
+    assert feed[1]["post"].id == "pro-other-label"
+    assert feed[1]["is_diverse_pick"] is True
 
 
 def test_diversity_aware_feed_marks_a_political_only_difference_as_diverse():

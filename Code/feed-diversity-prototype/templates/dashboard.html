@@ -43,13 +43,18 @@
       </div>
     {% elif not authorized %}
       <div class="empty-state">
-        Missing/incorrect access token. Call with <code>?token=…</code> (see <code>.env</code>).
+        {% if logged_in %}
+          Missing/incorrect access token for the team view (all accounts). Call with <code>?token=…</code> (see <code>.env</code>) – your own row is visible without a token under
+          <a href="{{ url_for('dashboard') }}">Dashboard</a>.
+        {% else %}
+          Missing/incorrect access token. Call with <code>?token=…</code> (see <code>.env</code>).
+        {% endif %}
       </div>
     {% else %}
-      {% if can_show_mine %}
+      {% if can_show_mine or can_show_all %}
         <nav class="tabs dashboard-scope-toggle" aria-label="View">
-          <a href="{{ url_for('dashboard') }}" class="tab {{ 'active' if scope == 'me' }}">Just me</a>
-          <a href="{{ url_for('dashboard', scope='all') }}" class="tab {{ 'active' if scope == 'all' }}">All accounts</a>
+          {% if can_show_mine %}<a href="{{ url_for('dashboard') }}" class="tab {{ 'active' if scope == 'me' }}">Just me</a>{% endif %}
+          {% if can_show_all %}<a href="{{ url_for('dashboard', scope='all') }}" class="tab {{ 'active' if scope == 'all' }}">All accounts</a>{% endif %}
         </nav>
       {% endif %}
       <div class="feed">
@@ -99,6 +104,7 @@
                     <span class="compass-segment center {{ 'active' if account.political_label == 'center' }}"></span>
                     <span class="compass-segment right {{ 'active' if account.political_label == 'right' }}"></span>
                   </span>
+                  <span class="compass-letter {{ account.political_label or '' }}" aria-hidden="true">{{ political_letter(account.political_label) }}</span>
                   <span class="compass-label">{{ account.political_label or 'no signal' }}</span>
                 </span>
               </div>

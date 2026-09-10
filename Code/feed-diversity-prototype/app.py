@@ -193,6 +193,27 @@ def stance_label(topic: str, perspective: str) -> str:
 # Templates (feed chips, /dashboard) call this directly.
 app.jinja_env.globals["stance_label"] = stance_label
 
+
+# L/M/R rather than L/C/R: Felix asked for these exact three letters
+# (2026-09-10), read as the German "links/mitte/rechts" initials he had in
+# mind rather than the English "left/center/right" wording the UI switched
+# to the same night (see PR #140) - 'M' for 'center'/"middle" reads fine in
+# English too, so keeping the requested letters as-is instead of silently
+# swapping to 'C'.
+POLITICAL_LABEL_LETTERS = {"left": "L", "center": "M", "right": "R"}
+
+
+def political_letter(label: str | None) -> str:
+    """Compact one-letter form of a political_label ('L'/'M'/'R') for the
+    compass badge (templates/index.html, dashboard.html) - the full word is
+    still shown next to it, this is just a faster-to-scan marker on top,
+    requested 2026-09-10 now that ranking (see ranking.py) sorts by this
+    label first. '–' for unset/legacy posts without one."""
+    return POLITICAL_LABEL_LETTERS.get(label, "–")
+
+
+app.jinja_env.globals["political_letter"] = political_letter
+
 DEFAULT_DIVERSITY_EVERY = 3
 MIN_DIVERSITY_EVERY = 2
 MAX_DIVERSITY_EVERY = 6
@@ -602,17 +623,39 @@ def dashboard():
     the first thing every admin sees every time they only want their own
     feed-bias breakdown. Falls back to "all" if nobody's logged in, since
     there's no "own row" to show then.
+
+    Own-row access (?scope=me, or no scope while logged in) no longer needs
+    ADMIN_DASHBOARD_TOKEN at all - it's the account's own already-visible
+    data, not the cross-account comparison the token was written to gate
+    (see the "sensitive even for demo accounts" paragraph above, which is
+    about *other* accounts' derived leans). Every logged-in user hitting the
+    plain "Dashboard" nav link used to get bounced to "falscher
+    Zugangs-Token" before ever entering a token, which read as broken for
+    anyone who wasn't already an admin - Felix flagged this 2026-09-10.
+    ?scope=all (and the nobody-logged-in fallback, which has no "own row" to
+    fall back to) still require the token exactly as before.
     """
     admin_token = os.environ.get("ADMIN_DASHBOARD_TOKEN", "")
     configured = bool(admin_token)
     if configured and secrets.compare_digest(request.args.get("token", ""), admin_token):
         session["dashboard_authorized"] = True
-    authorized = configured and session.get("dashboard_authorized", False)
-    if not authorized:
-        return render_template("dashboard.html", authorized=False, configured=configured, accounts=[])
+    admin_authorized = configured and session.get("dashboard_authorized", False)
 
     current_user = _current_user()
     scope = "all" if request.args.get("scope") == "all" or not current_user else "me"
+    # `configured` still gates the bypass: an unset ADMIN_DASHBOARD_TOKEN
+    # disables the dashboard outright (see docstring), it must not become
+    # "open to any logged-in user" just because there's no token to check
+    # against.
+    authorized = admin_authorized or (configured and scope == "me" and current_user is not None)
+    if not authorized:
+        return render_template(
+            "dashboard.html",
+            authorized=False,
+            configured=configured,
+            accounts=[],
+            logged_in=bool(current_user),
+        )
     topics = known_topics()
 
     profiles = db.fetch_all_profiles()
@@ -646,6 +689,7 @@ def dashboard():
         known_topics=topics,
         scope=scope,
         can_show_mine=bool(current_user),
+        can_show_all=admin_authorized,
         token=admin_token,
     )
 
