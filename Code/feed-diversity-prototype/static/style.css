@@ -100,8 +100,10 @@ a {
 
 .topbar-inner {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
+  gap: 0.3rem 0.6rem;
   max-width: 640px;
   margin: 0 auto;
 }
@@ -576,9 +578,13 @@ a {
   margin: 0 auto;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
+  /* Two 1px crosshair lines, each sized to exactly 1px in one dimension and
+     centered - not the previous 50%-sized gradient boxes, which drew the
+     line at the box's own edge (25%/75% of the grid) instead of at the true
+     50% center, so the two lines never actually met. */
   background:
-    linear-gradient(var(--line) 1px, transparent 1px) center / 100% 50% no-repeat,
-    linear-gradient(90deg, var(--line) 1px, transparent 1px) center / 50% 100% no-repeat;
+    linear-gradient(var(--line), var(--line)) center / 100% 1px no-repeat,
+    linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat;
 }
 
 .compass-plot-dot {
@@ -679,7 +685,11 @@ a {
   font-size: 0.74rem;
   color: var(--faint);
   cursor: pointer;
-  padding: 0;
+  /* Padding + negative margin keeps the visible size/alignment the same
+     while growing the tappable area closer to the ~44px touch-target
+     guideline (Apple HIG/Android Material) instead of a text-height hitbox. */
+  padding: 0.5rem 0;
+  margin: -0.5rem 0;
 }
 
 .comments-list {
@@ -703,14 +713,15 @@ a {
 }
 
 .comment-delete {
-  margin-left: 0.5rem;
+  margin: -0.5rem 0 -0.5rem 0.5rem;
   border: none;
   background: none;
   font-family: var(--font-meta);
   font-size: 0.7rem;
   color: var(--contra);
   cursor: pointer;
-  padding: 0;
+  /* Same touch-target padding trick as .comments-toggle above. */
+  padding: 0.5rem 0;
 }
 
 .comment-form {
@@ -724,7 +735,8 @@ a {
   padding: 0.4rem 0.55rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
-  font-size: 0.85rem;
+  /* 16px minimum, same reasoning as .settings-row inputs above. */
+  font-size: 1rem;
   font-family: inherit;
   background: var(--surface);
 }
@@ -784,7 +796,9 @@ a {
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   background: var(--surface);
-  font-size: 0.88rem;
+  /* 16px minimum - anything smaller makes iOS Safari zoom the whole page
+     in on focus, which then has to be manually zoomed back out. */
+  font-size: 1rem;
   font-family: inherit;
   resize: vertical;
   color: var(--ink);
@@ -818,7 +832,10 @@ a {
   font-family: inherit;
   color: var(--muted);
   cursor: pointer;
-  padding: 0;
+  /* Padding + negative margin: bigger tap target without shifting layout,
+     same trick as .comments-toggle/.comment-delete above. */
+  padding: 0.5rem;
+  margin: -0.5rem;
 }
 
 .like-button.liked {
@@ -850,8 +867,16 @@ a {
 
 .mix-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem 0.75rem;
+}
+
+.mix-row input[type="range"] {
+  /* Without a basis, `flex: 1` can shrink the slider to near-zero once
+     .mix-value wraps onto the same line as a narrow leftover, making it
+     fiddly to grab on a touchscreen. */
+  flex: 1 1 10rem;
 }
 
 input[type="range"] {

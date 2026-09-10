@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Perspektiv - Feed Diversity Lab (Case 3 DTEW)</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
@@ -58,7 +59,7 @@
           <span><span class="score-label">Political (left/center/right):</span> <span class="score-value">{{ political_feed_score }}%</span> other camp</span>
         {% endif %}
       </p>
-      {% if preferred_perspective_by_topic or preferred_political_label %}
+      {% if preferred_perspective_by_topic or preferred_political_label or preferred_political_ratio %}
         <p class="bias-note">
           Based on your likes/comments so far (and, where you don't have any
           yet, your answer in the sign-up survey), your feed currently
@@ -66,7 +67,12 @@
           {% for topic, perspective in preferred_perspective_by_topic.items() %}
             <strong>{{ topic }}</strong>&rarr;<strong>{{ stance_label(topic, perspective) }}</strong>{{ ' (survey)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
           {% endfor %}
-          {% if preferred_political_label %}
+          {% if preferred_political_ratio %}
+            {{ ' - ' if preferred_perspective_by_topic }}your standard feed mixes political camps roughly in your own like ratio (most recent likes count more):
+            {% for label, share in preferred_political_ratio.items() %}
+              <strong>{{ label }}</strong> {{ (share * 100) | round | int }}%{{ ', ' if not loop.last }}
+            {% endfor %}
+          {% elif preferred_political_label %}
             {{ ' - ' if preferred_perspective_by_topic }}also the <strong>{{ preferred_political_label }}</strong> camp{{ ' (survey)' if onboarding_political_label_used }}
           {% endif %}
           - this reinforces itself per topic with every further like/comment in that direction.

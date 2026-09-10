@@ -106,12 +106,87 @@ def dominant_political_label(labels: list[str]) -> str | None:
     return leaders[0] if len(leaders) == 1 else None
 
 
+def political_label_ratio(
+    labels_in_order: list[str | None], recent_boost: float = 2.0, recent_window: int = 3
+) -> dict[str, float]:
+    """Weighted share of each political_label ('left'/'center'/'right') across
+    a chronological (oldest-first) like history - lets standard_feed() mix
+    the feed roughly proportionally to how one-sided an account's real
+    engagement is (e.g. a 60/40 like split shows up as a roughly 60/40 feed),
+    instead of dominant_political_label()'s all-or-nothing winner take-all
+    (one label ahead by a single like used to flip the entire feed to that
+    side - see git history/user feedback 2026-09-10).
+
+    The most recent `recent_window` *labeled* likes count `recent_boost`
+    times as much as older ones, so a recent change in taste shows up faster
+    than one stale early like would otherwise allow - position in the
+    filtered (labeled-only) sequence decides "recent", not raw list index,
+    matching how dominant_political_label() already ignores unlabeled
+    entries. Weighting is done by position, not by comparing label strings
+    directly, since Python interns short string literals - comparing by
+    identity would wrongly treat every occurrence of a repeated label as
+    "the same" recent entry.
+
+    Returns {} if there's no labeled entry at all (no signal yet) - callers
+    should fall back to seed-post-based ranking in that case, same as when
+    dominant_political_label() returns None.
+    """
+    labeled = [label for label in labels_in_order if label]
+    if not labeled:
+        return {}
+    recent_cutoff = len(labeled) - recent_window
+    weights: dict[str, float] = {}
+    total = 0.0
+    for index, label in enumerate(labeled):
+        weight = recent_boost if index >= recent_cutoff else 1.0
+        weights[label] = weights.get(label, 0.0) + weight
+        total += weight
+    return {label: weight / total for label, weight in weights.items()}
+
+
+def _largest_remainder_slots(ratio: dict[str, float], total_slots: int) -> dict[str, int]:
+    """Splits `total_slots` across ratio's keys proportionally to their
+    share, rounded so the counts always sum to exactly `total_slots` (plain
+    round() on each share independently can overshoot/undershoot by a slot
+    since the rounded parts don't necessarily add back up)."""
+    raw = {label: share * total_slots for label, share in ratio.items()}
+    slots = {label: int(value) for label, value in raw.items()}
+    remainder = total_slots - sum(slots.values())
+    by_leftover_fraction = sorted(ratio, key=lambda label: raw[label] - slots[label], reverse=True)
+    for label in by_leftover_fraction[:remainder]:
+        slots[label] += 1
+    return slots
+
+
+def _interleave_by_share(buckets: dict[str, list], slots: dict[str, int]) -> list:
+    """Round-robin merge of each label's bucket that spreads its `slots[label]`
+    picks roughly evenly across the whole output instead of one contiguous
+    block per label (all of it clustered by dict/candidate order) - purely
+    cosmetic ordering within what's otherwise still a similarity-sorted,
+    proportionally-sized selection per label. At each step, picks whichever
+    label has used up the smallest fraction of its own allotment so far, the
+    same idea as proportional fair-queueing schedulers.
+    """
+    result = []
+    taken = {label: 0 for label in slots}
+    total = sum(min(slots[label], len(buckets.get(label, []))) for label in slots)
+    for _ in range(total):
+        label = min(
+            (l for l in slots if taken[l] < slots[l] and taken[l] < len(buckets.get(l, []))),
+            key=lambda l: (taken[l] + 1) / slots[l] if slots[l] else 1.0,
+        )
+        result.append(buckets[label][taken[label]])
+        taken[label] += 1
+    return result
+
+
 def standard_feed(
     posts: list[Post],
     seed_id: str,
     limit: int = 8,
     preferred_perspective_by_topic: dict[str, str] | None = None,
     preferred_political_label: str | None = None,
+    preferred_political_ratio: dict[str, float] | None = None,
     exclude_ids: set[str] | None = None,
 ):
     """Bubble-reinforcing ranking, like a typical 'For You' feed: posts that
@@ -155,6 +230,13 @@ def standard_feed(
     falls back to perspective-only, exactly as it did before this axis
     existed.
 
+    `preferred_political_ratio` (see political_label_ratio()), when given,
+    takes priority over `preferred_political_label` and replaces the
+    winner-take-all split above with a proportional mix matching the
+    account's actual like ratio (e.g. 60% left / 40% right in produces
+    roughly that same split in the feed, not 100% left just because left
+    happens to be ahead). Empty/None keeps the old single-label behavior.
+
     `exclude_ids` drops those post ids from the candidate pool before
     ranking - used by app.py to rotate a plain page reload on to posts the
     viewer hasn't been shown yet (see index()). None/empty keeps every post,
@@ -187,7 +269,32 @@ def standard_feed(
             and post.political_label != bias_political
         )
 
-    if bias_political:
+    if preferred_political_ratio:
+        # Proportional mix instead of a single winner: e.g. a 60/40 real like
+        # split shows up as a roughly 60/40 feed, not a 100% one once "right"
+        # merely has one more like than "left" (dominant_political_label()'s
+        # all-or-nothing winner - see git history/user feedback 2026-09-10).
+        buckets: dict[str, list] = {}
+        for label in preferred_political_ratio:
+            bucket = _sorted_by_similarity(candidates, lambda p, label=label: p.political_label == label)
+            # Stable sort: within a label's bucket, a post that also matches
+            # the topic's perspective bias still ranks first - same
+            # secondary-axis tiebreak as the winner-take-all branch below.
+            bucket.sort(key=lambda pair: matches_perspective(pair[0]), reverse=True)
+            buckets[label] = bucket
+        slots = _largest_remainder_slots(preferred_political_ratio, limit)
+        ranked = _interleave_by_share(buckets, slots)
+        used_ids = {post.id for post, _ in ranked}
+        remaining = [c for c in candidates if c[0].id not in used_ids]
+        # Same fallback tiers as the winner-take-all branch, restricted to
+        # whatever's left after the proportional picks above (only reached
+        # if a label's bucket ran dry before using up its full slot count).
+        no_signal = _sorted_by_similarity(remaining, lambda p: p.political_label is None)
+        other_political = _sorted_by_similarity(
+            remaining, lambda p: p.political_label is not None and p.political_label not in preferred_political_ratio
+        )
+        ranked = ranked + no_signal + other_political
+    elif bias_political:
         same_both = _sorted_by_similarity(candidates, lambda p: matches_political(p) and matches_perspective(p))
         same_political_only = _sorted_by_similarity(
             candidates, lambda p: matches_political(p) and not matches_perspective(p)
