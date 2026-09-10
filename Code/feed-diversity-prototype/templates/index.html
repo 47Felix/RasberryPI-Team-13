@@ -53,7 +53,7 @@
         {% endif %}
       </p>
       <p class="score-row">
-        <span><span class="score-label">Perspective (pro/contra):</span> <span class="score-value">{{ feed_score }}%</span> opposing view</span>
+        <span><span class="score-label">Perspective:</span> <span class="score-value">{{ feed_score }}%</span> opposing view</span>
         {% if show_political_score %}
           <span><span class="score-label">Political (left/center/right):</span> <span class="score-value">{{ political_feed_score }}%</span> other camp</span>
         {% endif %}
@@ -106,7 +106,7 @@
               <div class="post-footer">
                 <div class="tags">
                   <span class="chip {{ item.post.perspective }}"
-                        title="{{ item.post.topic }} - position: {{ stance_label(item.post.topic, item.post.perspective) }} ({{ item.post.perspective }})">
+                        title="{{ item.post.topic }} - position: {{ stance_label(item.post.topic, item.post.perspective) }}">
                     <span class="chip-mark" aria-hidden="true">{{ '▲' if item.post.perspective == 'pro' else '▼' }}</span>
                     {{ item.post.topic }}
                     <span class="chip-stance">· {{ stance_label(item.post.topic, item.post.perspective) }}</span>
@@ -268,13 +268,13 @@
           <button type="button" class="suggest-button" onclick="suggestCategory()">Suggest</button>
           <span id="suggest-hint" class="suggest-hint"></span>
         </label>
-        <select name="topic" id="topic">
+        <select name="topic" id="topic" onchange="updatePerspectiveOptions()">
           {% for topic in known_topics %}
             <option value="{{ topic }}">{{ topic }}</option>
           {% endfor %}
         </select>
 
-        <label for="perspective">Perspective (pro/contra on the topic)</label>
+        <label for="perspective">Position on the topic</label>
         <select name="perspective" id="perspective">
           {% for perspective in known_perspectives %}
             <option value="{{ perspective }}">{{ perspective }}</option>
@@ -297,6 +297,22 @@
     var CURRENT_USER_ID = {{ current_user.id | tojson if current_user else 'null' }};
     var LATEST_POST_ID = {{ latest_post_id | tojson }};
     var NEW_POSTS_POLL_MS = 15000;
+    // topic -> {"pro": phrase, "contra": phrase}, same source stance_label()
+    // renders server-side (see known_topic_stances() in app.py) - swaps the
+    // "pro"/"contra" option text below for the concrete phrase once a topic
+    // is picked, so composing a post never shows the bare word either.
+    var TOPIC_STANCES = {{ topic_stances | tojson }};
+
+    function updatePerspectiveOptions() {
+      var topic = document.getElementById("topic").value;
+      var stances = TOPIC_STANCES[topic];
+      var options = document.getElementById("perspective").options;
+      for (var i = 0; i < options.length; i++) {
+        var phrase = stances && stances[options[i].value];
+        options[i].textContent = phrase ? phrase : options[i].value;
+      }
+    }
+    updatePerspectiveOptions();
 
     function pollForNewPosts() {
       fetch("/posts/latest-id")
@@ -457,6 +473,7 @@
             return;
           }
           document.getElementById("topic").value = data.topic;
+          updatePerspectiveOptions();
           hint.textContent = "Suggestion: " + data.topic;
         });
     }

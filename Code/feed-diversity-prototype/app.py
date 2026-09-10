@@ -10,7 +10,7 @@ import secrets
 from datetime import timedelta
 from functools import wraps
 
-from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, g, jsonify, redirect, render_template, request, session, url_for
 
 import db
 import fediverse
@@ -159,11 +159,20 @@ COMPASS_QUESTIONS = [
 # "pro"/"contra" ("climate: pro") says almost nothing without the post in
 # front of you, so every place that shows a stance (feed chip, /dashboard,
 # the per-post reason line) runs it through stance_label() for a short
-# phrase instead. Framing follows the seed posts / ONBOARDING_QUESTIONS:
-# "pro" = more ambition / more protection / more openness on the topic,
-# "contra" = more weight on cost, feasibility, the market or the status quo.
-# A topic with no entry (e.g. a category added later) just falls back to the
-# bare word.
+# phrase instead - the raw "pro"/"contra" word is never meant to be
+# user-facing on its own, see below. Framing follows the seed posts /
+# ONBOARDING_QUESTIONS: "pro" = more ambition / more protection / more
+# openness on the topic, "contra" = more weight on cost, feasibility, the
+# market or the status quo.
+#
+# Fallback only as of 2026-09-10 (Felix): the live source is now
+# categories.pro_label/contra_label in Supabase (see
+# 0008_topic_stance_labels.sql, db.fetch_topic_stances()), same "lives in
+# Supabase, editable without a code change" pattern known_topics() already
+# uses for the category list itself - a category added there gets real
+# phrasing without touching this file, instead of silently falling back to
+# the bare word. This dict now only covers the gap: Supabase unconfigured/
+# unreachable, or a category whose labels haven't been set yet.
 TOPIC_STANCES = {
     "climate":        {"pro": "more climate protection, faster",       "contra": "more weight on cost/affordability"},
     "transport":      {"pro": "priority for bikes, transit and rail",  "contra": "priority for cars / status quo"},
@@ -180,11 +189,26 @@ TOPIC_STANCES = {
 }
 
 
+def known_topic_stances() -> dict[str, dict[str, str]]:
+    """topic -> {"pro":.., "contra":..}, Supabase rows (db.fetch_topic_stances())
+    layered over the TOPIC_STANCES fallback above - a topic present in both
+    uses the Supabase phrasing, since that's the one a team member can
+    actually edit without a deploy. Cached on flask.g for the lifetime of
+    the request: stance_label() below is a Jinja global called once per
+    feed-item/chip, and without this it would re-fetch categories from
+    Supabase on every single call instead of once per page render."""
+    if "topic_stances" not in g:
+        merged = dict(TOPIC_STANCES)
+        merged.update(db.fetch_topic_stances())
+        g.topic_stances = merged
+    return g.topic_stances
+
+
 def stance_label(topic: str, perspective: str) -> str:
     """Short human phrase for a (topic, perspective) pair - "more climate
     protection, faster" instead of just "pro". Falls back to the bare
-    perspective for topics not in TOPIC_STANCES."""
-    entry = TOPIC_STANCES.get(topic)
+    perspective for topics with no entry anywhere (see known_topic_stances())."""
+    entry = known_topic_stances().get(topic)
     if entry and perspective in entry:
         return entry[perspective]
     return perspective
@@ -508,6 +532,7 @@ def index():
         known_topics=known_topics(),
         known_perspectives=KNOWN_PERSPECTIVES,
         known_political_labels=KNOWN_POLITICAL_LABELS,
+        topic_stances=known_topic_stances(),
         db_configured=db.is_configured(),
         current_user=current_user,
         fediverse_posts=fediverse_posts,
