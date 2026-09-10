@@ -253,9 +253,14 @@ VALID_MODES = {"standard", "diversity"}
 # fall off first once it's full.
 FEED_SIZE = 8
 SEEN_HISTORY_CAP = 60
-# Below this many unseen posts, skip the rotation filter and just show the
-# normal top slice - otherwise a tiny dataset would starve the feed.
-MIN_UNSEEN_FOR_ROTATION = 12
+# Once fewer than this many posts are still unseen, the whole catalogue has
+# effectively been shown - _rotation_plan() then clears the seen history and
+# starts a fresh rotation cycle instead of freezing the feed on the same top
+# slice every reload (the old behaviour just switched rotation off here, so a
+# small dataset would "stop refreshing" after a handful of reloads - Felix,
+# 2026-09-10). FEED_SIZE + 1 keeps at least one full feed plus a seed to
+# rotate through.
+MIN_UNSEEN_FOR_ROTATION = FEED_SIZE + 1
 
 # Feed order == recency, like a real timeline: the top post is "just now",
 # further down is "older". Purely cosmetic, no real clock involved.
@@ -416,6 +421,38 @@ def _feed_item_reason(item: dict, preferred_perspective_by_topic: dict, perspect
     return f"goes against {source_label}-based lean on {post.topic}: \"{bias_phrase}\""
 
 
+def _rotation_plan(
+    post_ids: list[str], seen_post_ids: list[str], explicit_seed: str | None
+) -> tuple[str, set[str] | None, list[str], bool]:
+    """Decide which post seeds the feed and which already-shown posts to hide
+    from the feed body, so a plain browser reload keeps surfacing posts the
+    viewer hasn't seen yet ("refresh" == new content).
+
+    `post_ids` is every post id, newest first. `seen_post_ids` is what recent
+    reloads already showed (kept in the session). `explicit_seed` pins the
+    feed (tab switch, settings, "seed post" dropdown) - no rotation then.
+
+    Returns `(seed_id, exclude_ids, seen_after, rotation_active)`. Once the
+    unseen pool is too small to fill a fresh feed the seen history is cleared
+    and a new cycle starts from the top, so reloading never freezes on the
+    same top slice (see MIN_UNSEEN_FOR_ROTATION).
+    """
+    post_id_set = set(post_ids)
+    seen = [pid for pid in seen_post_ids if pid in post_id_set]
+
+    if explicit_seed in post_id_set:
+        return explicit_seed, None, seen, False
+
+    unseen = [pid for pid in post_ids if pid not in seen]
+    if len(unseen) < MIN_UNSEEN_FOR_ROTATION:
+        seen = []
+        unseen = list(post_ids)
+
+    seed_id = unseen[0]
+    exclude_ids = {pid for pid in seen if pid != seed_id}
+    return seed_id, (exclude_ids or None), seen, bool(exclude_ids)
+
+
 @app.route("/")
 def index():
     posts, extra_meta = load_posts()
@@ -445,27 +482,16 @@ def index():
     )
 
     rotation_active = False
+    exclude_ids = None
     if posts:
         post_ids = [p.id for p in posts]
-        post_id_set = set(post_ids)
         # Post ids shown in recent reloads, kept in the session. A plain
-        # browser reload (no ?seed_id=) then rotates the feed on to posts the
-        # viewer hasn't seen yet, so "aktualisieren" brings up new content
-        # instead of the identical top slice every time.
-        seen_post_ids = [pid for pid in session.get("seen_post_ids", []) if pid in post_id_set]
-        explicit_seed = request.args.get("seed_id")
-        if explicit_seed in post_id_set:
-            # An explicit ?seed_id= (tab switch, settings, "Ausgangs-Post"
-            # dropdown) pins the feed - only a plain reload rotates.
-            seed_id = explicit_seed
-        else:
-            unseen = [pid for pid in post_ids if pid not in seen_post_ids]
-            if not unseen:
-                # Whole catalogue has been shown once - start the rotation
-                # over so reloading keeps surfacing "new" posts.
-                seen_post_ids = []
-                unseen = post_ids
-            seed_id = unseen[0]
+        # browser reload (no ?seed_id=) rotates the feed on to posts the
+        # viewer hasn't seen yet, so "refresh" brings up new content instead
+        # of the identical top slice every time - see _rotation_plan().
+        seed_id, exclude_ids, seen_post_ids, rotation_active = _rotation_plan(
+            post_ids, session.get("seen_post_ids", []), request.args.get("seed_id")
+        )
         seed_post = next(p for p in posts if p.id == seed_id)
         fediverse_topic = seed_post.topic
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
@@ -481,14 +507,6 @@ def index():
             onboarding_political_label_used = prefs["political_label_source"] == "onboarding"
         bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
         bias_political_label = preferred_political_label or seed_post.political_label
-
-        unseen_count = sum(1 for pid in post_ids if pid not in seen_post_ids)
-        # Only drop seen posts from the feed body on a plain reload, and only
-        # while there's still a healthy pool of unseen ones - a pinned seed
-        # (explicit ?seed_id=) keeps the body stable so the two modes stay
-        # comparable.
-        rotation_active = explicit_seed not in post_id_set and unseen_count >= MIN_UNSEEN_FOR_ROTATION
-        exclude_ids = set(seen_post_ids) if rotation_active else None
 
         if mode == "diversity":
             active_feed = diversity_aware_feed(
