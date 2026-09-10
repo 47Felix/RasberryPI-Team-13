@@ -342,8 +342,8 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
 
 def _feed_item_reason(item: dict, preferred_perspective_by_topic: dict, perspective_source: dict) -> str:
     """One short, human-readable sentence for why this specific post is in
-    the feed at this position - the per-post half of "was welcher User
-    wieso angezeigt bekommt", the account-wide half is /dashboard."""
+    the feed at this position - the per-post half of "which user sees what
+    and why", the account-wide half is /dashboard."""
     post = item["post"]
     bias = preferred_perspective_by_topic.get(post.topic)
     if item.get("is_diverse_pick"):
@@ -577,9 +577,9 @@ def logout():
 def dashboard():
     """Team-facing transparency view: every account side by side with its
     current per-topic bias and where each came from (real engagement vs.
-    onboarding survey) - the account-wide half of "was welcher User wieso
-    angezeigt bekommt", the per-post half is the "reason" tag on each feed
-    item in index() (see _feed_item_reason()).
+    onboarding survey) - the account-wide half of "which user sees what and
+    why", the per-post half is the "reason" tag on each feed item in
+    index() (see _feed_item_reason()).
 
     Gated behind ADMIN_DASHBOARD_TOKEN (.env) instead of being open to any
     visitor: this necessarily exposes every account's derived political

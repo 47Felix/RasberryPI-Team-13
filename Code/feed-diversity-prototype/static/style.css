@@ -424,7 +424,7 @@ a {
 }
 
 /* Sub-label inside a topic chip: spells out what "pro"/"contra" means for
-   that topic ("· mehr Klimaschutz, schneller"). Deliberately not uppercase
+   that topic ("· more climate protection, faster"). Deliberately not uppercase
    / not letter-spaced like the chip itself, so it reads as prose, and it
    inherits the chip's pro/contra colour. */
 .chip-stance {

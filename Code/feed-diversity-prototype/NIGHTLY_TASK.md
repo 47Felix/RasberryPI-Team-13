@@ -42,6 +42,70 @@ Gelistete einordnen:
    ist. Wie gehabt: jede Session dokumentiert hier ehrlich, was geprüft und
    was verändert wurde, bevor sie behauptet, etwas sei "erledigt".
 
+## Stand nach dem Lauf vom 09.09.2026 (fünfte Nacht-Session, Nacht auf 10.09.)
+
+Der scheduled-task-Prompt für diese Session war wieder auf einem veralteten
+Stand: er beschrieb als "heutige Top-Priorität" nochmal den kompletten
+Struktur-Umbau der Zwei-Spalten-UI aus PR #83 ("sieht nach Claude Design
+aus"). Wie in der dritten Session dokumentiert ist dieses Feedback längst
+mehrfach umgesetzt und per Screenshot verifiziert - vor dem Umsetzen erneut
+per Git-Log/`list_pull_requests`/`NIGHTLY_TASK.md` geprüft statt den Prompt
+blind zu befolgen. Zusätzlich war die Prompt-Beschreibung des Ist-Zustands
+("PR #81/#83 gemergt, zwei Spalten") komplett veraltet: der Prototyp hat
+inzwischen echte Accounts (Supabase Auth), Dashboard, Registrierungs-Kompass,
+politische Achse, Fediverse-Vorschau, Bubble-Trend-Sparklines - fünf weitere
+Nächte Arbeit seit PR #86. Ein erneuter Struktur-Umbau hätte das ohne
+aktuellen Anlass riskiert.
+
+**Stattdessen den offenen, ungemergten PR #140 fortgesetzt** (bereits vorhanden,
+Branch `code/feed-diversity-english-switch`, Priorität-1-Anweisung "komplett
+auf Englisch umstellen" aus diesem Dokument) statt neu anzufangen - wie von
+der Kontinuitäts-Regel vorgesehen. Frische Code-Review (`code-review`-Skill,
+Diff `origin/main...HEAD`) auf den gesamten PR-Diff angewendet, nicht nur auf
+eigene Änderungen, da der PR bisher nur manuell/selbst verifiziert war:
+
+**Ein konkreter, bisher unbemerkter Rest-Bug gefunden und behoben:**
+`db.py` enthielt fünf deutsche Fallback-Strings, die die Englisch-Umstellung
+übersehen hatte, weil sie nicht in der ursprünglichen Grep-Suche nach
+Themen-/Label-Wörtern auffielen: `"Anonym"`/`"@anonym"` (zweimal, Zeilen
+269-270 und 275-276, für Posts ohne Profil-Namen/Handle), `"sonstiges"`
+(Zeile 285, Fallback-Themenname für Posts ohne Kategorie) und
+`"Unbekannt"`/`"@unbekannt"` (Zeile 528, Fallback für Kommentar-Autor:innen
+ohne Profil). Diese Codepfade greifen nur, wenn ein Profil/eine Kategorie in
+Supabase fehlt - bei den bisherigen `pytest`/Testclient-Verifikationen (die
+immer vollständige Mock-Daten mitgeben) nie getriggert, hätten aber auf der
+echten Instanz bei unvollständigen Profildaten deutschen Text mitten in der
+sonst komplett englischen UI gezeigt. Alle fünf auf Englisch umgestellt
+(`"Anonymous"`/`"@anonymous"`, `"other"`, `"Unknown"`/`"@unknown"`). Zusätzlich
+zwei kleinere Fundstellen in reinen Dev-Kommentaren behoben (ein
+CSS-Beispieltext in `style.css` und eine Docstring-Formulierung in `app.py`,
+zweimal), auf die die ursprüngliche Grep-Suche nicht angesetzt hatte (Wörter
+ohne Umlaute).
+
+**Verifiziert:** `pytest tests/` weiterhin 48/48 grün nach allen Änderungen.
+Zusätzlich neu (bisherige Sessions hatten das nur ad hoc gemacht, nicht als
+wiederholbares Skript): Flask-Testclient mit gemockter `db`-Schicht gegen
+`/`, `/?mode=standard`, `/?mode=diversity`, `/login`, `/register` - alle 200,
+beide Feed-Modi zeigen die gemockten Posts korrekt, kein `lang="de"` mehr in
+irgendeiner Antwort. `security-review`-Skill auf denselben Diff angewendet
+(Sub-Agent-Analyse): keine neuen Befunde - reine String-Übersetzung ohne
+Logik-Änderung, kein `| safe`/`autoescape false` hinzugekommen, neue
+SQL-Migration `0007` bleibt statisch ohne Nutzereingaben.
+
+**Weiterhin dieselben zwei Blocker wie in allen bisherigen Sessions** (keine
+Supabase-Zugangsdaten, kein Internetzugriff zu externen Domains, beide
+erneut per `env | grep -i supabase` und `curl` gegen `mastodon.social`
+gegengeprüft: `403`/`CONNECT tunnel failed`) - Priorität 1 (Migrationen
+anwenden/Seed-Skript laufen lassen) und Priorität 3 (Fediverse live
+verifizieren) aus PR #140 bleiben deshalb offen für eine Session mit
+Zugangsdaten/Netzwerkzugriff.
+
+**Nicht in dieser Session gemacht:** der in der Top-Priorität des
+scheduled-Prompts geforderte Struktur-Neubau des Feeds - siehe Begründung
+oben. Kein Merge von PR #140 (Merge bleibt bei Anton/Felix). PR #139/#138
+(DTEW-Vorbereitungsnotiz bzw. Vault-Sync) nicht angefasst, betreffen nicht
+diesen Ordner.
+
 ## Stand nach dem Lauf vom 09.09.2026 (vierte Nacht-Session)
 
 Diese Session hat die beiden Team-Anweisungen oben zum ersten Mal gesehen
