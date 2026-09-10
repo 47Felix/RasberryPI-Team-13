@@ -85,11 +85,11 @@
                         {% set persp = account.perspective_by_topic[topic] %}
                         {% set src = 'survey' if account.perspective_source[topic] == 'onboarding' else 'likes/comments' %}
                         <span class="chip {{ persp }}"
-                              title="{{ topic }}: {{ stance_label(topic, persp) }} ({{ persp }}) - source: {{ src }}">
+                              title="{{ topic }}: {{ stance_label(topic, persp) }} - source: {{ src }}">
                           <span class="chip-mark" aria-hidden="true">{{ '▲' if persp == 'pro' else '▼' }}</span>
                           {{ topic }}
                           <span class="chip-stance">· {{ stance_label(topic, persp) }}</span>
-                          <span class="sr-only">, {{ persp }} ({{ stance_label(topic, persp) }}), source: {{ src }}</span>
+                          <span class="sr-only">, {{ stance_label(topic, persp) }}, source: {{ src }}</span>
                         </span>
                       {% else %}
                         <span class="chip" title="no signal">{{ topic }}: –</span>

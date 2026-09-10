@@ -209,6 +209,28 @@ def fetch_categories() -> list[str]:
     return [row["name"] for row in rows]
 
 
+def fetch_topic_stances() -> dict[str, dict[str, str]]:
+    """topic -> {"pro": phrase, "contra": phrase} from categories.pro_label/
+    contra_label (see 0008_topic_stance_labels.sql) - same "lives in
+    Supabase, editable without a code change" idea as fetch_categories(),
+    just for the phrase text stance_label() (app.py) shows instead of the
+    bare "pro"/"contra" word. A row missing either label is left out of the
+    dict entirely (not included with a None value) so app.py's TOPIC_STANCES
+    fallback can fill the gap per-topic. {} if Supabase isn't configured/
+    unreachable, in which case app.py falls back to TOPIC_STANCES alone."""
+    if not is_configured():
+        return {}
+    try:
+        rows = _get("categories", {"select": "name,pro_label,contra_label"})
+    except requests.RequestException:
+        return {}
+    stances = {}
+    for row in rows:
+        if row.get("pro_label") and row.get("contra_label"):
+            stances[row["name"]] = {"pro": row["pro_label"], "contra": row["contra_label"]}
+    return stances
+
+
 def fetch_all_profiles() -> list[dict]:
     """Every account, for the /dashboard feed-transparency view (see
     app.py) - includes the same onboarding columns as fetch_profile() so the
