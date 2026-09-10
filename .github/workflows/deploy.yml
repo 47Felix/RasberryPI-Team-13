@@ -1,0 +1,33 @@
+name: Deploy feed-diversity-prototype
+
+# Redeploys the live prototype on the team VM whenever Code/feed-diversity-prototype/
+# changes on main. Runs deploy/update.sh over SSH with a dedicated,
+# restricted deploy key (see deploy/README.md) - that key can only ever run
+# this one script on the VM (forced command in ~/.ssh/authorized_keys), it
+# has no general shell access even if the private key ever leaked.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Code/feed-diversity-prototype/**"
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run deploy/update.sh on the VM
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The deploy key's forced command ignores whatever we "ask" for and
+          # always runs deploy/update.sh on the VM - see ~/.ssh/authorized_keys
+          # there. No command needs to be passed here.
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes "$SSH_USER@$SSH_HOST"
