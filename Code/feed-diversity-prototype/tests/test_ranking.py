@@ -14,6 +14,7 @@ from ranking import (
     dominant_perspective,
     dominant_political_label,
     political_bubble_trend,
+    political_label_ratio,
     standard_feed,
     suggest_category,
 )
@@ -355,3 +356,77 @@ def test_political_bubble_trend_skips_unlabeled_likes():
     trend = political_bubble_trend(["left", None, "left"])
     assert [point["index"] for point in trend] == [1, 2]
     assert [point["dominant_share"] for point in trend] == [100.0, 100.0]
+
+
+def test_political_label_ratio_is_empty_without_signal():
+    assert political_label_ratio([]) == {}
+    assert political_label_ratio([None, None]) == {}
+
+
+def test_political_label_ratio_reflects_the_plain_split_with_no_recent_likes_to_boost():
+    # recent_window=0 disables the recency boost entirely, isolating the
+    # plain-count behavior: 3 left / 2 right should come out as 60/40, not
+    # collapsed into a single winner like dominant_political_label() would.
+    ratio = political_label_ratio(["left", "left", "left", "right", "right"], recent_window=0)
+    assert ratio["left"] == pytest.approx(0.6)
+    assert ratio["right"] == pytest.approx(0.4)
+
+
+def test_political_label_ratio_lets_recent_likes_outweigh_an_older_majority():
+    # 5 old "left" likes, then 3 recent "right" ones. Plain counting would
+    # call this 5/3 in favor of left, but the boosted recent window should
+    # tip the weighted ratio the other way - a recent change in taste should
+    # show up before it's technically the numeric majority.
+    labels = ["left"] * 5 + ["right"] * 3
+    ratio = political_label_ratio(labels, recent_boost=2.0, recent_window=3)
+    assert ratio["right"] > ratio["left"]
+
+
+def test_political_label_ratio_ignores_unlabeled_entries():
+    assert political_label_ratio([None, "left", None, "right"], recent_window=0) == {
+        "left": pytest.approx(0.5),
+        "right": pytest.approx(0.5),
+    }
+
+
+RATIO_POSTS = [Post("seed", "Wind Power Expansion", "Wind power energy transition climate protection expansion", "climate", "pro", "left")] + [
+    Post(f"left-{i}", f"Left Post {i}", "Wind power energy transition climate protection expansion topic", "climate", "pro", "left")
+    for i in range(6)
+] + [
+    Post(f"right-{i}", f"Right Post {i}", "Wind power energy transition climate protection expansion topic", "climate", "pro", "right")
+    for i in range(6)
+]
+
+
+def test_standard_feed_mixes_proportionally_instead_of_all_or_nothing():
+    # A 60/40 ratio must not collapse into a 100% "right" feed just because
+    # right happens to be ahead (the bug report this fixes: one extra like
+    # on one side used to flip the entire standard feed to that side).
+    feed = standard_feed(RATIO_POSTS, seed_id="seed", limit=10, preferred_political_ratio={"left": 0.6, "right": 0.4})
+    labels = [item["post"].political_label for item in feed]
+    assert labels.count("left") == 6
+    assert labels.count("right") == 4
+
+
+def test_standard_feed_ratio_slots_are_spread_out_not_clumped_in_one_block():
+    # The minority label shouldn't be pushed entirely to one end of the feed
+    # - _interleave_by_share should distribute its slots across the output.
+    feed = standard_feed(RATIO_POSTS, seed_id="seed", limit=10, preferred_political_ratio={"left": 0.6, "right": 0.4})
+    right_positions = [i for i, item in enumerate(feed) if item["post"].political_label == "right"]
+    assert min(right_positions) < 5
+    assert max(right_positions) >= 5
+
+
+def test_standard_feed_ratio_takes_priority_over_the_single_label_fallback():
+    # When both are given, the proportional ratio wins - preferred_political_label
+    # alone would produce a 100%-left feed here.
+    feed = standard_feed(
+        RATIO_POSTS,
+        seed_id="seed",
+        limit=10,
+        preferred_political_label="left",
+        preferred_political_ratio={"left": 0.5, "right": 0.5},
+    )
+    labels = [item["post"].political_label for item in feed]
+    assert labels.count("left") == 5
+    assert labels.count("right") == 5

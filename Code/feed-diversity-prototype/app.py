@@ -23,6 +23,7 @@ from ranking import (
     dominant_perspective_by_topic,
     dominant_political_label,
     political_bubble_trend,
+    political_label_ratio,
     standard_feed,
     suggest_category,
 )
@@ -347,6 +348,16 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
         engagement-wins-over-onboarding rule, but account-wide rather than
         per topic (see ranking.dominant_political_label()).
       political_label_source: "engagement"/"onboarding"/None.
+      political_label_ratio: {"left"/"center"/"right": share 0-1}, weighted
+        toward the account's most recent likes (see
+        ranking.political_label_ratio()) - used by standard_feed() to mix
+        the feed proportionally to the account's actual like ratio instead
+        of political_label's winner-take-all (one extra like on one side
+        used to flip the whole feed to that side, see user feedback
+        2026-09-10). Likes only, not comments - comments have no reliable
+        chronological order available here, and the recency weighting is the
+        whole point of this field. {} with no signal, same as
+        political_label_ratio() itself.
       liked_history: passed through (or freshly fetched) so callers that
         also need it for bubble_trend() don't fetch it twice.
     """
@@ -357,6 +368,7 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
     engagement_political_label = dominant_political_label(
         [item["political_label"] for item in liked_history] + db.fetch_commented_political_labels(user_id)
     )
+    engagement_political_ratio = political_label_ratio([item["political_label"] for item in liked_history])
 
     profile = db.fetch_profile(user_id) or {}
     onboarding_by_topic = profile.get("onboarding_perspective_by_topic") or {}
@@ -381,6 +393,7 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
         "perspective_source": perspective_source,
         "political_label": political_label,
         "political_label_source": political_label_source,
+        "political_label_ratio": engagement_political_ratio,
         "liked_history": liked_history,
     }
 
@@ -416,6 +429,7 @@ def index():
     political_feed_score = 0
     preferred_perspective_by_topic = {}
     preferred_political_label = None
+    preferred_political_ratio = {}
     show_political_score = False
     fediverse_posts = []
     fediverse_topic = None
@@ -462,6 +476,7 @@ def index():
             preferred_perspective_by_topic = prefs["perspective_by_topic"]
             perspective_source = prefs["perspective_source"]
             preferred_political_label = prefs["political_label"]
+            preferred_political_ratio = prefs["political_label_ratio"]
             onboarding_topics_used = {t for t, s in perspective_source.items() if s == "onboarding"}
             onboarding_political_label_used = prefs["political_label_source"] == "onboarding"
         bias_perspective = preferred_perspective_by_topic.get(seed_post.topic) or seed_post.perspective
@@ -492,6 +507,7 @@ def index():
                 limit=FEED_SIZE,
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
+                preferred_political_ratio=preferred_political_ratio,
                 exclude_ids=exclude_ids,
             )
 
@@ -539,6 +555,7 @@ def index():
         fediverse_topic=fediverse_topic,
         preferred_perspective_by_topic=preferred_perspective_by_topic,
         preferred_political_label=preferred_political_label,
+        preferred_political_ratio=preferred_political_ratio,
         onboarding_topics_used=onboarding_topics_used,
         onboarding_political_label_used=onboarding_political_label_used,
         bubble_trend_data=bubble_trend_data,
