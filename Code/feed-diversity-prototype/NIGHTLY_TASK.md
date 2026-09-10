@@ -95,6 +95,177 @@ verändert wurde, bevor sie behauptet, etwas sei "erledigt". Merge nach `main`
 bleibt bei Anton/Felix. Den Scheduled-Prompt nicht blind befolgen, wenn er
 veraltet wirkt - erst Git-Log / offene PRs / diese Datei prüfen.
 
+## Stand nach dem Lauf vom 10.09.2026 (sechste Nacht-Session)
+
+Der scheduled-task-Prompt für diese Session war wieder auf einem veralteten
+Stand (verlangte als Top-Priorität nochmal visuelles Redesign, politische
+Einordnung als neue Dimension, Beispiel-Accounts, Fediverse-Recherche,
+Marketing und Deployment-Vorbereitung - alles laut Git-Log/dieser Datei
+längst umgesetzt: Redesign mehrfach verifiziert, politisches Label mit
+proportionalem Ratio-Mix seit dem Team-Feedback vom 10.09. vormittags,
+`seed_demo_accounts.py` mit `DEMO_ACCOUNTS`, `fediverse.py` plus
+Machbarkeitsnotiz im Vault, `deploy/`-Ordner mit systemd/Caddy). Vor dem
+Umsetzen wie vorgesehen zuerst diese Datei geprüft: die Team-Anweisung vom
+10.09. (per Chat, direkt von Felix committet in `221c122`, nicht aus einer
+Nacht-Session) ersetzt die Top-Priorität explizit durch den
+Algorithmus/Refresh-Auftrag oben - dieser Datei-Anweisung Vorrang gegeben,
+wie sie selbst verlangt.
+
+**Priorität 1 (`ranking.py`) bearbeitet - konkreter Fund:** den echten
+~250-Posts-Datensatz (`seed_demo_accounts.py` + `seed_more_posts.py` +
+`seed_more_posts_v2.py`) offline durch `standard_feed()`/
+`diversity_aware_feed()` laufen lassen (kein Supabase nötig, reine
+Post-Objekte). Ergebnis bestätigt genau den in der Team-Anweisung
+vermuteten Verdacht: der bisherige, ungewichtete TF-IDF-Vektorisierer
+(Standardeinstellungen, keine Stoppwörter, keine n-Gramme, Titel nur
+einmal im Text) lieferte auf diesem Datensatz erkennbar schlechte
+Nachbarschaften - für den Seed-Post "Speed up wind power expansion"
+(climate) rangierte ein völlig themenfremder Migrations-Post ("Speed up
+procedures without cutting legal protection") vor anderen echten
+Klima-Posts, einzig weil beide zufällig das Wort "speed" teilen. Behoben in
+`ranking.py`: neue `_post_text()` (Titel doppelt gezählt) und
+`_tfidf_matrix()` (`stop_words="english"`, `ngram_range=(1, 2)`, mit
+Fallback auf einen ungetunten Vektorisierer, falls die Einstellungen bei
+nutzergeneriertem Text mal ein leeres Vokabular ergeben sollten - reiner
+Stoppwort-Text ist mit echten Post-Titeln unrealistisch, aber die Route
+darf trotzdem nie mit 500 abstürzen). Am selben Datensatz vorher/nachher
+gegengeprüft: die Top-3-Treffer für den Klima-Seed sind jetzt durchgehend
+Klima-Posts statt einer themenfremden Beimischung. Regressionstest
+`test_similarity_ranking_prefers_genuine_topic_match_over_a_shared_incidental_word`
+in `tests/test_ranking.py` hält das mit einem kleinen, eigenständigen
+Fixture fest (nicht abhängig von den Seed-Dateien, damit der Test nicht
+zerbricht, sobald jemand den Seed-Datensatz ändert).
+
+**Übrige Punkte aus der Prioritätenliste geprüft, nichts Weiteres zu
+reparieren gefunden** (jeweils am echten 250-Posts-Datensatz, nicht nur an
+den kleinen Test-Fixtures):
+- `standard_feed()`s proportionaler `preferred_political_ratio`-Mix: Tests
+  für Einzel-Like, exakte Gleichstände (`recent_window=0`-Tests) und
+  leerlaufende Buckets (Fallback-Tiers in `standard_feed()`) existieren
+  bereits und sind korrekt.
+- `diversity_every` wirkt auf dem großen Datensatz weiterhin sichtbar (jede
+  n-te Position tatsächlich ein `is_diverse_pick`), keine Verwässerung
+  durch die Datensatzgröße.
+- Cold-Start (kein Account, kein Like, kein `political_label` am Seed-Post
+  selbst) stürzt nicht ab und liefert eine sinnvolle Reihenfolge - neuer
+  Test `test_standard_feed_with_zero_signal_and_no_labels_does_not_crash_and_stays_sane`.
+- Determinismus: `standard_feed()`/`diversity_aware_feed()` liefern bei
+  gleicher Eingabe fünfmal hintereinander exakt dieselbe Reihenfolge (am
+  echten Datensatz manuell geprüft, zusätzlich zwei neue Regressionstests
+  `test_standard_feed_is_deterministic_across_repeated_calls`/
+  `test_diversity_aware_feed_is_deterministic_across_repeated_calls`, da
+  vorher kein Test das explizit festgehalten hatte).
+
+**Priorität 2 (`app.py`: `_rotation_plan()`/Refresh) geprüft, ein
+Test-Lücke geschlossen, sonst nichts zu reparieren gefunden:**
+- Kleiner-Datensatz-Fall (Gesamtkatalog kleiner als
+  `MIN_UNSEEN_FOR_ROTATION`) war bisher nicht direkt getestet - neuer Test
+  `test_small_catalogue_below_the_rotation_floor_disables_rotation_gracefully`
+  bestätigt: Rotation schaltet sauber ab (`rotation_active=False`,
+  `exclude_ids=None`) statt versehentlich den gesamten Kandidatenpool
+  auszuschließen.
+- Session-Cookie-Größe nachgerechnet (nicht nur geschätzt): ein signierter
+  Cookie mit `SEEN_HISTORY_CAP=60` UUIDs plus den übrigen Session-Keys
+  (user_id, display_name, handle) liegt bei ca. 2 KB - deutlich unter dem
+  4-KB-Browser-Limit, aktuell kein Handlungsbedarf.
+- "↑ New posts"-Banner (`templates/index.html`, `pollForNewPosts()`) nutzt
+  `window.location.reload()` - das erhält ein eventuell in der URL
+  stehendes `?seed_id=` automatisch, kann also nicht mit einem expliziten
+  Seed-Pin kollidieren. Kein Bug gefunden.
+- `tests/test_rotation.py` deckte den Großdatensatz-/Wrap-around-Fall
+  bereits ausführlich ab (`test_repeated_reloads_keep_advancing...`).
+
+**Priorität 3 (alles andere) - zwei kleinere Prüfungen, nichts Konkretes
+gefunden:**
+- Performance: `standard_feed()` auf dem vollen 250-Posts-Datensatz braucht
+  im Schnitt ~12 ms pro Aufruf (20 Wiederholungen gemessen) - kein Problem.
+- Toter Code: Sub-Agent-Durchlauf über `app.py`/`ranking.py`/`db.py`/
+  `fediverse.py` (jede Funktion/Konstante gegen Referenzen im ganzen
+  Ordner geprüft, inkl. Templates/Tests) - nichts Totes gefunden, jede
+  Funktion hat mindestens eine echte Aufrufstelle außerhalb ihrer eigenen
+  Definition.
+- `/dashboard` nutzt für die Account-Übersicht weiterhin nur
+  `political_label` (Sieger-Label), nicht `political_label_ratio` - anders
+  als der Standard-Feed, der seit heute Vormittag proportional mischt.
+  **Bewusst nicht umgesetzt:** eine UI-Änderung an `dashboard.html`, um
+  auch dort den Ratio anzuzeigen, wäre selbst eine Design-Entscheidung
+  (wie soll ein 60/40-Split in der Tabelle aussehen?) und war nicht
+  Teil des heutigen Auftrags - als Kandidat für einen künftigen Lauf oder
+  eine Team-Entscheidung hier vermerkt statt eigenmächtig entschieden.
+
+**Verifiziert:** `pytest tests/` 70/70 grün (65 vorher + 5 neue Tests).
+Zusätzlich Flask-Testclient mit dem kompletten echten 250-Posts-Datensatz
+(nicht nur gemockten Test-Fixtures) gegen `/`, `/?mode=diversity`,
+`/?mode=standard&mix=2`, `/login`, `/register` - alle 200, Feed rendert
+mit echten Posts. Diff ist rein auf `ranking.py`/Tests/README beschränkt
+(keine neuen Nutzereingabe-Pfade, kein `| safe`, keine SQL-Änderung) -
+kein separater `security-review`-Sub-Agent-Lauf für diese eng begrenzte
+Änderung als nötig eingeschätzt, manuell gegengeprüft.
+
+**Weiterhin dieselben zwei Blocker wie in allen bisherigen Sessions**
+(keine Supabase-Zugangsdaten, kein Internetzugriff zu externen Domains) -
+unverändert geprüft (`env | grep -i supabase` leer). Priorität 1
+(Migrationen/Seed-Skript gegen die echte Instanz) und die
+Fediverse-Live-Verifikation aus früheren Läufen bleiben deshalb weiterhin
+offen für eine Session mit Zugangsdaten/Netzwerkzugriff - siehe "Nächste
+Schritte" unten, unverändert gegenüber der letzten Fassung.
+
+**Kein STATUS: FERTIG-Block** - es gibt weiterhin sinnvolle offene Punkte
+(siehe "Nächste Schritte"), auch wenn diese Session die beiden
+Top-Prioritäten aus der Team-Anweisung ernsthaft bearbeitet und dabei
+einen echten, demo-relevanten Bug gefunden und behoben hat, statt nur
+oberflächlich "geprüft" zu haben.
+
+## Nächste Schritte (Priorität absteigend, ersetzt die Fassung der fünften Session weiter unten)
+
+1. **Sobald Supabase-Zugangsdaten verfügbar sind:** unverändert offen -
+   `0003_political_label.sql`, `0006_more_categories.sql`,
+   `0007_english_content.sql`, `0010_political_label_english.sql` in
+   Dateinamen-Reihenfolge anwenden (`apply_schema.py`), danach
+   `seed_demo_accounts.py` laufen lassen. Siehe README "Current status"
+   für den genauen Stand, welche Migrationen laut Git-Historie schon gegen
+   die echte Instanz gelaufen sind.
+2. **Fediverse-Anbindung live verifizieren**, sobald normaler
+   Internetzugriff verfügbar ist - weiterhin nie gegen die echte
+   Mastodon-API getestet.
+3. **Deployment tatsächlich durchführen** (`deploy/README.md`), sobald
+   jemand mit VM-Zugriff Zeit hat.
+4. **`/dashboard` optional um `political_label_ratio` erweitern** (siehe
+   oben, "bewusst nicht umgesetzt") - nur falls das Team eine
+   Ratio-Anzeige in der Account-Übersicht tatsächlich will, sonst
+   überflüssige UI-Änderung.
+5. Politisches Label als optionales statt Pflichtfeld - weiterhin keine
+   Team-Entscheidung bekannt, nicht umgesetzt.
+6. Sollte der Algorithmus-/Refresh-Auftrag aus der Team-Anweisung oben nach
+   dieser Session als "gründlich genug durchgesehen" gelten (diese Session
+   hat beide Punkte 1 und 2 der Anweisung mit konkretem Fund/Fix bzw.
+   sauberer Verifikation bearbeitet): der nächste Lauf kann sich stärker
+   auf Punkt 3 der Team-Anweisung ("alles andere") konzentrieren -
+   Accessibility/UX-Feinschliff, weitere Testabdeckung abseits von
+   Ranking/Rotation, README-Aktualität an anderen Stellen. Falls Felix/
+   Anton das anders sehen (z.B. noch mehr am Algorithmus vermuten): bitte
+   hier oder per Chat präzisieren, wonach genau noch gesucht werden soll -
+   ein weiterer "nochmal alles kritisch durchgehen"-Durchlauf ohne neuen
+   Anhaltspunkt würde vermutlich nur denselben Stand wie heute
+   reproduzieren.
+7. Falls es noch offene PRs für diesen Ordner gibt, wenn der nächste Lauf
+   startet: gegen den dann aktuellen main-Stand prüfen/rebasen, bevor
+   inhaltlich weitergearbeitet wird (Merge bleibt bei Anton/Felix). Stand
+   dieser Session: kein offener PR für `Code/feed-diversity-prototype/`
+   (per `list_pull_requests` geprüft, die beiden offenen PRs #150/#151
+   betreffen nur Vault-Notizen zum DTEW-Workshop).
+
+## Was in dieser Session NICHT versucht wurde (mit Absicht)
+
+- Keine Supabase-Migrationen/Seed-Skripte ohne Zugangsdaten ausgeführt
+- Kein Login/SSH/Deployment auf die Team-VM
+- Kein Merge irgendeines PRs nach `main`
+- Keine UI-Änderung an `dashboard.html` für die Ratio-Anzeige (siehe oben,
+  Design-Entscheidung statt klarer Bugfix)
+- Kein erneuter kompletter Struktur-Umbau des Feeds trotz Prompt-Forderung
+  ("visuelles Redesign") - laut Git-Log/dieser Datei mehrfach bereits
+  umgesetzt und verifiziert, siehe Begründung oben
+
 ## Stand nach dem Lauf vom 09.09.2026 (fünfte Nacht-Session, Nacht auf 10.09.)
 
 Der scheduled-task-Prompt für diese Session war wieder auf einem veralteten

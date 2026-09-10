@@ -103,6 +103,68 @@ def test_standard_feed_stays_within_seed_perspective_even_when_the_topic_runs_ou
     assert all(item["post"].perspective == "pro" for item in feed)
 
 
+def test_similarity_ranking_prefers_genuine_topic_match_over_a_shared_incidental_word():
+    # Regression test for a real quality bug found on the ~250-post seed
+    # dataset (2026-09-10, Felix's algorithm-review brief): a plain,
+    # unweighted TF-IDF vectorizer let an unrelated post that merely shares
+    # one word with the seed's title ("speed") outrank a post genuinely
+    # about the same subject, because a short post's few body words gave
+    # the title's on-topic vocabulary no extra weight. See _post_text()/
+    # _tfidf_matrix() in ranking.py for the fix (title counted twice,
+    # English stop words, word bigrams).
+    posts = [
+        Post(
+            "seed", "Speed up wind power expansion",
+            "Expanding wind power is central to the energy transition.", "climate", "pro",
+        ),
+        Post(
+            "on-topic", "Fast-track onshore wind approvals",
+            "Onshore wind projects need faster planning approval to expand capacity.", "climate", "pro",
+        ),
+        Post(
+            "off-topic-shared-word", "Time limits speed re-entry to work",
+            "Shorter benefit time limits speed re-entry to the labour market.", "welfare", "pro",
+        ),
+    ]
+    feed = standard_feed(posts, seed_id="seed", limit=2)
+    assert feed[0]["post"].id == "on-topic"
+
+
+def test_standard_feed_is_deterministic_across_repeated_calls():
+    # Live-demo requirement (see NIGHTLY_TASK.md): identical input must
+    # always produce the identical feed order, not depend on incidental
+    # dict/set iteration order.
+    runs = {
+        tuple(item["post"].id for item in standard_feed(POLITICAL_POSTS, seed_id="seed", limit=5))
+        for _ in range(5)
+    }
+    assert len(runs) == 1
+
+
+def test_diversity_aware_feed_is_deterministic_across_repeated_calls():
+    runs = {
+        tuple(
+            item["post"].id
+            for item in diversity_aware_feed(POLITICAL_POSTS, seed_id="seed", limit=5, diversity_every=2)
+        )
+        for _ in range(5)
+    }
+    assert len(runs) == 1
+
+
+def test_standard_feed_with_zero_signal_and_no_labels_does_not_crash_and_stays_sane():
+    # Full cold start: no preferred_* args, and the seed post itself
+    # predates political_label (None) - the feed must still render instead
+    # of erroring out, with the same-perspective post ranked first.
+    posts = [
+        Post("seed", "A Neutral Title", "Some neutral body text about a topic.", "climate", "pro", None),
+        Post("same", "Related Title", "Some related body text about the same topic.", "climate", "pro", None),
+        Post("counter", "Counter Title", "Some counter body text about the same topic.", "climate", "contra", None),
+    ]
+    feed = standard_feed(posts, seed_id="seed", limit=2)
+    assert feed[0]["post"].id == "same"
+
+
 def test_diversity_feed_injects_a_counter_perspective_post():
     feed = diversity_aware_feed(POSTS, seed_id="seed", limit=3, diversity_every=2)
     diverse_items = [item for item in feed if item["is_diverse_pick"]]

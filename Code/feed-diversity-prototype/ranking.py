@@ -24,9 +24,44 @@ class Post:
     political_label: str | None = None
 
 
+def _post_text(post: Post) -> str:
+    """Title counted twice, then the body. On the real ~250-post dataset a
+    plain "title + text" concatenation let posts that merely share one
+    common word (e.g. both mention "speed") outrank posts that are
+    genuinely about the same topic, because a short post's few body
+    sentences give the title's on-topic vocabulary no extra weight over
+    incidental body words. Verified empirically 2026-09-10 (Felix): for the
+    seed post "Speed up wind power expansion" (climate), an unweighted
+    vectorizer ranked an unrelated migration post ("Speed up procedures
+    without cutting legal protection") above other genuine climate posts;
+    doubling the title fixed the ordering without changing anything about
+    how candidates are filtered into tiers, only how they're sorted within
+    one - see standard_feed()/diversity_aware_feed()."""
+    return f"{post.title} {post.title} {post.text}"
+
+
+def _tfidf_matrix(texts: list[str]):
+    """Shared vectorizer config for both the feed similarity base and
+    suggest_category(). English stop words keep near-universal words like
+    "the"/"is" from adding noise dimensions, and word bigrams catch short
+    domain phrases ("speed limit", "carbon price") that unigrams alone
+    conflate with unrelated posts sharing just one of the two words -
+    same 2026-09-10 check as _post_text() above.
+
+    Falls back to a plain unigram vectorizer with no stop words if the
+    tuned settings leave nothing to vectorize (e.g. a corpus of only stop
+    words after removal) - doesn't happen with the seed dataset, but post
+    text is user-authored, so this is a real boundary case for a route
+    that must never 500 on a plain page load.
+    """
+    try:
+        return TfidfVectorizer(stop_words="english", ngram_range=(1, 2)).fit_transform(texts)
+    except ValueError:
+        return TfidfVectorizer().fit_transform(texts)
+
+
 def _similarities_to_seed(posts: list[Post], seed_id: str):
-    vectorizer = TfidfVectorizer()
-    matrix = vectorizer.fit_transform(f"{p.title} {p.text}" for p in posts)
+    matrix = _tfidf_matrix([_post_text(p) for p in posts])
     ids = [p.id for p in posts]
     seed_idx = ids.index(seed_id)
     sims = cosine_similarity(matrix[seed_idx], matrix).flatten()
@@ -437,9 +472,8 @@ def suggest_category(title: str, content: str, posts: list[Post]) -> str | None:
     """
     if not posts:
         return None
-    vectorizer = TfidfVectorizer()
-    corpus = [f"{p.title} {p.text}" for p in posts] + [f"{title} {content}"]
-    matrix = vectorizer.fit_transform(corpus)
+    corpus = [_post_text(p) for p in posts] + [_post_text(Post("", title, content, "", ""))]
+    matrix = _tfidf_matrix(corpus)
     similarities = cosine_similarity(matrix[-1], matrix[:-1]).flatten()
     return posts[similarities.argmax()].topic
 
