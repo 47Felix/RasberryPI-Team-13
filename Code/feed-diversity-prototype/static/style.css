@@ -482,6 +482,36 @@ a {
   color: var(--muted);
 }
 
+/* Quick-glance L/M/R badge next to the compass bar - the words "left" /
+   "center" / "right" stay too (compass-label above), this is just a
+   faster-to-scan marker now that ranking sorts by this label first. */
+.compass-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  font-family: var(--font-meta);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--surface);
+  background: var(--muted);
+  flex: none;
+}
+
+.compass-letter.left {
+  background: var(--left);
+}
+
+.compass-letter.center {
+  background: var(--center);
+}
+
+.compass-letter.right {
+  background: var(--right);
+}
+
 /* /dashboard "tilt bar": a stacked pro/contra/kein-Signal meter per account,
    one glance at how many known topics currently lean which way - the counts
    underneath are the real legend (never color alone), the bar itself is

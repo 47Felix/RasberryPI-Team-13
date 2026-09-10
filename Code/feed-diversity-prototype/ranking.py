@@ -138,18 +138,22 @@ def standard_feed(
     posts about "wind power expansion" score similarly regardless of stance), so
     ranking by similarity alone let counter-perspective and unrelated-topic
     posts crowd out a feed that's supposed to look one-sided. Perspective
-    match is the actual signal being demonstrated here, similarity only
-    orders within it.
+    match is a real signal being demonstrated here, similarity only orders
+    within it - but as of 2026-09-10 (Felix) it's the *secondary* one, see
+    below.
 
     `preferred_political_label`/the seed post's own `political_label`
-    ('left'/'center'/'right', see dominant_political_label()) works as a
-    second, independent, still account-wide axis on top of perspective
-    (political identity isn't topic-specific the way a pro/contra stance is)
-    - within the "same perspective" tier, posts that also match on political
-    label are ranked ahead of ones that only match on perspective. Posts
-    without a political_label (legacy rows, or bias_political being None
-    because there's no signal yet) simply skip this extra split and behave
-    exactly as before.
+    ('left'/'center'/'right', see dominant_political_label()) is the
+    primary sort axis: posts matching the account's political lean rank
+    ahead of posts that merely match its pro/contra stance on the topic,
+    which is now only a tiebreak within (and after) the political-label
+    split. Independent axis, still account-wide (political identity isn't
+    topic-specific the way a pro/contra stance is). Posts without a
+    political_label (legacy rows) never count as a match, same treatment as
+    diversity_score_for_political_label(). If there's no political signal at
+    all (bias_political is None - no engagement, no seed label), ranking
+    falls back to perspective-only, exactly as it did before this axis
+    existed.
 
     `exclude_ids` drops those post ids from the candidate pool before
     ranking - used by app.py to rotate a plain page reload on to posts the
@@ -173,28 +177,37 @@ def standard_feed(
         bias = topic_bias(post)
         return bias is not None and post.perspective == bias
 
-    def differs_perspective(post: Post) -> bool:
-        bias = topic_bias(post)
-        return bias is not None and post.perspective != bias
+    def matches_political(post: Post) -> bool:
+        return bias_political is not None and post.political_label == bias_political
+
+    def differs_political(post: Post) -> bool:
+        return (
+            bias_political is not None
+            and post.political_label is not None
+            and post.political_label != bias_political
+        )
 
     if bias_political:
-        same_both = _sorted_by_similarity(
-            candidates, lambda p: matches_perspective(p) and p.political_label == bias_political
+        same_both = _sorted_by_similarity(candidates, lambda p: matches_political(p) and matches_perspective(p))
+        same_political_only = _sorted_by_similarity(
+            candidates, lambda p: matches_political(p) and not matches_perspective(p)
         )
-        same_perspective_only = _sorted_by_similarity(
-            candidates, lambda p: matches_perspective(p) and p.political_label != bias_political
-        )
-        ranked = same_both + same_perspective_only
+        ranked = same_both + same_political_only
+        # Posts with no political_label at all (legacy rows) can't match or
+        # differ - rank them ahead of confirmed counter-label posts (nothing
+        # here actively opposes the account's lean) but behind anything that
+        # actually shares it, same "no signal" treatment topic_bias() below
+        # gets when there's no political axis to compare against at all.
+        no_signal = _sorted_by_similarity(candidates, lambda p: p.political_label is None)
+        other_political = _sorted_by_similarity(candidates, differs_political)
+        ranked = ranked + no_signal + other_political
     else:
+        # No political signal to sort by at all - fall back to the old
+        # perspective-only ranking (topic_bias() 3-way split).
         ranked = _sorted_by_similarity(candidates, matches_perspective)
-
-    # Topics with neither engagement history nor being the seed's own topic
-    # have no bias to match or differ from - rank them ahead of confirmed
-    # counter-perspective posts (nothing here actively opposes the account's
-    # stance) but behind anything that actually reinforces it.
-    no_signal = _sorted_by_similarity(candidates, lambda p: topic_bias(p) is None)
-    other_perspective = _sorted_by_similarity(candidates, differs_perspective)
-    ranked = ranked + no_signal + other_perspective
+        no_signal = _sorted_by_similarity(candidates, lambda p: topic_bias(p) is None)
+        other_perspective = _sorted_by_similarity(candidates, lambda p: not matches_perspective(p) and topic_bias(p) is not None)
+        ranked = ranked + no_signal + other_perspective
 
     return [
         {"post": post, "score": score, "is_diverse_pick": False}
@@ -227,15 +240,17 @@ def diversity_aware_feed(
 
     `preferred_political_label`/the seed post's `political_label` adds a
     second, independent, still account-wide axis the same way it does in
-    standard_feed() (political identity isn't topic-specific). When it's
-    set, same-topic candidates split into four groups instead of two
+    standard_feed() (political identity isn't topic-specific) - and as of
+    2026-09-10 (Felix) it's the *primary* one, perspective is the secondary
+    tiebreak, mirroring the swap in standard_feed(). When it's set,
+    same-topic candidates split into four groups instead of two
     (matches/differs on perspective, crossed with matches/differs on
     political label). A diversity slot prefers a post that differs on
-    *both* axes ("double counter") over one that only differs on
-    perspective, over one that only differs on the political label - the
-    strongest available counter-signal wins the slot. A post lacking a
-    political_label counts as "differs" from any bias_political value
-    (there's nothing to match), never as agreeing by default.
+    *both* axes ("double counter") over one that differs on the political
+    label only, over one that only differs on perspective - the strongest
+    available counter-signal on the primary axis wins the slot. A post
+    lacking a political_label counts as "differs" from any bias_political
+    value (there's nothing to match), never as agreeing by default.
 
     `exclude_ids` drops those post ids before ranking, same as in
     standard_feed() - lets a plain reload rotate on to unseen posts.
@@ -280,14 +295,19 @@ def diversity_aware_feed(
         is_diversity_slot = (len(feed) + 1) % diversity_every == 0
         picked = None
         if is_diversity_slot:
-            picked = next(double_counter, None) or next(diff_persp_same_pol, None) or next(same_persp_diff_pol, None)
+            # Primary axis (political label) differing wins the slot before
+            # a post that only differs on the secondary axis (perspective).
+            picked = next(double_counter, None) or next(same_persp_diff_pol, None) or next(diff_persp_same_pol, None)
 
         if picked is None:
+            # Same ordering principle for the non-diversity fallback: a
+            # primary-axis (political) match outranks a secondary-axis
+            # (perspective) match when both are on offer.
             picked = (
                 next(same_both, None)
                 or next(other_topics, None)
-                or next(same_persp_diff_pol, None)
                 or next(diff_persp_same_pol, None)
+                or next(same_persp_diff_pol, None)
                 or next(double_counter, None)
             )
 
