@@ -6,41 +6,94 @@ dem letzten Lauf offen ist und was der sinnvollste nächste Schritt wäre,
 damit die Arbeit von Nacht zu Nacht fortgesetzt wird statt bei null
 anzufangen.
 
-## Anweisungen vom Team (09.09.2026, per Chat) - höchste Priorität
+## Anweisungen vom Team (10.09.2026, per Chat, Felix) - höchste Priorität
 
-Zwei ausdrückliche Anweisungen, bitte vor allem andere in dieser Datei
-Gelistete einordnen:
+Diese Fassung ersetzt die bisherige Top-Priorität (Englisch-Umstellung). Der
+Englisch-Umbau gilt als erledigt (PR #140 gemergt, db.py-Fallbacks
+nachgezogen in `d53cf37`) - ab jetzt nur noch **beibehalten**: wenn dir neuer
+deutscher sichtbarer Text auffällt, mit übersetzen, aber es ist nicht mehr der
+Fokus.
 
-1. **Komplett auf Englisch umstellen - UI und Datenbank-Inhalte.** Publikum
-   vor Ort ist ausschließlich englischsprachig, Deutsch ist für die
-   Präsentation nicht mehr geeignet. Betrifft alles Sichtbare:
-   - `templates/*.html` (Labels, Buttons, Überschriften, Platzhalter-Texte,
-     Fehlermeldungen)
-   - Python-seitige Strings in `app.py` (z.B. `TIME_LABELS`, `TOPIC_STANCES`/
-     `stance_label()`, Fehlermeldungen in `register()`/`login()`)
-   - `ONBOARDING_QUESTIONS`/`COMPASS_QUESTIONS` in `app.py`
-   - Alle Supabase-Inhalte: `categories.name` (Themen-Namen wie "klima" ->
-     "climate"), alle `posts`-Zeilen (title/content), `authors`
-     (name/handle), bestehende `profiles`-Testaccounts falls sinnvoll
-   - `seed_demo_accounts.py`s `SEED_POSTS` (~100 Posts) - eher neu auf
-     Englisch schreiben/übersetzen als nur die Variablennamen
-   - README.md kann/sollte ebenfalls auf Englisch, ist aber nachrangig
-     gegenüber der eigentlichen App/den Daten (Team-interne Doku, kein
-     Besucher-Publikum)
+**Backup-Punkt vor dieser Neuausrichtung:** Tag
+`backup/pre-nightly-overhaul-2026-09-10` und Branch `backup/main-2026-09-10`,
+beide auf `main @ 99647db` (Refresh-Rotation-Fix PR #148 + 100 zusätzliche
+Seed-Posts PR #147). Falls eine Nacht-Session etwas verschlimmbessert, ist das
+der Stand, auf den zurückgesetzt werden kann.
 
-   Migrations-Ansatz: neue Kategorie-Namen bedeuten neue `category_id`s -
-   entweder bestehende `categories`-Zeilen per `UPDATE` umbenennen (Posts
-   bleiben verknüpft, einfacher) oder sauber neu migrieren. Vor dem
-   Umsetzen einmal beide Wege gegeneinander abwägen und die gewählte
-   Variante hier dokumentieren, nicht stillschweigend eine wählen.
+### Auftrag: Algorithmus + Refresh gründlich überarbeiten, dann alles andere
 
-2. **Allgemein weiter verbessern, so lange wie möglich.** Kein einzelner
-   Punkt mehr - einfach den Prototyp in jeder Nacht-Session weiter
-   verfeinern (UI-Politur, Bugs, Testabdeckung, README-Aktualität,
-   Accessibility, Performance, was auch immer beim genauen Hinsehen als
-   nächstes am meisten bringt), bis nichts Sinnvolles mehr zu verbessern
-   ist. Wie gehabt: jede Session dokumentiert hier ehrlich, was geprüft und
-   was verändert wurde, bevor sie behauptet, etwas sei "erledigt".
+Felix' Wortlaut sinngemäß: den Prototyp über die nächsten Nächte "nochmal
+komplett überarbeiten, ausbessern - Algorithmus, Refresh und alles". Konkret,
+in dieser Reihenfolge:
+
+1. **Ranking-Algorithmus (`ranking.py`)** - der Kern des Prototyps, hier den
+   meisten Wert schaffen. Mit frischem, kritischem Blick durchgehen, u.a.:
+   - Taugt die TF-IDF + Cosine-Similarity-Basis noch, oder produziert sie auf
+     dem inzwischen ~250-Posts-Datensatz erkennbar schlechte Nachbarschaften?
+     (Stopwords, n-grams, Titel-Gewichtung, `min_df`/`max_df` prüfen - aktuell
+     alles Default.)
+   - `standard_feed()`: der proportionale `preferred_political_ratio`-Mix
+     (Largest-Remainder + Interleave) - stimmen die Anteile im echten Feed mit
+     der Like-Historie überein? Randfälle: nur ein gelabelter Like, exakte
+     Gleichstände, ein Bucket läuft leer.
+   - `diversity_aware_feed()`: ist `diversity_every` (2-6) der richtige Hebel?
+     Wirkt die Diversity-Einstreuung auf dem größeren Datensatz noch, oder
+     verschwindet sie zwischen zu vielen ähnlichen Posts?
+   - Cold-Start: neuer Account ohne Likes, nur Onboarding-Antworten - oder
+     ganz ohne Signal. Sieht der Feed dann sinnvoll aus?
+   - Die Diversity-/Bubble-Scores: messen sie wirklich das, was die
+     DTEW-Kritikpunkte gemeint haben, oder sind sie zu grob?
+   - Determinismus/Stabilität: gleiche Eingabe -> gleiche Reihenfolge (wichtig
+     für die Live-Demo). Keine ungewollte Abhängigkeit von dict-Reihenfolge.
+
+2. **Feed-Refresh / Rotation (`app.py`: `_rotation_plan()` und Umfeld in
+   `index()`, `SEEN_HISTORY_CAP`, `MIN_UNSEEN_FOR_ROTATION`, Session-Cookie)** -
+   frisch in PR #148 gefixt (Rotation fror ein, sobald fast alles gesehen war),
+   aber weiter härten:
+   - Verhalten bei kleinem vs. großem Datensatz einmal komplett durchdenken
+     und mit Tests festnageln (`tests/test_rotation.py` erweitern).
+   - Session-Cookie-Größe: `SEEN_HISTORY_CAP = 60` UUIDs + andere
+     Session-Keys - wie groß wird der signierte Cookie real? Nah an den 4 KB
+     Browser-Limit? Ggf. auf Hashes/kürzere IDs oder serverseitige Ablage
+     ausweichen.
+   - Zusammenspiel mit dem "↑ New posts"-Polling und mit explizitem
+     `?seed_id=` (Tab-Wechsel, Dropdown) - darf sich nicht gegenseitig
+     aushebeln.
+   - Fühlt sich "Reload = neue Beiträge" auf dem echten Datensatz flüssig an,
+     oder springt der Feed unangenehm?
+
+3. **Danach alles andere** (wie schon bisher, kein Einzelpunkt vorgegeben):
+   Korrektheit/Bugs, Testabdeckung, UI-Politur, Accessibility, Performance,
+   README-Aktualität, tote Codepfade, Konsistenz zwischen `standard_feed`/
+   `diversity_aware_feed`/`/dashboard`. Was beim genauen Hinsehen als nächstes
+   am meisten bringt.
+
+Das passt bewusst zu den Dauer-Blockern der Nacht-Sessions (kein
+Supabase-Zugang, kein externes Netz): Algorithmus, Rotation, Tests, UI und
+Doku lassen sich alle offline mit `pytest` + Flask-Testclient verifizieren.
+Supabase-/Fediverse-abhängige Schritte bleiben wie gehabt für eine Session mit
+Zugangsdaten liegen (siehe "Nächste Schritte" weiter unten).
+
+### Wann aufhören
+
+Nicht künstlich Nacht für Nacht weiterlaufen, wenn nichts Echtes mehr
+ansteht. Sobald du **ehrlich** beurteilst, dass der Prototyp korrekt, sauber
+getestet, poliert und ohne sinnvoll verbleibende Verbesserung ist:
+
+- **STOPP.** In diese Datei ganz oben einen Block `## STATUS: FERTIG (<Datum>)`
+  schreiben, der begründet, warum nichts Sinnvolles mehr offen ist (was
+  geprüft wurde, welche Bereiche als "gut genug" gelten).
+- Keinen weiteren PR in dieser Nacht öffnen, keine kosmetischen Diffs
+  erzeugen, um beschäftigt auszusehen. Lieber ein kurzer "geprüft, nichts zu
+  tun"-Eintrag als erfundene Änderungen.
+- Bei echten Zweifeln, ob etwas noch eine Verbesserung ist: nicht machen,
+  stattdessen hier als "Kandidat, bewusst nicht umgesetzt, weil unsicher"
+  notieren, damit Felix/Anton entscheiden können.
+
+Wie gehabt: jede Session dokumentiert hier ehrlich, was geprüft und was
+verändert wurde, bevor sie behauptet, etwas sei "erledigt". Merge nach `main`
+bleibt bei Anton/Felix. Den Scheduled-Prompt nicht blind befolgen, wenn er
+veraltet wirkt - erst Git-Log / offene PRs / diese Datei prüfen.
 
 ## Stand nach dem Lauf vom 09.09.2026 (fünfte Nacht-Session, Nacht auf 10.09.)
 
