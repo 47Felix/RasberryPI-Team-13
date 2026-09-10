@@ -4,7 +4,7 @@
    warm paper background, serif nameplate, hairline rules instead of
    floating rounded cards/gradients, monospace bylines (press-agency style)
    for metadata. Two independent axes per post - perspective (pro/contra,
-   green/red) and political self-label (links/mitte/rechts) - each get
+   green/red) and political self-label (left/center/right) - each get
    their own colour language so they read as separate signals, not one
    generic "tag". No external fonts/CDNs — must run fully offline. */
 
@@ -25,23 +25,23 @@
   --contra: #a3311d;
   --contra-bg: #f5e6e0;
 
-  /* links/rechts intentionally not red/blue (see README "Politische
-     Einordnung") - violet/blue read as a neutral, non-partisan pair here.
-     Re-stepped 2026-09 from the original #5b4b8a/#7d6a3f/#2c6e83 trio, which
-     failed the dataviz-skill validator: mitte's brown and rechts' teal both
-     sat below the OKLCH chroma floor (read as near-gray), and links/rechts
-     sat at normal-vision Delta E 11.4 - below the 15 floor, hard to tell
-     apart even with full-color vision. This trio (validated against this
-     file's --pro/--contra too, all-pairs, against --surface) clears every
-     check: worst normal-vision pair Delta E 16.3, worst CVD (deutan) 6.2 -
-     inside the 6-8 legal-with-secondary-encoding band, already satisfied
-     here since every compass segment ships a text label alongside color. */
-  --links: #4a3aa7;
-  --links-bg: #ece7f5;
-  --mitte: var(--muted);
-  --mitte-bg: #efece3;
-  --rechts: #2a78d6;
-  --rechts-bg: #e2edf8;
+  /* left/right intentionally not red/blue (see README "Political labeling")
+     - violet/blue read as a neutral, non-partisan pair here. Re-stepped
+     2026-09 from the original #5b4b8a/#7d6a3f/#2c6e83 trio, which failed the
+     dataviz-skill validator: center's brown and right's teal both sat below
+     the OKLCH chroma floor (read as near-gray), and left/right sat at
+     normal-vision Delta E 11.4 - below the 15 floor, hard to tell apart even
+     with full-color vision. This trio (validated against this file's
+     --pro/--contra too, all-pairs, against --surface) clears every check:
+     worst normal-vision pair Delta E 16.3, worst CVD (deutan) 6.2 - inside
+     the 6-8 legal-with-secondary-encoding band, already satisfied here since
+     every compass segment ships a text label alongside color. */
+  --left: #4a3aa7;
+  --left-bg: #ece7f5;
+  --center: var(--muted);
+  --center-bg: #efece3;
+  --right: #2a78d6;
+  --right-bg: #e2edf8;
 
   --radius-sm: 3px;
   --radius-round: 999px;
@@ -424,7 +424,7 @@ a {
 }
 
 /* Sub-label inside a topic chip: spells out what "pro"/"contra" means for
-   that topic ("· mehr Klimaschutz, schneller"). Deliberately not uppercase
+   that topic ("· more climate protection, faster"). Deliberately not uppercase
    / not letter-spaced like the chip itself, so it reads as prose, and it
    inherits the chip's pro/contra colour. */
 .chip-stance {
@@ -458,16 +458,16 @@ a {
   opacity: 0.2;
 }
 
-.compass-segment.links {
-  background: var(--links);
+.compass-segment.left {
+  background: var(--left);
 }
 
-.compass-segment.mitte {
-  background: var(--mitte);
+.compass-segment.center {
+  background: var(--center);
 }
 
-.compass-segment.rechts {
-  background: var(--rechts);
+.compass-segment.right {
+  background: var(--right);
 }
 
 .compass-segment.active {
@@ -565,16 +565,16 @@ a {
   transition: left 0.25s ease, top 0.25s ease, background 0.25s ease;
 }
 
-.compass-plot-dot.links {
-  background: var(--links);
+.compass-plot-dot.left {
+  background: var(--left);
 }
 
-.compass-plot-dot.mitte {
-  background: var(--mitte);
+.compass-plot-dot.center {
+  background: var(--center);
 }
 
-.compass-plot-dot.rechts {
-  background: var(--rechts);
+.compass-plot-dot.right {
+  background: var(--right);
 }
 
 .compass-plot-axis-label {

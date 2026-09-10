@@ -1,47 +1,47 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Registrieren – Perspektiv</title>
+  <title>Register - Perspektiv</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">Perspektiv</span>
-      <span class="brand-tag">Registrieren</span>
+      <span class="brand-tag">Register</span>
     </div>
   </header>
 
   <main class="app">
     <div class="disclosure settings" open>
-      <p class="tab-caption" style="border:none;padding:0.75rem 0 0;">Neuen Account anlegen, um Posts zu erstellen, zu liken und zu kommentieren.</p>
+      <p class="tab-caption" style="border:none;padding:0.75rem 0 0;">Create a new account to post, like and comment.</p>
 
       {% if not auth_configured %}
-        <p class="tab-caption">Supabase-Auth ist nicht konfiguriert – Registrierung ist aktuell nicht möglich.</p>
+        <p class="tab-caption">Supabase Auth isn't configured - registration isn't possible right now.</p>
       {% endif %}
       {% if error %}
         <p class="tab-caption" style="color:var(--contra);">{{ error }}</p>
       {% endif %}
 
       <form class="settings-row" method="post">
-        <label for="display_name">Anzeigename</label>
+        <label for="display_name">Display name</label>
         <input type="text" name="display_name" id="display_name" required maxlength="60">
 
-        <label for="email">E-Mail</label>
+        <label for="email">Email</label>
         <input type="email" name="email" id="email" required>
 
-        <label for="password">Passwort</label>
+        <label for="password">Password</label>
         <input type="password" name="password" id="password" required minlength="6">
 
         <details class="disclosure" style="margin:0.9rem 0;">
-          <summary>Kurzer Einstiegs-Fragebogen (optional, jederzeit überspringbar)</summary>
+          <summary>Short sign-up survey (optional, skippable at any time)</summary>
           <p class="tab-caption" style="border:none;padding:0.5rem 0;">
-            Hilft dem Feed, pro Thema von Anfang an eine Richtung zu haben, statt
-            bei null zu starten – bei jedem Thema für sich, z.B. bei Verkehr "pro"
-            und bei Digital "contra" gleichzeitig. Wird pro Thema sofort von
-            deinen echten Likes/Kommentaren zu diesem Thema überschrieben, sobald
-            du welche machst. Nichts hier ist Pflicht.
+            Helps the feed have a direction per topic from the start instead of
+            starting from zero - for each topic on its own, e.g. "pro" on
+            transport and "contra" on digital at the same time. Gets
+            immediately overridden per topic by your real likes/comments on
+            that topic as soon as you make some. Nothing here is required.
           </p>
 
           {% for question in onboarding_questions %}
@@ -49,54 +49,54 @@
               <legend class="tab-caption" style="border:none;padding:0 0 0.3rem;">{{ question.topic }}</legend>
               <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="pro"> {{ question.pro }}</label>
               <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="contra"> {{ question.contra }}</label>
-              <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="" checked> Keine Angabe</label>
+              <label><input type="radio" name="onboarding_q_{{ question.topic }}" value="" checked> No answer</label>
             </fieldset>
           {% endfor %}
 
           <p class="tab-caption" style="border:none;padding:0.9rem 0 0.4rem;">
-            <strong>Perspektiven-Kompass</strong> – beantworte ein paar Aussagen,
-            der Punkt unten bewegt sich live mit. Daraus wird automatisch dein
-            politisches Lager (links/mitte/rechts) abgeleitet, genau wie oben
-            bei den Themen bleibt alles optional und wird von echten
-            Likes/Kommentaren sofort überschrieben.
+            <strong>Perspective compass</strong> - answer a few statements, the
+            dot below moves along live. Your political camp
+            (left/center/right) is derived from that automatically, just like
+            above with the topics everything here stays optional and gets
+            immediately overridden by real likes/comments.
           </p>
 
           {% for q in compass_questions %}
             <fieldset class="settings-row compass-question" data-axis="{{ q.axis }}" data-direction="{{ q.direction }}" style="border:none;padding:0;margin:0 0 0.6rem;">
               <legend class="tab-caption" style="border:none;padding:0 0 0.3rem;">{{ q.text }}</legend>
-              <label><input type="radio" name="compass_{{ q.id }}" value="2"> Stimme voll zu</label>
-              <label><input type="radio" name="compass_{{ q.id }}" value="1"> Stimme eher zu</label>
-              <label><input type="radio" name="compass_{{ q.id }}" value="0" checked> Neutral / keine Angabe</label>
-              <label><input type="radio" name="compass_{{ q.id }}" value="-1"> Stimme eher nicht zu</label>
-              <label><input type="radio" name="compass_{{ q.id }}" value="-2"> Stimme gar nicht zu</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="2"> Strongly agree</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="1"> Somewhat agree</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="0" checked> Neutral / no answer</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="-1"> Somewhat disagree</label>
+              <label><input type="radio" name="compass_{{ q.id }}" value="-2"> Strongly disagree</label>
             </fieldset>
           {% endfor %}
 
           <div class="compass-plot">
-            <span class="compass-plot-axis-label top">progressiv</span>
-            <span class="compass-plot-axis-label bottom">konservativ</span>
+            <span class="compass-plot-axis-label top">progressive</span>
+            <span class="compass-plot-axis-label bottom">conservative</span>
             <div class="compass-plot-grid">
-              <span class="compass-plot-axis-label left">links</span>
-              <span class="compass-plot-axis-label right">rechts</span>
+              <span class="compass-plot-axis-label left">left</span>
+              <span class="compass-plot-axis-label right">right</span>
               <div class="compass-plot-dot" id="compass-plot-dot"></div>
             </div>
           </div>
-          <p class="compass-plot-readout" id="compass-plot-readout">Noch keine Angabe</p>
+          <p class="compass-plot-readout" id="compass-plot-readout">No answer yet</p>
 
           <input type="hidden" name="onboarding_political_label" id="compass-result-label" value="">
         </details>
 
-        <button type="submit" {{ 'disabled' if not auth_configured }}>Account erstellen</button>
+        <button type="submit" {{ 'disabled' if not auth_configured }}>Create account</button>
       </form>
 
-      <p class="tab-caption">Schon registriert? <a href="{{ url_for('login') }}">Einloggen</a></p>
+      <p class="tab-caption">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
     </div>
   </main>
 
   <script>
     var COMPASS_QUESTIONS = {{ compass_questions | tojson }};
     // Out of a possible +-8 per axis (4 questions * max 2 each) - a
-    // 3.75-wide "mitte" band around zero (-1.5..1.5 out of a -8..8 range).
+    // 3.75-wide "center" band around zero (-1.5..1.5 out of a -8..8 range).
     var COMPASS_THRESHOLD = 1.5;
 
     function computeCompass() {
@@ -106,7 +106,7 @@
         if (!checked) return;
         var value = parseInt(checked.value, 10);
         if (value !== 0) interacted = true;
-        var sign = (q.direction === 'rechts' || q.direction === 'progressiv') ? 1 : -1;
+        var sign = (q.direction === 'right' || q.direction === 'progressive') ? 1 : -1;
         if (q.axis === 'economic') x += sign * value;
         else y += sign * value;
       });
@@ -125,16 +125,16 @@
       dot.style.left = leftPercent + '%';
       dot.style.top = topPercent + '%';
 
-      dot.classList.remove('links', 'mitte', 'rechts');
+      dot.classList.remove('left', 'center', 'right');
       if (!result.interacted) {
-        readout.textContent = 'Noch keine Angabe';
+        readout.textContent = 'No answer yet';
         hiddenInput.value = '';
         return;
       }
 
-      var label = result.x > COMPASS_THRESHOLD ? 'rechts' : result.x < -COMPASS_THRESHOLD ? 'links' : 'mitte';
+      var label = result.x > COMPASS_THRESHOLD ? 'right' : result.x < -COMPASS_THRESHOLD ? 'left' : 'center';
       dot.classList.add(label);
-      readout.textContent = 'Aktuell: ' + label;
+      readout.textContent = 'Currently: ' + label;
       hiddenInput.value = label;
     }
 

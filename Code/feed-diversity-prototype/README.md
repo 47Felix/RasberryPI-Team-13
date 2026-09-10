@@ -1,297 +1,287 @@
-# Feed-Diversity-Prototyp (DTEW Case 3)
+# Feed Diversity Prototype (DTEW Case 3)
 
-Kleine Testumgebung für die Kernfrage aus Case 3 (digi&demo e.V.): *"Design of
+Small test environment for the core question from Case 3 (digi&demo e.V.): *"Design of
 feeds / 'For You': instead of algorithms that can reinforce bubbles, and
 bubbles that form through self-selection, how can recommenders be designed to
 inform users in a way that is varied but still topically relevant?"*
 
-Kein selbst trainiertes ML-Modell (siehe [`ObsidianGehirn/10 DTEW
+No self-trained ML model (see [`ObsidianGehirn/10 DTEW
 Workshop/Team 13 - Digitale Demokratie.md`](../../ObsidianGehirn/10%20DTEW%20Workshop/Team%2013%20-%20Digitale%20Demokratie.md)),
-sondern klassisches Content-Based Filtering über TF-IDF + Cosine Similarity
+but classic content-based filtering via TF-IDF + cosine similarity
 (`scikit-learn`).
 
-## Zwei Feed-Modi (`ranking.py`)
+## Two feed modes (`ranking.py`)
 
-- **Standard** (`standard_feed`): gleiche Perspektive wie der Ausgangs-Post
-  zuerst (Ähnlichkeit nur zum Sortieren innerhalb dieser Gruppe) – bubble-
-  verstärkend, wie ein typischer "For You"-Feed. Reine globale Ähnlichkeit
-  reicht dafür nicht: auf dem kleinen Datensatz teilen Gegenperspektiven-Posts
-  zum selben Thema oft genauso viel Vokabular wie Posts mit gleicher
-  Perspektive, sodass eine reine Similarity-Rangfolge die Bubble gar nicht
-  zuverlässig zeigt (siehe Docstring in `ranking.py`).
-- **Diversity-aware** (`diversity_aware_feed`): gleiche Ähnlichkeitsbasis,
-  mischt aber alle `diversity_every` Plätze bewusst den ähnlichsten Post mit
-  **gleichem Thema, aber Gegenperspektive** ein und kennzeichnet ihn.
+- **Standard** (`standard_feed`): same perspective as the seed post first
+  (similarity only sorts within that group) - bubble-reinforcing, like a
+  typical "For You" feed. Pure global similarity isn't enough for that: on
+  the small dataset, counter-perspective posts on the same topic often share
+  just as much vocabulary as same-perspective posts, so a pure similarity
+  ranking doesn't reliably show the bubble at all (see the docstring in
+  `ranking.py`).
+- **Diversity-aware** (`diversity_aware_feed`): same similarity base, but
+  deliberately mixes in the most similar post with **the same topic but the
+  opposite perspective** every `diversity_every` slots and flags it.
 
-**Account-Bias aus der Like-Historie:** Für eingeloggte Accounts entscheidet
-nicht mehr nur der gerade gewählte Ausgangs-Post, welche Perspektive
-"gewinnt" – `ranking.dominant_perspective()` wertet aus, ob ein Account über
-alle bisherigen Likes hinweg mehrheitlich "pro" oder "contra" geliket hat,
-und dieser `preferred_perspective`-Wert übersteuert dann in `standard_feed`/
-`diversity_aware_feed` die Perspektive des Ausgangs-Posts. Ergebnis: der
-Standard-Feed verstärkt sich mit jedem weiteren Like in eine Richtung selbst
-und reinforct das *über jeden beliebigen Ausgangs-Post hinweg*, nicht nur
-für den einen, der gerade geliket wurde – ganz bewusst ohne eingebauten
-Ausweg (das ist der Punkt der Demo). Der Diversity-aware-Feed nutzt denselben
-`preferred_perspective`-Wert, um gezielt die *tatsächliche* Account-Neigung
-zu durchbrechen statt nur die des aktuellen Ausgangs-Posts. Ohne Account
-oder ohne bisherige Likes (bzw. bei einem exakten Unentschieden) bleibt das
-alte Verhalten erhalten: Perspektive des Ausgangs-Posts entscheidet.
+**Account bias from like history:** for logged-in accounts, it's no longer
+just the currently selected seed post that decides which perspective "wins" -
+`ranking.dominant_perspective()` evaluates whether an account has liked
+mostly "pro" or "contra" across its entire like history, and this
+`preferred_perspective` value then overrides the seed post's perspective in
+`standard_feed`/`diversity_aware_feed`. Result: the standard feed reinforces
+itself in one direction with every further like, and does so *across any
+seed post*, not just the one that was just liked - deliberately with no
+built-in escape (that's the point of the demo). The diversity-aware feed
+uses the same `preferred_perspective` value to deliberately break the
+*actual* account lean instead of just the current seed post's. Without an
+account or without prior likes (or on an exact tie), the old behavior
+remains: the seed post's own perspective decides.
 
-### Position statt nur „pro/contra"
+### A position, not just "pro/contra"
 
-Ein nacktes `pro`/`contra` (z.B. „klima: pro") sagt ohne den Post davor
-wenig aus. `app.TOPIC_STANCES` ordnet deshalb jedem Thema **eine feste
-Richtung** zu, was „pro" bzw. „contra" dort bedeuten (grob: „pro" = mehr
-Ambition / mehr Schutz / mehr Offenheit, „contra" = mehr Gewicht auf Kosten,
-Markt oder Status quo), und `stance_label(topic, perspective)` liefert die
-Kurzformel dazu – z.B. `klima/pro` → „mehr Klimaschutz, schneller",
-`wirtschaft/contra` → „Vorrang für Betriebe und Standort". Feed-Chips, das
-`/dashboard` und die „Warum siehst du das?"-Zeile am Post zeigen diese
-Formel statt nur das Wort. Themen ohne Eintrag (später hinzugefügte
-Kategorien) fallen auf das bloße `pro`/`contra` zurück.
+A bare `pro`/`contra` (e.g. "climate: pro") says little without the post in
+front of you. `app.TOPIC_STANCES` therefore assigns each topic **a fixed
+direction** for what "pro" and "contra" mean there (roughly: "pro" = more
+ambition / more protection / more openness, "contra" = more weight on cost,
+the market or the status quo), and `stance_label(topic, perspective)`
+returns the short phrase for it - e.g. `climate/pro` -> "more climate
+protection, faster", `economy/contra` -> "priority for businesses and the
+market". Feed chips, `/dashboard` and the "why are you seeing this?" line on
+each post show this phrase instead of just the word. Topics with no entry
+(categories added later) fall back to the bare `pro`/`contra`.
 
-Damit die Formel nicht lügt, ist `perspective` im Seed-Datensatz
-(`seed_demo_accounts.py`) **pro Thema als konsistente Achse** gepflegt: alle
-„pro"-Posts eines Themas lehnen in dieselbe Richtung, alle „contra"-Posts in
-die andere. Neue Posts bitte auf derselben Achse wie der Rest ihres Themas
-anlegen. Die Formulierungen sind bewusst knapp und als Lesehilfe gedacht,
-keine formale Definition – Einzelfälle können unscharf sein, der Post-Titel
-steht ja daneben.
+So the phrase doesn't lie, `perspective` in the seed dataset
+(`seed_demo_accounts.py`) is maintained **as a consistent axis per topic**:
+all "pro" posts on a topic lean the same direction, all "contra" posts the
+other way. Please add new posts on the same axis as the rest of their
+topic. The phrasing is deliberately short and meant as a reading aid, not a
+formal definition - individual cases can be fuzzy, and the post title sits
+right next to it anyway.
 
-## Politische Einordnung (links/mitte/rechts) als zweite, unabhängige Dimension
+## Political labeling (left/center/right) as a second, independent dimension
 
-Bisher gab es pro Post nur eine Achse: `perspective` (pro/contra zum jeweiligen
-Thema). Seit dieser Erweiterung gibt es eine zweite, davon unabhängige Achse:
-`political_label` (`links`/`mitte`/`rechts`), z.B. ein Post kann gleichzeitig
-"pro Windkraft-Ausbau" **und** "links" sein, oder "pro Windkraft-Ausbau"
-**und** "rechts" – die beiden Achsen sind orthogonal, nicht dasselbe Feld
-zweimal.
+Until this feature, each post only had one axis: `perspective` (pro/contra
+on its topic). Since this extension there is a second, independent axis:
+`political_label` (`left`/`center`/`right`), e.g. a post can be both "pro
+wind power expansion" **and** "left", or "pro wind power expansion" **and**
+"right" - the two axes are orthogonal, not the same field twice.
 
-**Bewusst kein automatischer Links/Rechts-Klassifikator.** Kritischer Punkt 6
-aus der DTEW-0209-Notiz (`ObsidianGehirn/10 DTEW Workshop/DTEW 0209 -
-Kritische Punkte, Problem Statements und Ideation.md`) benennt es direkt:
-"Wie misst/zeigt man 'Perspektivenvielfalt' überhaupt messbar, statt nur
-subjektiv zu behaupten das ist jetzt vielfältiger?" Eine zuverlässige
-automatische Erkennung der politischen Ausrichtung aus Freitext ist ein
-ungelöstes, in der NLP-Forschung selbst umstrittenes Problem (uneinheitliche
-Trainingsdaten, kulturell/zeitlich verschobene Definitionen von "links" und
-"rechts", hohe Fehlerquote gerade bei kurzen Posts ohne viel Kontext) und für
-ein zweiwöchiges Prototyping ohne ML-Vorerfahrung im Team nicht seriös
-machbar (dieselbe Einschätzung wie schon bei Lasses Fake-News-Detektor-
-Vorschlägen, siehe `ObsidianGehirn/10 DTEW Workshop/Team 13 - Digitale
-Demokratie.md`). Ein Prototyp, der intern behauptet "das hier ist objektiv
-links", würde eine Genauigkeit vortäuschen, die es nicht gibt, und selbst
-genau die Art von unsichtbarer, unüberprüfbarer algorithmischer Bewertung
-reproduzieren, die der ganze Case eigentlich sichtbar machen soll.
+**Deliberately no automatic left/right classifier.** Critical point 6 from
+the DTEW 0209 note (`ObsidianGehirn/10 DTEW Workshop/DTEW 0209 - Kritische
+Punkte, Problem Statements und Ideation.md`) names it directly: "How do you
+even measure/show 'perspective diversity' rather than just subjectively
+claiming it's more diverse now?" A reliable automatic detection of political
+orientation from free text is an unsolved problem that is itself contested
+in NLP research (inconsistent training data, culturally/temporally shifted
+definitions of "left" and "right", high error rates especially on short
+posts without much context) and isn't realistically achievable in a
+two-week prototyping sprint without prior ML experience on the team (the
+same assessment as for Lasse's fake-news-detector proposals, see
+`ObsidianGehirn/10 DTEW Workshop/Team 13 - Digitale Demokratie.md`). A
+prototype that internally claims "this is objectively left" would fake an
+accuracy it doesn't have, and would itself reproduce exactly the kind of
+invisible, unverifiable algorithmic judgment that this whole case is
+supposed to make visible.
 
-**Stattdessen: Nutzer wählen das Label selbst**, beim Post-Erstellen über ein
-Dropdown, genau wie Thema/Perspektive schon funktionieren (`templates/
-index.html`, Feld `political_label`, serverseitig gegen `KNOWN_POLITICAL_LABELS`
-geprüft in `app.py:create_post`). Kein automatisches Nachjustieren, kein
-verstecktes Scoring – die Autorin/der Autor sieht das eigene Label, alle
-anderen sehen es am Post (kleiner Drei-Segment-"Kompass"-Chip, angelehnt an
-Felix' Brain-Dump-Idee eines "Perspektiven-Kompass", siehe
-`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`).
+**Instead: users choose the label themselves**, when creating a post via a
+dropdown, exactly like topic/perspective already work (`templates/
+index.html`, field `political_label`, checked server-side against
+`KNOWN_POLITICAL_LABELS` in `app.py:create_post`). No automatic adjustment,
+no hidden scoring - the author sees their own label, everyone else sees it
+on the post (a small three-segment "compass" chip, inspired by Felix's
+brain-dump idea of a "perspective compass", see `ObsidianGehirn/07 Brain
+Dump/Felix - Brain Dump.md`).
 
-**Kritisch einzuordnen:** Ein selbst gewähltes Label ist kein objektives Maß
-für "tatsächliche" politische Position, sondern eine Selbstauskunft. Das
-bringt eigene Verzerrungen mit (Selbstauswahl, sozial erwünschte Antworten,
-manche Nutzer:innen labeln strategisch "mitte" um neutral zu wirken, andere
-übertreiben absichtlich), ist aber ehrlich darüber, was es ist: eine
-Zuschreibung durch die Autorin/den Autor, keine von der App behauptete
-Wahrheit. Für einen Demo-Prototyp, der zeigen soll *wie* ein Ranking eine
-gewählte Dimension verstärken oder aufbrechen kann, reicht dieses transparente
-Label – es ersetzt keine echte, validierte Politikwissenschafts-Metrik und
-soll das auch nicht vorgeben.
+**Critical framing:** a self-chosen label is not an objective measure of
+"actual" political position, it's self-reported. That brings its own biases
+(self-selection, social-desirability bias, some users strategically label
+"center" to seem neutral, others deliberately overstate), but it's honest
+about what it is: an attribution by the author, not a truth claimed by the
+app. For a demo prototype meant to show *how* a ranking can reinforce or
+break a chosen dimension, this transparent label is enough - it doesn't
+replace, and isn't meant to replace, a real, validated political-science
+metric.
 
-**Wie es ins Ranking einfließt (`ranking.py`):** `dominant_political_label()`
-ist das Pendant zu `dominant_perspective()` – Mehrheitslabel aus der gesamten
-Like-Historie eines Accounts (Feld `political_label` in `db.fetch_liked_history()`,
-bis zu dieser Nacht-Session eine eigene `fetch_liked_political_labels()`-Query,
-jetzt in dieselbe Query wie Thema/Perspektive gefaltet statt denselben
-Likes-Join zweimal abzufragen), `None` bei
-fehlendem Signal oder einem Unentschieden zwischen mehreren Labels. In
-`standard_feed()` sortiert das Ergebnis (`preferred_political_label` oder
-ersatzweise das Label des Ausgangs-Posts) *innerhalb* der bestehenden
-Perspektive-Tier zusätzlich danach, ob das politische Label übereinstimmt –
-ein Post, der sowohl Perspektive als auch politisches Lager trifft, steht vor
-einem, der nur die Perspektive trifft. In `diversity_aware_feed()` bevorzugt
-ein Diversity-Slot einen "doppelten Gegenpol" (weicht auf *beiden* Achsen ab)
-vor einem, der nur auf einer Achse abweicht. `diversity_score_for_political_label()`
-misst denselben Vielfalts-Anteil wie `diversity_score_for_perspective()`, nur
-für die politische Achse, und wird in der UI als zweiter Wert neben dem
-Perspektive-Score angezeigt (nur wenn ein politisches Signal überhaupt
-vorliegt). Beide Achsen sind unabhängig testbar (`tests/test_ranking.py`) und
-verändern das bestehende, bereits getestete Perspektive-Ranking nicht, wenn
-kein `political_label` gesetzt ist (Rückwärtskompatibilität zu Posts von vor
-dieser Erweiterung).
+**How it feeds into the ranking (`ranking.py`):** `dominant_political_label()`
+is the counterpart to `dominant_perspective()` - the majority label across
+an account's entire like history (field `political_label` in
+`db.fetch_liked_history()`, folded into the same query as topic/perspective
+rather than querying the same likes join twice), `None` on missing signal or
+a tie between multiple labels. In `standard_feed()`, the result
+(`preferred_political_label`, or the seed post's own label as a fallback)
+additionally sorts *within* the existing perspective tier by whether the
+political label matches - a post that matches both perspective and
+political camp ranks ahead of one that only matches the perspective. In
+`diversity_aware_feed()`, a diversity slot prefers a "double counter" (differs
+on *both* axes) over one that only differs on one axis.
+`diversity_score_for_political_label()` measures the same diversity share as
+`diversity_score_for_perspective()`, just for the political axis, and is
+shown in the UI as a second value next to the perspective score (only when a
+political signal actually exists). Both axes are independently testable
+(`tests/test_ranking.py`) and don't change the existing, already-tested
+perspective ranking when no `political_label` is set (backward compatible
+with posts from before this extension).
 
-**Bubble-Entwicklung über die Zeit, für beide Achsen:** `ranking.bubble_trend()`
-(Perspektive) hatte bisher keine Entsprechung für die politische Achse. Neu:
-`ranking.political_bubble_trend()`, gleiche Idee (Anteil der bisherigen Likes,
-der zur jeweils dann vorherrschenden Ausprägung gehört, für jeden Like einzeln
-berechnet statt nur als Momentaufnahme), aber für drei mögliche Werte
-(links/mitte/rechts) statt zwei, deshalb eine eigene Zähl-Logik statt einer
-Wiederverwendung der pro/contra-Zähler. Likes auf Posts ohne gesetztes Label
-(vor dieser Erweiterung geliket, oder Autor:in hat kein Label gewählt) werden
-übersprungen statt als eigener "kein Label"-Balken gezählt. In der UI
-(`templates/index.html`) erscheint dafür ein zweites Sparkline-Panel
-("Deine politische Bubble-Entwicklung") unterhalb des bestehenden, nur
-sichtbar ab zwei gelabelten Likes, farblich abgesetzt (`--accent-ink` statt
-`--brand`) damit die beiden Achsen nicht wie ein doppelt gerendertes Widget
-wirken.
+**Bubble development over time, for both axes:** `ranking.bubble_trend()`
+(perspective) previously had no counterpart for the political axis. New:
+`ranking.political_bubble_trend()`, same idea (the share of likes so far
+that belong to whichever value was dominant at that point, computed per like
+rather than only as a snapshot), but for three possible values
+(left/center/right) instead of two, so it needs its own counting logic
+rather than reusing the pro/contra counters. Likes on posts with no label set
+(liked before this extension existed, or the author didn't choose one) are
+skipped rather than counted as a separate "no label" bar. In the UI
+(`templates/index.html`) this shows up as a second sparkline panel ("Your
+political bubble over time") below the existing one, only visible once at
+least two labeled likes exist, color-distinguished (`--accent-ink` instead
+of `--brand`) so the two axes don't read as one duplicated widget.
 
-**Schema:** `supabase/migrations/0003_political_label.sql` fügt die Spalte
-`posts.political_label` hinzu (nullable, `check` auf die drei erlaubten
-Werte). Muss wie 0001/0002 einmalig angewendet werden (SQL-Editor oder
-`apply_schema.py`) – siehe "Aktueller Stand" unten, in dieser Nacht-Session
-ohne Supabase-Zugriff nicht möglich.
+**Schema:** `supabase/migrations/0003_political_label.sql` adds the
+`posts.political_label` column (nullable, `check` on the three allowed
+values). Needs to be applied once like 0001/0002 (SQL editor or
+`apply_schema.py`) - see "Current status" below, not possible in this
+overnight session without Supabase access.
 
-## UI: ein Feed, zwei Modi (`templates/index.html`, `static/style.css`)
+## UI: one feed, two modes (`templates/index.html`, `static/style.css`)
 
-Nach Nutzer-Feedback ("sieht nach Claude Design aus", "kein richtiger Feed")
-verworfen: zwei nebeneinanderliegende Spalten mit Segmented Control, Regler
-und Score-Pille. Stattdessen ein **einzelner, vertikal scrollender Feed** mit
-einem Tab-Umschalter oben ("Standard" / "Diversity-aware", `?mode=`), wie ein
-echter Wechsel zwischen zwei Feeds in einer App:
+Discarded after user feedback ("looks like Claude design", "not a real
+feed"): two side-by-side columns with a segmented control, a slider and a
+score pill. Instead, a **single, vertically scrolling feed** with a tab
+switcher on top ("Standard" / "Diversity-aware", `?mode=`), like an actual
+switch between two feeds in an app:
 
-> [!note] Zweites Redesign (Nacht-Session): weg vom generischen SaaS-Look
-> Dasselbe Feedback ("sieht nach Claude Design aus") kam ein zweites Mal, diesmal
-> zur konkreten Umsetzung (Indigo-Verlauf im Header, durchgehend abgerundete
-> weiße Karten, Sans-Serif-UI-Font) – typische Merkmale generischer
-> KI-Dashboard-Vorlagen. `static/style.css` wurde daraufhin komplett auf eine
-> redaktionelle Optik umgestellt statt nur Farben zu tauschen: warmer
-> Papier-Hintergrund statt kühles Grau, Serif-Schrift (Georgia) fürs
-> Nameplate/die Post-Titel statt Sans-Serif überall, eine Monospace-Schrift
-> für Metadaten (Handle, Zeit, Kategorien-Chips) im Stil einer
-> Nachrichtenagentur-Zeile, feine Trennlinien statt schwebender Karten mit
-> Schatten, kein Farbverlauf mehr im Header (flache Fläche mit Doppellinie wie
-> ein Zeitungs-Impressum). Die neue politische Einordnung (siehe oben) bekommt
-> einen eigenen kleinen Drei-Segment-"Kompass"-Chip statt eines weiteren
-> generischen Badges, als eigenständiges visuelles Element statt Farbe Nummer
-> drei im selben Chip-Stil.
+> [!note] Second redesign (overnight session): away from the generic SaaS look
+> The same feedback ("looks like Claude design") came a second time, this time
+> about the concrete implementation (indigo gradient in the header, uniformly
+> rounded white cards, sans-serif UI font) - typical traits of generic AI
+> dashboard templates. `static/style.css` was then rebuilt entirely around an
+> editorial look instead of just swapping colors: a warm paper background
+> instead of cool gray, a serif font (Georgia) for the nameplate/post titles
+> instead of sans-serif everywhere, a monospace font for metadata (handle,
+> time, category chips) in the style of a news-agency byline, hairline rules
+> instead of floating cards with shadows, no more gradient in the header (a
+> flat surface with a double rule like a newspaper masthead). The new
+> political labeling (see above) gets its own small three-segment "compass"
+> chip instead of another generic badge, as a distinct visual element instead
+> of a third color in the same chip style.
 
-- Jeder Post hat eine feed-typische Kopfzeile (Avatar, Account-Name, Handle,
-  relative Zeitangabe) statt einer nackten Karte – Avatar/Name/Handle kommen
-  vom echten Account, der den Post erstellt hat.
-- Gegenperspektiven-Posts bekommen ein kleines "Vorgeschlagen"-Label statt
-  eines auffälligen Badges.
-- Eigener Ausgangs-Post und Vielfalt-Regler sind in ein eingeklapptes
-  "Feed-Einstellungen"-Element verschoben – sichtbar/bedienbar, aber nicht
-  mehr die Hauptfläche der Seite.
+- Every post has a feed-typical header line (avatar, account name, handle,
+  relative time) instead of a bare card - avatar/name/handle come from the
+  real account that created the post.
+- Counter-perspective posts get a small "Suggested" label instead of an
+  attention-grabbing badge.
+- The own seed post and diversity slider have moved into a collapsed "feed
+  settings" element - visible/usable, but no longer the main surface of the
+  page.
 
-### Rotation beim Neuladen
+### Rotation on reload
 
-Damit „Aktualisieren“ tatsächlich **neue Beiträge** bringt und nicht immer
-denselben Top-Ausschnitt, merkt sich `index()` in der Flask-Session die
-zuletzt gezeigten Post-IDs (`seen_post_ids`, gedeckelt auf
-`SEEN_HISTORY_CAP`). Ein einfacher Browser-Reload (ohne `?seed_id=`) wählt
-dann den nächsten noch nicht gezeigten Post als Ausgangs-Post und blendet die
-bereits gezeigten aus dem Feed-Body aus (`ranking.standard_feed()`/
-`diversity_aware_feed()` haben dafür einen optionalen `exclude_ids`-Parameter,
-`None` = altes Verhalten). Ist der ganze Bestand einmal durch, fängt die
-Rotation von vorn an. Ein **explizit gesetzter** `?seed_id=` (Tab-Wechsel,
-„Feed-Einstellungen“, Ausgangs-Post-Dropdown) rotiert bewusst nicht – so
-bleiben die zwei Modi für denselben Post vergleichbar. Der bestehende
-„Neue Beiträge“-Poll (`/posts/latest-id`, alle ~15 s) bleibt zusätzlich für
-Posts, die *andere* währenddessen anlegen.
+So that "refresh" actually brings **new posts** instead of always the same
+top slice, `index()` remembers the most recently shown post ids in the Flask
+session (`seen_post_ids`, capped at `SEEN_HISTORY_CAP`). A plain browser
+reload (without `?seed_id=`) then picks the next not-yet-shown post as the
+seed post and hides the already-shown ones from the feed body
+(`ranking.standard_feed()`/`diversity_aware_feed()` have an optional
+`exclude_ids` parameter for this, `None` = old behavior). Once the whole
+catalog has been shown, the rotation starts over. An **explicitly set**
+`?seed_id=` (tab switch, "feed settings", seed post dropdown) deliberately
+doesn't rotate - so the two modes stay comparable for the same post. The
+existing "new posts" poll (`/posts/latest-id`, every ~15s) remains in
+addition, for posts *other people* create in the meantime.
 
-## Accounts, Posts, Kommentare, Likes & Kategorie-Vorschlag (Supabase)
+## Accounts, posts, comments, likes & category suggestion (Supabase)
 
-Es gibt keinen statischen/hartcodierten Datensatz mehr – **alle** Posts im
-Feed kommen aus Supabase, angelegt von echten Accounts über das Formular
-"Neuen Post erstellen". Ist Supabase nicht konfiguriert/erreichbar oder die
-Tabelle leer, zeigt die Seite einen expliziten leeren Zustand statt
-irgendwelcher Platzhalter-Inhalte. Storage ist Supabase Postgres, angebunden
-über `db.py`. Posten, Liken und Kommentieren setzt einen **echten,
-eingeloggten Account** voraus (Supabase Auth) – keine anonymen Interaktionen.
+There is no more static/hardcoded dataset - **all** posts in the feed come
+from Supabase, created by real accounts via the "create new post" form. If
+Supabase isn't configured/reachable or the table is empty, the page shows an
+explicit empty state instead of any placeholder content. Storage is Supabase
+Postgres, connected via `db.py`. Posting, liking and commenting requires a
+**real, logged-in account** (Supabase Auth) - no anonymous interactions.
 
 **Schema** (`supabase/migrations/0001_init.sql` + `0002_accounts.sql`):
-`categories`, `authors` (Fallback-Anzeige für Posts von vor der Account-
-Einführung, siehe unten), `posts` (verweist auf beide + `user_id`),
-`profiles` (Anzeigename/Handle/Avatar pro Supabase-Auth-Account, `id` =
-`auth.users.id`), `likes` (Post + `user_id`, Composite Key – ein Like pro
-Account und Post), `comments` (Post + `user_id` + Text, per Account
-löschbar). `posts.user_id`/`likes.user_id`/`comments.user_id` zeigen bewusst
-auf `profiles(id)` statt direkt auf `auth.users(id)` – nur so kann PostgREST
-die Relation beim Abfragen einbetten (`auth`-Schema ist für PostgREST nicht
-sichtbar). Bei der Einbettung von `profiles` in `fetch_posts()` ist zusätzlich
-der explizite Hint `profiles!posts_user_id_fkey` nötig, weil `likes` (mit
-`post_id` *und* `user_id`) aus PostgREST-Sicht eine zweite, many-to-many-
-Beziehung zwischen `posts` und `profiles` bildet – ohne den Hint verweigert
-PostgREST die Anfrage als mehrdeutig.
+`categories`, `authors` (fallback display for posts from before accounts
+existed, see below), `posts` (references both plus `user_id`), `profiles`
+(display name/handle/avatar per Supabase Auth account, `id` =
+`auth.users.id`), `likes` (post + `user_id`, composite key - one like per
+account and post), `comments` (post + `user_id` + text, deletable per
+account). `posts.user_id`/`likes.user_id`/`comments.user_id` deliberately
+point at `profiles(id)` rather than directly at `auth.users(id)` - that's
+the only way PostgREST can embed the relation when querying (the `auth`
+schema isn't visible to PostgREST). Embedding `profiles` in `fetch_posts()`
+additionally needs the explicit hint `profiles!posts_user_id_fkey`, because
+`likes` (with both `post_id` and `user_id`) forms a second, many-to-many
+relationship between `posts` and `profiles` from PostgREST's point of view -
+without the hint, PostgREST refuses the request as ambiguous.
 
-- `.env` (nicht committet, siehe `.gitignore`) mit `SUPABASE_URL`,
+- `.env` (not committed, see `.gitignore`) with `SUPABASE_URL`,
   `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`
-- Datentabellen laufen weiterhin ausschließlich über den **Secret Key**
-  (server-seitig, umgeht Row Level Security) – **neu:** Registrierung/Login
-  gehen direkt gegen die Supabase-Auth-API (GoTrue) mit dem
-  **Publishable Key**, das ist der dafür vorgesehene Key (siehe
-  `db.sign_up`/`db.sign_in`)
-- Alle Tabellen haben RLS aktiv **ohne** Policies – nur der Secret Key kommt
-  an die Daten-Tabellen ran, direkter Zugriff über den Publishable Key ist
-  dort absichtlich blockiert
-- Im Supabase-Dashboard unter *Authentication → Providers → Email* die
-  Option **"Confirm email" deaktivieren** – sonst kann sich niemand direkt
-  nach der Registrierung einloggen, weil erst ein Bestätigungslink in einer
-  (in diesem Setup nicht konfigurierten) E-Mail geklickt werden müsste
-- Tabellen/Migrationen einmalig anlegen: SQL aus
-  `supabase/migrations/*.sql` der Reihe nach im Supabase Dashboard unter
-  *SQL Editor* ausführen, **oder** `apply_schema.py` laufen lassen (ohne
-  Argument wendet es automatisch alle Migrationen in Dateinamen-Reihenfolge
-  an; braucht `SUPABASE_MANAGEMENT_TOKEN`, ein Account-weites Personal
-  Access Token aus den Supabase-Kontoeinstellungen – direkter Postgres-Port
-  5432 ist aus manchen Sandbox-Umgebungen nicht erreichbar, das Skript geht
-  deshalb über die Management-API per HTTPS)
-- Likes sind an `(post_id, user_id)` gebunden (durch `0002_accounts.sql`
-  bereits umgestellt, angewendet gegen die echte Instanz). Posts von vor der
-  Account-Einführung ohne `user_id` zeigen weiterhin den fiktiven
-  `authors`-Eintrag als Autor, neue Posts zeigen den echten Account
-- Fällt Supabase aus/ist nicht konfiguriert oder sind noch keine Posts
-  angelegt, zeigt die Seite einen leeren Zustand ("Keine Posts gefunden")
-  statt eines Fehlers oder erfundener Inhalte
+- Data tables still run exclusively through the **secret key** (server-side,
+  bypasses row level security) - **new:** registration/login go directly
+  against the Supabase Auth API (GoTrue) with the **publishable key**, which
+  is the key meant for that (see `db.sign_up`/`db.sign_in`)
+- All tables have RLS enabled **without** policies - only the secret key can
+  reach the data tables, direct access via the publishable key is
+  deliberately blocked there
+- In the Supabase dashboard under *Authentication -> Providers -> Email*,
+  disable the **"Confirm email"** option - otherwise nobody can log in right
+  after registering, because a confirmation link would first have to be
+  clicked in an email (not configured in this setup)
+- Create tables/migrations once: run the SQL from
+  `supabase/migrations/*.sql` in order in the Supabase dashboard under *SQL
+  Editor*, **or** run `apply_schema.py` (with no argument it automatically
+  applies every migration in filename order; needs
+  `SUPABASE_MANAGEMENT_TOKEN`, an account-wide personal access token from
+  the Supabase account settings - direct Postgres port 5432 isn't reachable
+  from some sandbox environments, so the script goes through the management
+  API over HTTPS instead)
+- Likes are keyed on `(post_id, user_id)` (already switched over by
+  `0002_accounts.sql`, applied against the real instance). Posts from before
+  accounts existed, with no `user_id`, still show the fictional `authors`
+  entry as the author, new posts show the real account
+- If Supabase is down/not configured, or no posts have been created yet, the
+  page shows an empty state ("No posts found") instead of an error or made-up
+  content
 
-**Accounts:** `/register` (E-Mail, Passwort, Anzeigename) legt einen
-Supabase-Auth-Account plus `profiles`-Zeile an (Handle wird aus dem
-Anzeigenamen abgeleitet, bei Kollision mit Zahlensuffix, siehe
-`db.create_unique_profile`). `/login`/`/logout` verwalten die Session
-(Flask-Session-Cookie speichert nur `user_id`/Anzeigename/Handle, nicht das
-Passwort). Ohne Account: Feed lesen geht weiterhin, Posten/Liken/
-Kommentieren verlangt Login (Redirect zu `/login`, bei den fetch()-Aktionen
-über einen 401).
+**Accounts:** `/register` (email, password, display name) creates a Supabase
+Auth account plus a `profiles` row (the handle is derived from the display
+name, with a numeric suffix on collision, see `db.create_unique_profile`).
+`/login`/`/logout` manage the session (the Flask session cookie only stores
+`user_id`/display name/handle, never the password). Without an account:
+reading the feed still works, posting/liking/commenting requires login
+(redirect to `/login`, a 401 for the fetch()-driven actions).
 
-**Kommentare:** pro Post über "💬 N Kommentare" aufklappbar (lädt per
-`GET /posts/<id>/comments`), neuer Kommentar via Formular
-(`POST /posts/<id>/comments`, JSON, verlangt Login). Eigene Kommentare
-lassen sich über einen "Löschen"-Link wieder entfernen
-(`DELETE /comments/<id>`) – die Berechtigung wird serverseitig geprüft
-(`db.delete_comment` filtert zusätzlich auf `user_id`), nicht nur durch das
-Verstecken des Buttons in der UI.
+**Comments:** expandable per post via "💬 N comments" (loads via
+`GET /posts/<id>/comments`), a new comment via a form
+(`POST /posts/<id>/comments`, JSON, requires login). Your own comments can be
+removed again via a "Delete" link (`DELETE /comments/<id>`) - the permission
+is checked server-side (`db.delete_comment` additionally filters on
+`user_id`), not just by hiding the button in the UI.
 
-**Kategorie-Vorschlag:** `ranking.suggest_category()` (reine, netzwerkfreie
-Funktion, per Unit-Test abgedeckt) vergleicht Titel+Text des Entwurfs per
-TF-IDF gegen alle vorhandenen Posts und schlägt das Thema des ähnlichsten
-Posts vor. Im Formular per "Vorschlagen"-Button (`POST /posts/suggest-category`)
-angebunden, überschreibt aber nichts automatisch – Dropdown bleibt änderbar.
+**Category suggestion:** `ranking.suggest_category()` (a pure, network-free
+function, covered by a unit test) compares the draft's title+text via TF-IDF
+against all existing posts and suggests the topic of the most similar post.
+Wired up in the form via a "Suggest" button
+(`POST /posts/suggest-category`), but doesn't overwrite anything
+automatically - the dropdown stays editable.
 
-**Themen-Liste ist live, nicht hartkodiert:** `app.py:known_topics()` liest
-alle Themen aus der `categories`-Tabelle (`db.fetch_categories()`). Eine
-neue Zeile dort (z.B. per Supabase SQL-Editor) taucht beim nächsten Request
-automatisch überall auf – Post-Formular-Dropdown, `/dashboard`-Chips und die
-Validierung beim Post-Erstellen –, ohne Code-Änderung. Nur falls Supabase
-nicht konfiguriert/erreichbar ist, fällt das auf die hartkodierte
-`DEFAULT_TOPICS`-Liste zurück (Demo-Modus mit dem statischen Datensatz). Der
-Einstiegs-Fragebogen (`ONBOARDING_QUESTIONS`) bleibt bewusst manuell
-kuratiert, weil jede Frage eine eigens formulierte pro/contra-Aussage
-braucht – neue Themen ohne eigene Frage werden im Fragebogen einfach
-ausgelassen (Fragebogen ist ohnehin optional, siehe oben).
+**The topic list is live, not hardcoded:** `app.py:known_topics()` reads all
+topics from the `categories` table (`db.fetch_categories()`). A new row
+there (e.g. via the Supabase SQL editor) shows up everywhere on the next
+request - the post form dropdown, `/dashboard` chips and validation when
+creating a post - with no code change. Only if Supabase isn't
+configured/reachable does it fall back to the hardcoded `DEFAULT_TOPICS`
+list (demo mode with the static dataset). The sign-up survey
+(`ONBOARDING_QUESTIONS`) stays deliberately manually curated, because every
+question needs its own hand-written pro/contra statement - new topics
+without their own question are simply left out of the survey (the survey is
+optional anyway, see above).
 
-**Likes:** Toggle pro Account (`(post_id, user_id)` in der DB, verlangt
-Login). Fließt seit `dominant_perspective()`/`dominant_political_label()`
-(siehe oben) direkt ins Ranking ein, nicht mehr nur reine Anzeige.
+**Likes:** toggled per account (`(post_id, user_id)` in the DB, requires
+login). Since `dominant_perspective()`/`dominant_political_label()` (see
+above), likes feed directly into the ranking, no longer just a plain
+display count.
 
-## Lokal starten
+## Running locally
 
 ```bash
 cd Code/feed-diversity-prototype
@@ -301,31 +291,31 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Dann `http://localhost:5050` öffnen.
+Then open `http://localhost:5050`.
 
-## Team-Dashboard: welcher Account bekommt wieso welchen Feed (`/dashboard`)
+## Team dashboard: which account gets which feed and why (`/dashboard`)
 
-Zeigt für jeden Account nebeneinander den aktuellen Feed-Bias pro Thema
-(pro/contra) und das politische Lager, inklusive Quelle (echtes
-Likes/Kommentare-Engagement, das immer gewinnt sobald vorhanden, vs.
-Einstiegs-Fragebogen als Fallback ohne Engagement) - siehe
-`app.py:compute_preferences()`, gemeinsam genutzt von `index()` und
-`/dashboard`, damit beide Ansichten nicht auseinanderlaufen können. Die
-Begründung für ein einzelnes Post im eigenen Feed steht direkt am Post
-selbst (🛈-Zeile, `app.py:_feed_item_reason()`).
+Shows, for every account side by side, the current feed bias per topic
+(pro/contra) and the political camp, including the source (real
+likes/comments engagement, which always wins once it exists, vs. the sign-up
+survey as a fallback without engagement) - see
+`app.py:compute_preferences()`, shared between `index()` and `/dashboard` so
+the two views can't drift apart. The reasoning for a single post in your own
+feed is shown right on the post itself (ⓘ line,
+`app.py:_feed_item_reason()`).
 
-Hinter `ADMIN_DASHBOARD_TOKEN` (`.env`) statt öffentlich erreichbar, weil das
-zwangsläufig jedes Accounts abgeleitetes politisches Lager offenlegt - Aufruf
-über `/dashboard?token=…`. Leeres/fehlendes Token deaktiviert die Seite
-komplett (zeigt einen Hinweis statt eines Fehlers), nie offen per Default.
+Gated behind `ADMIN_DASHBOARD_TOKEN` (`.env`) instead of being publicly
+reachable, because it necessarily exposes every account's derived political
+camp - call via `/dashboard?token=…`. An empty/missing token disables the
+page entirely (shows a notice instead of an error), never open by default.
 
-## Deployment (öffentlich erreichbar machen)
+## Deployment (making it publicly reachable)
 
-`deploy/` enthält eine fertig vorbereitete systemd-Unit (Gunicorn statt
-Flask-Dev-Server) und ein Caddyfile (automatisches HTTPS per Reverse-Proxy),
-plus eine Schritt-für-Schritt-Anleitung inkl. Azure-NSG-Firewall-Hinweis und
-Tailscale-only-Alternative - siehe `deploy/README.md`. Noch nicht angewendet,
-nur vorbereitet (siehe dortige Anleitung, warum).
+`deploy/` contains a ready-made systemd unit (Gunicorn instead of the Flask
+dev server) and a Caddyfile (automatic HTTPS via reverse proxy), plus a
+step-by-step guide including an Azure NSG firewall note and a
+Tailscale-only alternative - see `deploy/README.md`. Not applied yet, only
+prepared (see the guide there for why).
 
 ## Tests
 
@@ -333,161 +323,166 @@ nur vorbereitet (siehe dortige Anleitung, warum).
 pytest tests/
 ```
 
-## Beispiel-Accounts für den Standard-Algorithmus (`seed_demo_accounts.py`)
+## Example accounts for the standard algorithm (`seed_demo_accounts.py`)
 
-Für eine überzeugende Demo braucht es Accounts mit einer klar erkennbaren,
-gegensätzlichen Like-Historie, damit `ranking.dominant_perspective()`/
-`dominant_political_label()` beim Vorführen sichtbar wird. `seed_demo_accounts.py`
-legt dafür vier Beispiel-Accounts (unterschiedliche Namen, je zwei liken
-konsequent "contra"/"links" bzw. "pro"/"rechts") sowie einen Admin-Account an,
-der die Seed-Posts veröffentlicht, und lässt die Beispiel-Accounts passende
-Posts liken.
+A convincing demo needs accounts with a clearly recognizable, opposing like
+history, so `ranking.dominant_perspective()`/`dominant_political_label()`
+becomes visible when presenting. `seed_demo_accounts.py` creates four
+example accounts for this (different names, two of them consistently like
+"contra"/"left" and two "pro"/"right") plus an admin account that publishes
+the seed posts, and has the example accounts like matching posts.
 
-Der Seed-Datensatz (`SEED_POSTS` im Skript) umfasst rund **100 Posts über 12
-Themen** (die vier Default-Themen plus `bildung`, `gesundheit`, `migration`,
-`wohnen`, `sicherheit`, `soziales`, `europa`, `aussenpolitik` – deren
-`categories`-Zeilen legt `supabase/migrations/0006_more_categories.sql` an,
-danach ziehen sie `known_topics()`/Dropdown/`/dashboard`/Validierung
-automatisch mit). Pro Thema gibt es je Perspektive/politischem Label mehrere
-Posts, mindestens einen "contra/links" und einen "pro/rechts", damit jeder
-Beispiel-Account auf jedem Thema passende Inhalte findet. Damit die
-Like-Historie trotz des großen Datensatzes lesbar bleibt, liked jeder Account
-höchstens `MAX_LIKES_PER_TOPIC` (Default 1) passende Posts pro Thema – im
-Ergebnis rund ein Dutzend gleichgerichteter Likes pro Account. Die Inhalte
-sind bewusst sachlich formuliert und geben beide Seiten fair wieder.
-`0006_more_categories.sql` muss (wie 0003–0005) einmalig gegen die echte
-Supabase-Instanz angewendet werden, **bevor** das Seed-Skript läuft.
+The seed dataset (`SEED_POSTS` in the script) covers about **100 posts
+across 12 topics** (the four default topics plus `education`, `health`,
+`migration`, `housing`, `security`, `welfare`, `europe`, `foreign_policy` -
+their `categories` rows are created by
+`supabase/migrations/0006_more_categories.sql`, after which they
+automatically flow into `known_topics()`/the dropdown/`/dashboard`/
+validation). Each topic has several posts per perspective/political label,
+at least one "contra/left" and one "pro/right", so every example account
+finds matching content on every topic. So the like history stays readable
+despite the large dataset, each account likes at most
+`MAX_LIKES_PER_TOPIC` (default 1) matching posts per topic - resulting in
+roughly a dozen same-direction likes per account. The content is
+deliberately phrased neutrally and represents both sides fairly.
+`0006_more_categories.sql` needs to be applied once against the real
+Supabase instance (like 0003-0005), **before** the seed script runs.
 
-**Zugangsdaten kommen ausschließlich aus der Umgebung/`.env`** (`DEMO_ACCOUNT_A_EMAIL`/
-`_PASSWORD` bis `DEMO_ACCOUNT_D_EMAIL`/`_PASSWORD`, `DEMO_ADMIN_EMAIL`/`_PASSWORD`,
-zusätzlich zu den bestehenden `SUPABASE_*`-Variablen) - das Skript bricht ohne
-diese Variablen ab, statt Platzhalterwerte zu verwenden. Diese Session hatte
-keine Supabase-Zugangsdaten zur Verfügung und konnte das Skript deshalb nicht
-ausführen (siehe `NIGHTLY_TASK.md`). Eine reine Namens-/Zweck-Übersicht der
-Accounts (ohne Zugangsdaten) steht im Vault unter `ObsidianGehirn/06
+**Credentials come exclusively from the environment/`.env`**
+(`DEMO_ACCOUNT_A_EMAIL`/`_PASSWORD` through `DEMO_ACCOUNT_D_EMAIL`/
+`_PASSWORD`, `DEMO_ADMIN_EMAIL`/`_PASSWORD`, in addition to the existing
+`SUPABASE_*` variables) - the script aborts without these variables instead
+of using placeholder values. No overnight session so far has had Supabase
+credentials available and could therefore not run the script (see
+`NIGHTLY_TASK.md`). A plain name/purpose overview of the accounts (without
+credentials) lives in the vault at `ObsidianGehirn/06
 Zugangsdaten/Feed-Diversity-Beispielaccounts.md`.
 
 ```bash
-# .env ergänzen (SUPABASE_* + die DEMO_*-Variablen oben), dann einmalig:
+# Add to .env (SUPABASE_* plus the DEMO_* variables above), then once:
 python3 seed_demo_accounts.py
 ```
 
-## Fediverse-Anzeige (`fediverse.py`, rein lesend)
+## Fediverse display (`fediverse.py`, read-only)
 
-Auf Wunsch aus dem Brain Dump ("look into fediverse and activity pub and
-look how we can connect these things with each other", siehe
-`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`) zeigt der Feed unten
-einen zusätzlichen, klar als extern gekennzeichneten Abschnitt "Aus dem
-Fediverse zu [Thema]" mit öffentlichen Mastodon-Posts zum aktuell
-gewählten Thema.
+At the team's request from the brain dump ("look into fediverse and activity
+pub and look how we can connect these things with each other", see
+`ObsidianGehirn/07 Brain Dump/Felix - Brain Dump.md`), the feed shows an
+additional, clearly marked-as-external section "From the Fediverse on
+[topic]" with public Mastodon posts on the currently selected topic.
 
-**Bewusst keine ActivityPub-Implementierung.** Ein vollständiger
-ActivityPub-Client/-Server (eigener Actor, WebFinger, HTTP Signatures,
-Inbox/Outbox) ist ein eigener Protokoll-Stack mit realistisch mehreren
-Wochen Aufwand, siehe die ausführliche Machbarkeits-Einschätzung im Vault
-(`ObsidianGehirn/10 DTEW Workshop/Fediverse ActivityPub -
-Machbarkeitseinschaetzung.md`). Stattdessen nutzt `fediverse.py` Mastodons
-**öffentliche, unauthentifizierte REST-API** (`GET
-/api/v1/timelines/tag/{hashtag}`) – braucht keinen Account, kein Token,
-funktioniert rein lesend gegen jede Mastodon-Instanz. Fehlschläge (Instanz
-nicht erreichbar, Timeout, unerwartetes Antwortformat) liefern eine leere
-Liste statt eines Fehlers, genau wie `db.py` bei einem nicht erreichbaren
-Supabase. Externe Post-Inhalte kommen als HTML von der API zurück und
-werden vor der Anzeige zu Klartext reduziert (`fediverse._strip_html`),
-statt sie ungefiltert ins Template zu rendern – sonst wäre das ein
-XSS-Risiko über fremde, nicht moderierte Inhalte.
+**Deliberately no ActivityPub implementation.** A full ActivityPub
+client/server (its own actor, WebFinger, HTTP signatures, inbox/outbox) is
+its own protocol stack realistically worth several weeks of effort, see the
+detailed feasibility assessment in the vault (`ObsidianGehirn/10 DTEW
+Workshop/Fediverse ActivityPub - Machbarkeitseinschaetzung.md`). Instead,
+`fediverse.py` uses Mastodon's **public, unauthenticated REST API** (`GET
+/api/v1/timelines/tag/{hashtag}`) - needs no account, no token, works purely
+read-only against any Mastodon instance. Failures (instance unreachable,
+timeout, unexpected response format) yield an empty list instead of an
+error, the same as `db.py` does for an unreachable Supabase. External post
+content comes back as HTML from the API and is reduced to plain text before
+display (`fediverse._strip_html`) rather than rendered unfiltered into the
+template - otherwise that would be an XSS risk via foreign, unmoderated
+content.
 
-**Themen-Abdeckung & Qualitätsfilter:** `TOPIC_HASHTAGS` deckt jetzt alle 12
-Themen ab; für ein Thema ohne Eintrag (z.B. eine später hinzugefügte
-Kategorie) fällt `_hashtag_for()` auf den bereinigten Themennamen als Hashtag
-zurück, statt die Sektion leer zu lassen. Beim Verarbeiten der Timeline
-werden **Boosts/Reblogs** (`reblog`-Feld gesetzt – der eigentliche Beitrag
-ist nur ein Wrapper) und **textlose Posts** (nur Medien) übersprungen; die
-API-Abfrage holt entsprechend mehr als `limit` Einträge, um nach dem Filtern
-trotzdem `limit` lesbare zu haben. Sehr lange Beiträge werden auf ~280
-Zeichen gekürzt.
+**Topic coverage & quality filter:** `TOPIC_HASHTAGS` now covers all 12
+topics; for a topic with no entry (e.g. a category added later),
+`_hashtag_for()` falls back to the cleaned-up topic name as a hashtag
+instead of leaving the section empty. While processing the timeline,
+**boosts/reblogs** (the `reblog` field set - the actual entry is just a
+wrapper) and **text-less posts** (media only) are skipped; the API query
+correspondingly fetches more than `limit` entries so `limit` readable ones
+remain after filtering. Very long posts are truncated to ~280 characters.
 
-**Caching statt live pro Seitenaufruf:** `index()` ruft `fetch_public_posts()`
-bei jedem `/`-Aufruf auf, ein Hashtag-Timeline ändert sich aber nicht schnell
-genug, um jedes Mal einen frischen Mastodon-Request zu rechtfertigen. Seit
-dieser Nacht-Session hält `fediverse.py` erfolgreiche Antworten pro
-(Hashtag, Limit) `FEDIVERSE_CACHE_SECONDS` lang (Default 300s, per
-Umgebungsvariable änderbar) im Prozessspeicher vor, statt bei jedem Aufruf neu
-zu fragen. Schlägt ein Refresh nach Ablauf des Caches fehl (Netzwerkfehler,
-Instanz kurz nicht erreichbar), wird der zuletzt bekannte Cache-Stand weiter
-ausgeliefert statt die Sektion leer zu zeigen – nur ein leerer Cache fällt auf
-`[]` zurück, im selben "fail open"-Stil wie der Rest des Moduls. Kein Redis
-oder Ähnliches nötig für einen Ein-Prozess-Prototyp; bei mehreren
-Gunicorn-Workern (siehe `deploy/`) hat jeder Worker seinen eigenen Cache, was
-für diesen Zweck unkritisch ist.
+**Caching instead of live per page view:** `index()` calls
+`fetch_public_posts()` on every `/` request, but a hashtag timeline doesn't
+change fast enough to justify a fresh Mastodon request every time. Since
+this overnight session, `fediverse.py` keeps successful responses per
+(hashtag, limit) in process memory for `FEDIVERSE_CACHE_SECONDS` (default
+300s, changeable via environment variable) instead of asking again on every
+call. If a refresh fails after the cache expires (network error, instance
+briefly unreachable), the last known cache value keeps being served instead
+of showing an empty section - only an *empty* cache falls back to `[]`, the
+same "fail open" style as the rest of the module. No Redis or similar needed
+for a single-process prototype; with multiple Gunicorn workers (see
+`deploy/`), each worker has its own cache, which is uncritical for this
+purpose.
 
-> [!warning] Nicht live gegen Mastodon getestet
-> Die Cloud-Sandbox dieser Session erlaubt nur ausgehende Verbindungen zu
-> einer festen Domain-Allowlist – ein Aufruf gegen `mastodon.social` wurde
-> vom sandboxeigenen Proxy mit `403` blockiert. Mit gemockten Requests
-> unit-getestet (`tests/test_fediverse.py`), aber noch nicht gegen die
-> echte API verifiziert – vor dem Vorführen einmal in einer Umgebung mit
-> normalem Internetzugriff prüfen.
+> [!warning] Not tested live against Mastodon
+> This session's cloud sandbox only allows outbound connections to a fixed
+> domain allowlist - a call against `mastodon.social` was blocked by the
+> sandbox's own proxy with `403`. Unit-tested with mocked requests
+> (`tests/test_fediverse.py`), but not yet verified against the real API -
+> check once in an environment with normal internet access before presenting.
 
-## Aktueller Stand / offen
+## Current status / open items
 
-- [x] Standard- und Diversity-aware-Ranking mit Tests (`ranking.py`, dataset-
-      unabhängig – funktioniert mit beliebigen Posts, egal ob früher aus
-      `data/posts.json` oder jetzt aus Supabase)
-- [x] Supabase-Anbindung für alle Posts, Kategorien, Autoren
-- [x] Kategorie-Vorschlag per TF-IDF beim Post-Erstellen
-- [x] Echte Accounts (Supabase Auth: Registrierung/Login/Logout), Profile
-      mit Anzeigename/Handle, Likes und Kommentare pro Account statt
-      anonymer Session-Cookies (`0002_accounts.sql`, gegen die echte Instanz
-      angewendet und end-to-end verifiziert)
-- [x] Eigene Kommentare löschbar (`DELETE /comments/<id>`, serverseitig auf
-      Eigentümerschaft geprüft)
-- [x] Statischer Datensatz (`data/posts.json`) sowie die darauf aufbauende
-      Persona-Schnellauswahl ("Mia"/"Tom") entfernt – der Feed zeigt
-      ausschließlich echte Supabase-Posts, leerer Zustand statt Platzhalter
-      wenn noch keine welche existieren
-- [x] Likes als Ranking-Signal: Standard-Feed reinforct jetzt die
-      Mehrheits-Perspektive der eigenen Like-Historie statt nur die des
-      gerade gewählten Ausgangs-Posts (`dominant_perspective`)
-- [x] Metrik für "Perspektivenvielfalt" sichtbar machen (siehe kritischer
-      Punkt 6 in der DTEW-0209-Notiz) – neben dem Diversity-Score pro
-      Feed-Aufruf jetzt auch eine Verlaufsansicht über die Zeit
-      (`ranking.bubble_trend()`/`political_bubble_trend()`, Sparkline-Panels
-      in `templates/index.html`), für beide Achsen (Perspektive und
-      politisches Label)
-- [x] Politische Einordnung (links/mitte/rechts) als zweite, unabhängige
-      Dimension neben pro/contra, nutzergewählt statt automatisch erkannt
-      (siehe "Politische Einordnung" oben, `0003_political_label.sql`)
-- [x] Visuelles Redesign weg vom generischen SaaS-/KI-Dashboard-Look
-      (Papier-Optik, Serif/Monospace statt durchgehend Sans-Serif, Kompass-Chip
-      statt Verlauf/abgerundete Karten überall, siehe "UI-Redesign" oben)
-- [ ] `0003_political_label.sql` gegen die echte Supabase-Instanz anwenden
-      (in dieser Nacht-Session ohne `SUPABASE_MANAGEMENT_TOKEN` nicht möglich,
-      siehe NIGHTLY_TASK.md)
-- [ ] Beispiel-Accounts mit gegensätzlicher Like-Historie für die Demo
-      (Skript vorbereitet, noch nicht ausgeführt – siehe `seed_demo_accounts.py`
-      und NIGHTLY_TASK.md)
-- [ ] `0006_more_categories.sql` gegen die echte Supabase-Instanz anwenden
-      (acht zusätzliche Themen-Kategorien für den erweiterten ~100-Post-Seed-
-      Datensatz)
-- [x] Seed-Datensatz von 8 auf ~100 Posts über 12 Themen erweitert
-      (`SEED_POSTS` in `seed_demo_accounts.py`), Demo-Likes pro Thema
-      gedeckelt (`MAX_LIKES_PER_TOPIC`), damit die Like-Historie lesbar bleibt
-- [x] Feed rotiert beim Neuladen auf noch nicht gezeigte Beiträge
-      (`seen_post_ids` in der Session, `exclude_ids` in `ranking.py`), damit
-      „Aktualisieren“ neue Posts bringt – siehe "Rotation beim Neuladen"
-- [x] `pro`/`contra` wird als konkrete Position gezeigt (`TOPIC_STANCES`/
-      `stance_label()`) statt nur als Wort, im Feed-Chip, `/dashboard` und
-      der Reason-Zeile; Seed-`perspective` pro Thema als konsistente Achse
-      gepflegt – siehe „Position statt nur pro/contra"
-- [x] Fediverse: alle 12 Themen mit Hashtag + Namens-Fallback für neue
-      Kategorien, Boosts/textlose Posts werden gefiltert (`fediverse.py`)
-- [x] Erster, risikoarmer Fediverse-Schritt: öffentliche Mastodon-Posts zu
-      einem themenabhängigen Hashtag rein lesend im Feed anzeigen
-      (`fediverse.py`, siehe eigenen Abschnitt unten). Ein vollständiger
-      ActivityPub-Server/-Actor bleibt Konzept-Skizze, siehe
-      Machbarkeits-Notiz im Vault unter "10 DTEW Workshop"
-- [ ] Fediverse-Anzeige gegen die echte Mastodon-API verifizieren (in dieser
-      Sandbox durch die Netzwerk-Allowlist blockiert, siehe unten)
-- [x] Fediverse-Fetch cachen statt live pro `/`-Aufruf (`fediverse.py`,
-      `FEDIVERSE_CACHE_SECONDS`, siehe eigenen Abschnitt oben)
+- [x] Standard and diversity-aware ranking with tests (`ranking.py`,
+      dataset-independent - works with any posts, whether previously from
+      `data/posts.json` or now from Supabase)
+- [x] Supabase connection for all posts, categories, authors
+- [x] Category suggestion via TF-IDF when creating a post
+- [x] Real accounts (Supabase Auth: registration/login/logout), profiles
+      with display name/handle, likes and comments per account instead of
+      anonymous session cookies (`0002_accounts.sql`, applied against the
+      real instance and verified end to end)
+- [x] Own comments deletable (`DELETE /comments/<id>`, checked server-side
+      for ownership)
+- [x] Static dataset (`data/posts.json`) and the persona quick-picker built
+      on it ("Mia"/"Tom") removed - the feed shows exclusively real Supabase
+      posts, an empty state instead of placeholders when none exist yet
+- [x] Likes as a ranking signal: the standard feed now reinforces the
+      majority perspective of the account's own like history instead of
+      just the currently selected seed post's (`dominant_perspective`)
+- [x] Make a "perspective diversity" metric visible (see critical point 6 in
+      the DTEW 0209 note) - besides the diversity score per feed view,
+      there's now also a view of its development over time
+      (`ranking.bubble_trend()`/`political_bubble_trend()`, sparkline
+      panels in `templates/index.html`), for both axes (perspective and
+      political label)
+- [x] Political labeling (left/center/right) as a second, independent
+      dimension next to pro/contra, user-chosen instead of automatically
+      detected (see "Political labeling" above, `0003_political_label.sql`)
+- [x] Visual redesign away from the generic SaaS/AI-dashboard look (paper
+      look, serif/monospace instead of sans-serif throughout, compass chip
+      instead of gradients/rounded cards everywhere, see "UI redesign"
+      above)
+- [x] Switched the whole prototype to English - UI, database content and the
+      seed dataset (team decision from 2026-09-09, audience is
+      English-speaking, see `NIGHTLY_TASK.md`). Categories/authors already
+      applied to the real instance from `0001_init.sql` are renamed via a
+      new `0007_english_content.sql` migration (`UPDATE` on existing rows,
+      keeps `category_id`/`author_id` references intact - see that
+      migration's comment for why an `UPDATE` was chosen over re-migrating
+      with new rows) rather than editing the already-applied migration file
+      in place
+- [ ] Apply `0003_political_label.sql`/`0006_more_categories.sql`/
+      `0007_english_content.sql` against the real Supabase instance (not
+      possible in this overnight session without
+      `SUPABASE_MANAGEMENT_TOKEN`, see NIGHTLY_TASK.md)
+- [ ] Example accounts with an opposing like history for the demo (script
+      prepared and rewritten in English, still not executed - see
+      `seed_demo_accounts.py` and NIGHTLY_TASK.md)
+- [x] Seed dataset expanded from 8 to ~100 posts across 12 topics
+      (`SEED_POSTS` in `seed_demo_accounts.py`, now in English), demo likes
+      per topic capped (`MAX_LIKES_PER_TOPIC`) so the like history stays
+      readable
+- [x] Feed rotates on reload to not-yet-shown posts (`seen_post_ids` in the
+      session, `exclude_ids` in `ranking.py`), so "refresh" brings new posts
+      - see "Rotation on reload"
+- [x] `pro`/`contra` shown as a concrete position (`TOPIC_STANCES`/
+      `stance_label()`) instead of just a word, in the feed chip,
+      `/dashboard` and the reason line; seed `perspective` maintained per
+      topic as a consistent axis - see "A position, not just pro/contra"
+- [x] Fediverse: all 12 topics have a hashtag + name fallback for new
+      categories, boosts/text-less posts are filtered (`fediverse.py`)
+- [x] First, low-risk Fediverse step: show public Mastodon posts for a
+      topic-dependent hashtag, read-only, in the feed (`fediverse.py`, see
+      its own section below). A full ActivityPub server/actor remains a
+      concept sketch, see the feasibility note in the vault under "10 DTEW
+      Workshop"
+- [ ] Verify the Fediverse display against the real Mastodon API (blocked in
+      this sandbox by the network allowlist, see above)
+- [x] Cache the Fediverse fetch instead of live per `/` call (`fediverse.py`,
+      `FEDIVERSE_CACHE_SECONDS`, see its own section above)

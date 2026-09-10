@@ -13,7 +13,7 @@ import fediverse
 
 @pytest.fixture(autouse=True)
 def _clear_fediverse_cache():
-    # Every test below calls fetch_public_posts("klima", ...) - without
+    # Every test below calls fetch_public_posts("climate", ...) - without
     # this, whichever test runs first would populate the cache and every
     # later test would silently get its result back instead of hitting the
     # mocked requests.get() they each set up.
@@ -60,7 +60,7 @@ def test_fetch_public_posts_skips_reblogs_and_textless_posts(mock_get):
             {"content": "", "url": "", "account": {}, "created_at": ""},
         ]
     )
-    posts = fediverse.fetch_public_posts("klima", limit=5)
+    posts = fediverse.fetch_public_posts("climate", limit=5)
     assert [p["content"] for p in posts] == ["echter Beitrag"]
 
 
@@ -76,7 +76,7 @@ def test_fetch_public_posts_strips_html_and_maps_fields(mock_get):
             }
         ]
     )
-    posts = fediverse.fetch_public_posts("klima")
+    posts = fediverse.fetch_public_posts("climate")
     assert posts == [
         {
             "content": "Hallo Welt !",
@@ -92,25 +92,25 @@ def test_fetch_public_posts_drops_a_non_http_url(mock_get):
     mock_get.return_value = _FakeResponse(
         [{"content": "x", "url": "javascript:alert(1)", "account": {"acct": "a"}, "created_at": ""}]
     )
-    posts = fediverse.fetch_public_posts("klima")
+    posts = fediverse.fetch_public_posts("climate")
     assert posts[0]["url"] == ""
 
 
 @patch("fediverse.requests.get", side_effect=requests.ConnectionError)
 def test_fetch_public_posts_fails_open_on_network_error(mock_get):
-    assert fediverse.fetch_public_posts("klima") == []
+    assert fediverse.fetch_public_posts("climate") == []
 
 
 @patch("fediverse.requests.get")
 def test_fetch_public_posts_fails_open_on_http_error(mock_get):
     mock_get.return_value = _FakeResponse([], status_code=503)
-    assert fediverse.fetch_public_posts("klima") == []
+    assert fediverse.fetch_public_posts("climate") == []
 
 
 @patch("fediverse.requests.get")
 def test_fetch_public_posts_fails_open_on_unexpected_response_shape(mock_get):
     mock_get.return_value = _FakeResponse({"error": "not a list"})
-    assert fediverse.fetch_public_posts("klima") == []
+    assert fediverse.fetch_public_posts("climate") == []
 
 
 @patch("fediverse.requests.get")
@@ -118,7 +118,7 @@ def test_fetch_public_posts_respects_the_limit(mock_get):
     mock_get.return_value = _FakeResponse(
         [{"content": f"post {i}", "url": "", "account": {}, "created_at": ""} for i in range(10)]
     )
-    posts = fediverse.fetch_public_posts("klima", limit=2)
+    posts = fediverse.fetch_public_posts("climate", limit=2)
     assert len(posts) == 2
 
 
@@ -127,8 +127,8 @@ def test_fetch_public_posts_uses_the_cache_on_a_second_call(mock_get):
     mock_get.return_value = _FakeResponse(
         [{"content": "a", "url": "", "account": {}, "created_at": ""}]
     )
-    first = fediverse.fetch_public_posts("klima")
-    second = fediverse.fetch_public_posts("klima")
+    first = fediverse.fetch_public_posts("climate")
+    second = fediverse.fetch_public_posts("climate")
     assert first == second
     assert mock_get.call_count == 1
 
@@ -138,9 +138,9 @@ def test_fetch_public_posts_refetches_after_the_cache_expires(mock_get):
     mock_get.return_value = _FakeResponse(
         [{"content": "a", "url": "", "account": {}, "created_at": ""}]
     )
-    fediverse.fetch_public_posts("klima")
+    fediverse.fetch_public_posts("climate")
     with patch("fediverse.time.monotonic", return_value=time.monotonic() + fediverse.CACHE_TTL_SECONDS + 1):
-        fediverse.fetch_public_posts("klima")
+        fediverse.fetch_public_posts("climate")
     assert mock_get.call_count == 2
 
 
@@ -149,11 +149,11 @@ def test_fetch_public_posts_serves_stale_cache_when_a_later_fetch_fails(mock_get
     mock_get.return_value = _FakeResponse(
         [{"content": "a", "url": "", "account": {}, "created_at": ""}]
     )
-    first = fediverse.fetch_public_posts("klima")
+    first = fediverse.fetch_public_posts("climate")
 
     mock_get.side_effect = requests.ConnectionError
     with patch("fediverse.time.monotonic", return_value=time.monotonic() + fediverse.CACHE_TTL_SECONDS + 1):
-        second = fediverse.fetch_public_posts("klima")
+        second = fediverse.fetch_public_posts("climate")
 
     assert second == first
     assert second != []

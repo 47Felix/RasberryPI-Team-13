@@ -39,26 +39,26 @@ def clear_cache() -> None:
     for a future admin/ops action if a stale cache ever needs a manual kick."""
     _cache.clear()
 
-# One hashtag per topic, so the "aus dem Fediverse" section can follow
-# whichever topic the visitor is currently looking at. Rough,
-# German-language-leaning picks - meant as a starting point for the team to
-# adjust, not a researched-perfect mapping (see feasibility note). Topics
-# without an entry fall back to the topic name itself as a hashtag (see
+# One hashtag per topic, so the "from the Fediverse" section can follow
+# whichever topic the visitor is currently looking at. Rough, English-
+# language-leaning picks - meant as a starting point for the team to adjust,
+# not a researched-perfect mapping (see feasibility note). Topics without an
+# entry fall back to the topic name itself as a hashtag (see
 # _hashtag_for()), so a category added later still shows *something* instead
 # of an empty section.
 TOPIC_HASHTAGS = {
-    "klima": "klimapolitik",
-    "verkehr": "verkehrswende",
-    "wirtschaft": "wirtschaftspolitik",
-    "digital": "digitalpolitik",
-    "bildung": "bildungspolitik",
-    "gesundheit": "gesundheitspolitik",
-    "migration": "migrationspolitik",
-    "wohnen": "mietenwahnsinn",
-    "sicherheit": "innenpolitik",
-    "soziales": "sozialpolitik",
-    "europa": "europapolitik",
-    "aussenpolitik": "aussenpolitik",
+    "climate": "climatepolicy",
+    "transport": "transportpolicy",
+    "economy": "economicpolicy",
+    "digital": "digitalpolicy",
+    "education": "educationpolicy",
+    "health": "healthpolicy",
+    "migration": "migrationpolicy",
+    "housing": "housingcrisis",
+    "security": "domesticpolicy",
+    "welfare": "socialpolicy",
+    "europe": "eupolitics",
+    "foreign_policy": "foreignpolicy",
 }
 
 _HASHTAG_CLEAN_RE = re.compile(r"[^a-z0-9]+")
@@ -147,7 +147,7 @@ def fetch_public_posts(topic: str, limit: int = 3) -> list[dict]:
                 # post is untrusted external data, and Jinja auto-escaping
                 # doesn't stop a "javascript:" scheme from ending up in href.
                 "url": url if url.startswith(("http://", "https://")) else "",
-                "account_handle": account.get("acct", "unbekannt"),
+                "account_handle": account.get("acct", "unknown"),
                 "created_at": post.get("created_at", ""),
             }
         )

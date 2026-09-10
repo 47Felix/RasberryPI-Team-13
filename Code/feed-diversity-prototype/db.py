@@ -142,7 +142,7 @@ def create_unique_profile(
     onboarding_perspective_by_topic/onboarding_political_label are the
     optional, skippable registration-survey answers (see
     0004_onboarding_survey.sql/0005_onboarding_per_topic.sql) - the topic map
-    stores one pro/contra answer per topic (e.g. {"verkehr": "pro"}), same
+    stores one pro/contra answer per topic (e.g. {"transport": "pro"}), same
     shape as ranking.dominant_perspective_by_topic() produces from real
     engagement, so app.py can merge the two without converting between
     formats. None/{} just leaves the feed with no initial lean until real
@@ -266,14 +266,14 @@ def fetch_posts() -> list[dict]:
         comment_rows = row.get("comments") or []
         if profile:
             author = {
-                "name": profile.get("display_name", "Anonym"),
-                "handle": profile.get("handle", "@anonym"),
+                "name": profile.get("display_name", "Anonymous"),
+                "handle": profile.get("handle", "@anonymous"),
                 "avatar": profile.get("avatar") or "🙂",
             }
         else:
             author = {
-                "name": legacy_author.get("name", "Anonym"),
-                "handle": legacy_author.get("handle", "@anonym"),
+                "name": legacy_author.get("name", "Anonymous"),
+                "handle": legacy_author.get("handle", "@anonymous"),
                 "avatar": legacy_author.get("avatar", "📰"),
             }
         result.append(
@@ -282,7 +282,7 @@ def fetch_posts() -> list[dict]:
                     id=row["id"],
                     title=row["title"],
                     text=row["content"],
-                    topic=category.get("name", "sonstiges"),
+                    topic=category.get("name", "other"),
                     perspective=row["perspective"],
                     political_label=row.get("political_label"),
                 ),
@@ -524,8 +524,8 @@ def fetch_comments(post_id: str) -> list[dict]:
                 "user_id": row["user_id"],
                 "content": row["content"],
                 "created_at": row["created_at"],
-                "author": profile.get("display_name", "Unbekannt"),
-                "handle": profile.get("handle", "@unbekannt"),
+                "author": profile.get("display_name", "Unknown"),
+                "handle": profile.get("handle", "@unknown"),
                 "avatar": profile.get("avatar") or "🙂",
             }
         )

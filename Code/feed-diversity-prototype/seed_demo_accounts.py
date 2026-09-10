@@ -26,9 +26,9 @@ realistic-looking activity log. The eight non-default topics need their
 `categories` rows (supabase/migrations/0006_more_categories.sql) applied
 first, otherwise db.insert_post() can't resolve the category_id.
 
-See README.md ("Beispiel-Accounts fuer den Standard-Algorithmus") and the
-vault note ObsidianGehirn/06 Zugangsdaten/Feed-Diversity-Beispielaccounts.md
-(name/Zweck ohne Zugangsdaten) for context.
+See README.md ("Example accounts for the standard algorithm") and the vault
+note ObsidianGehirn/06 Zugangsdaten/Feed-Diversity-Beispielaccounts.md
+(name/purpose without credentials) for context.
 """
 
 import os
@@ -42,10 +42,10 @@ from ranking import Post
 # so the bias is obvious within a handful of likes - this is a demo dataset,
 # not meant to look like realistic organic behaviour.
 DEMO_ACCOUNTS = [
-    {"prefix": "DEMO_ACCOUNT_A", "display_name": "Nora Bergmann", "like_perspective": "contra", "like_political_label": "links"},
-    {"prefix": "DEMO_ACCOUNT_B", "display_name": "Jonas Kessler", "like_perspective": "pro", "like_political_label": "rechts"},
-    {"prefix": "DEMO_ACCOUNT_C", "display_name": "Lea Vogt", "like_perspective": "contra", "like_political_label": "links"},
-    {"prefix": "DEMO_ACCOUNT_D", "display_name": "Tarek Aydin", "like_perspective": "pro", "like_political_label": "rechts"},
+    {"prefix": "DEMO_ACCOUNT_A", "display_name": "Nora Bergmann", "like_perspective": "contra", "like_political_label": "left"},
+    {"prefix": "DEMO_ACCOUNT_B", "display_name": "Jonas Kessler", "like_perspective": "pro", "like_political_label": "right"},
+    {"prefix": "DEMO_ACCOUNT_C", "display_name": "Lea Vogt", "like_perspective": "contra", "like_political_label": "left"},
+    {"prefix": "DEMO_ACCOUNT_D", "display_name": "Tarek Aydin", "like_perspective": "pro", "like_political_label": "right"},
 ]
 ADMIN_ACCOUNT = {"prefix": "DEMO_ADMIN", "display_name": "Team 13 Admin"}
 
@@ -60,132 +60,132 @@ MAX_LIKES_PER_TOPIC = 1
 # every topic. Posted under the admin account so the demo accounts' own like
 # histories stay clean/interpretable. ~100 posts across 12 topics (the four
 # defaults plus the eight from supabase/migrations/0006_more_categories.sql);
-# each topic has at least one "contra/links" and one "pro/rechts" post so
+# each topic has at least one "contra/left" and one "pro/right" post so
 # DEMO_ACCOUNTS below always has a target.
 #
 # `perspective` is a consistent axis *per topic*, not just "pro/contra the
 # post's own headline": within a topic, every "pro" post leans the same way
 # (roughly: more ambition / more protection / more openness), every "contra"
 # post the other way (more weight on cost, the market or the status quo).
-# app.TOPIC_STANCES spells that direction out per topic ("klima pro" =
-# "mehr Klimaschutz, schneller"), and the feed/dashboard show that phrase
-# instead of a bare "pro"/"contra". Keep new posts on the same axis as the
-# rest of their topic. Content is intentionally civil and states each side
-# fairly - this is a filter-bubble demo, not a place to model inflammatory
-# posting.
+# app.TOPIC_STANCES spells that direction out per topic ("climate pro" =
+# "more climate protection, faster"), and the feed/dashboard show that
+# phrase instead of a bare "pro"/"contra". Keep new posts on the same axis
+# as the rest of their topic. Content is intentionally civil and states each
+# side fairly - this is a filter-bubble demo, not a place to model
+# inflammatory posting.
 SEED_POSTS = [
-    # --- klima -------------------------------------------------------------
-    Post("", "Windkraft-Ausbau beschleunigen", "Der Ausbau von Windkraft ist zentral fuer die Energiewende und muss beschleunigt werden.", "klima", "pro", "rechts"),
-    Post("", "Windkraft belastet Anwohner", "Windkraftanlagen veraendern die Landschaft, die Kosten fuer den Ausbau sind zu hoch.", "klima", "contra", "links"),
-    Post("", "CO2-Preis konsequent erhoehen", "Ein verlaesslich steigender CO2-Preis lenkt Investitionen dauerhaft in klimafreundliche Technik.", "klima", "pro", "links"),
-    Post("", "CO2-Preis trifft Pendler zu hart", "Ein steigender CO2-Preis belastet vor allem Menschen auf dem Land ohne Alternative zum Auto.", "klima", "contra", "rechts"),
-    Post("", "Gebaeudesanierung gezielt foerdern", "Foerderprogramme fuer Waermedaemmung senken Emissionen und langfristig die Heizkosten.", "klima", "pro", "mitte"),
-    Post("", "Sanierungspflicht ueberfordert Eigentuemer", "Kurzfristige Sanierungspflichten sind fuer viele Hausbesitzer finanziell nicht zu stemmen.", "klima", "contra", "mitte"),
-    Post("", "Kohleausstieg vorziehen", "Ein frueherer Kohleausstieg ist machbar, wenn Speicher und Netze parallel ausgebaut werden.", "klima", "pro", "links"),
-    Post("", "Kohleausstieg gefaehrdet Versorgungssicherheit", "Ein vorgezogener Ausstieg ohne gesicherte Reserve riskiert Engpaesse im Winter.", "klima", "contra", "rechts"),
-    Post("", "Solarpflicht auf Neubauten", "Eine Solarpflicht bei Neubauten holt viel ungenutzte Dachflaeche in die Stromerzeugung.", "klima", "pro", "rechts"),
-    # --- verkehr ---------------------------------------------------------
-    Post("", "Tempolimit jetzt einfuehren", "Ein Tempolimit auf Autobahnen senkt CO2-Ausstoss und Unfallzahlen spuerbar.", "verkehr", "pro", "links"),
-    Post("", "Tempolimit bremst Mobilitaet aus", "Ein generelles Tempolimit bringt wenig, schraenkt aber individuelle Mobilitaet unnoetig ein.", "verkehr", "contra", "rechts"),
-    Post("", "Deutschlandticket dauerhaft guenstig halten", "Ein bezahlbares bundesweites Ticket bringt nachweislich mehr Menschen in Bus und Bahn.", "verkehr", "pro", "links"),
-    Post("", "Ausbau vor Nulltarif im Nahverkehr", "Solange Strecken ueberlastet sind, sollte Geld in Kapazitaet statt in einen Nulltarif fliessen.", "verkehr", "contra", "links"),
-    Post("", "Sichere Radwege baulich trennen", "Baulich getrennte Radwege erhoehen die Sicherheit und entlasten die Strassen in den Staedten.", "verkehr", "pro", "mitte"),
-    Post("", "Autospuren nicht ersatzlos streichen", "Neue Radwege sollten entstehen, ohne bestehende Fahrspuren einfach wegzunehmen.", "verkehr", "contra", "mitte"),
-    Post("", "Mehr Gueter auf die Schiene", "Mehr Gueterverkehr auf der Schiene senkt Laerm, Emissionen und Unfallzahlen.", "verkehr", "pro", "links"),
-    Post("", "Lkw-Logistik bleibt unverzichtbar", "Die Schiene deckt die Flaeche nicht ab, fuer viele Betriebe bleibt der Lkw alternativlos.", "verkehr", "contra", "rechts"),
-    Post("", "Nachtzuege wieder ausbauen", "Ein groesseres Nachtzugnetz macht klimafreundliche Reisen ueber lange Strecken attraktiv.", "verkehr", "pro", "rechts"),
-    # --- wirtschaft ----------------------------------------------------
-    Post("", "Mindestlohn deutlich anheben", "Ein hoeherer Mindestlohn staerkt die Kaufkraft und wirkt gegen Armut.", "wirtschaft", "pro", "links"),
-    Post("", "Mindestlohn gefaehrdet Arbeitsplaetze", "Ein zu hoher Mindestlohn ueberfordert kleine Betriebe und kostet Arbeitsplaetze.", "wirtschaft", "contra", "rechts"),
-    Post("", "Buerokratie fuer Betriebe abbauen", "Weniger Meldepflichten und schnellere Genehmigungen verschaffen kleinen Firmen Luft.", "wirtschaft", "contra", "rechts"),
-    Post("", "Buerokratieabbau darf Schutz nicht kippen", "Umwelt- und Arbeitsschutz duerfen nicht als Buerokratie wegdefiniert werden.", "wirtschaft", "pro", "links"),
-    Post("", "Zuwanderung darf Loehne nicht druecken", "Neue Zuwanderung in den Arbeitsmarkt darf Loehne und Tarifstandards nicht unterlaufen.", "wirtschaft", "contra", "links"),
-    Post("", "Erst inlaendisches Potenzial heben", "Statt auf mehr Zuwanderung zu setzen, sollten Weiterbildung und bessere Erwerbsanreize Vorrang haben.", "wirtschaft", "pro", "rechts"),
-    Post("", "Uebergewinne staerker besteuern", "In Krisenzeiten koennen Abgaben auf Zufallsgewinne Entlastungen fuer alle gegenfinanzieren.", "wirtschaft", "pro", "links"),
-    Post("", "Sondersteuern schrecken Investoren ab", "Kurzfristige Sondersteuern machen den Standort unberechenbar und bremsen Investitionen.", "wirtschaft", "contra", "rechts"),
-    Post("", "Unternehmenssteuern senken", "Niedrigere Unternehmenssteuern entlasten vor allem Betriebe und Kapital.", "wirtschaft", "contra", "rechts"),
+    # --- climate -------------------------------------------------------------
+    Post("", "Speed up wind power expansion", "Expanding wind power is central to the energy transition and needs to move faster.", "climate", "pro", "right"),
+    Post("", "Wind turbines burden residents", "Wind turbines change the landscape, and the cost of expansion is too high.", "climate", "contra", "left"),
+    Post("", "Raise the carbon price steadily", "A reliably rising carbon price steers investment toward climate-friendly technology for the long term.", "climate", "pro", "left"),
+    Post("", "Carbon pricing hits commuters too hard", "A rising carbon price mainly burdens people in rural areas who have no alternative to the car.", "climate", "contra", "right"),
+    Post("", "Fund building renovation properly", "Subsidy programs for insulation cut emissions and heating costs in the long run.", "climate", "pro", "center"),
+    Post("", "Renovation mandates overwhelm owners", "Short-notice renovation mandates are financially out of reach for many homeowners.", "climate", "contra", "center"),
+    Post("", "Bring the coal phase-out forward", "An earlier coal phase-out is feasible if storage and grids are expanded in parallel.", "climate", "pro", "left"),
+    Post("", "Coal phase-out risks supply security", "An accelerated phase-out without a secured reserve risks shortages in winter.", "climate", "contra", "right"),
+    Post("", "Require solar panels on new builds", "A solar mandate for new buildings puts a lot of unused roof space to work generating power.", "climate", "pro", "right"),
+    # --- transport ---------------------------------------------------------
+    Post("", "Introduce a speed limit now", "A speed limit on highways noticeably cuts CO2 emissions and accident numbers.", "transport", "pro", "left"),
+    Post("", "A speed limit holds mobility back", "A blanket speed limit achieves little but needlessly restricts individual mobility.", "transport", "contra", "right"),
+    Post("", "Keep the nationwide transit ticket cheap", "An affordable nationwide ticket demonstrably gets more people onto buses and trains.", "transport", "pro", "left"),
+    Post("", "Expansion before free fares", "As long as routes are overcrowded, money should go into capacity rather than free fares.", "transport", "contra", "left"),
+    Post("", "Physically separate bike lanes", "Physically separated bike lanes improve safety and take pressure off city streets.", "transport", "pro", "center"),
+    Post("", "Don't just remove car lanes", "New bike lanes should be built without simply removing existing traffic lanes.", "transport", "contra", "center"),
+    Post("", "Shift more freight onto rail", "More freight on rail cuts noise, emissions and accident numbers.", "transport", "pro", "left"),
+    Post("", "Truck logistics remains essential", "Rail doesn't cover every area, so for many businesses trucks remain the only option.", "transport", "contra", "right"),
+    Post("", "Expand night trains again", "A bigger night-train network makes climate-friendly long-distance travel appealing.", "transport", "pro", "right"),
+    # --- economy ----------------------------------------------------
+    Post("", "Raise the minimum wage significantly", "A higher minimum wage strengthens purchasing power and helps fight poverty.", "economy", "pro", "left"),
+    Post("", "Minimum wage hikes threaten jobs", "A minimum wage set too high overwhelms small businesses and costs jobs.", "economy", "contra", "right"),
+    Post("", "Cut red tape for businesses", "Fewer reporting requirements and faster permits give small companies room to breathe.", "economy", "contra", "right"),
+    Post("", "Cutting red tape must not gut protections", "Environmental and worker protections must not be redefined away as red tape.", "economy", "pro", "left"),
+    Post("", "Immigration must not undercut wages", "New entrants to the labor market must not undermine wages and collective-bargaining standards.", "economy", "contra", "left"),
+    Post("", "Tap domestic potential first", "Rather than relying on more immigration, training and better work incentives should come first.", "economy", "pro", "right"),
+    Post("", "Tax windfall profits more heavily", "In times of crisis, levies on windfall profits can help fund relief for everyone.", "economy", "pro", "left"),
+    Post("", "Special taxes scare off investors", "Short-notice special taxes make the country unpredictable and slow investment.", "economy", "contra", "right"),
+    Post("", "Cut corporate taxes", "Lower corporate taxes mainly benefit businesses and capital.", "economy", "contra", "right"),
     # --- digital ------------------------------------------------------
-    Post("", "Digitale Buergerrechte staerken", "Datenschutz und digitale Selbstbestimmung muessen gegenueber Konzernen gestaerkt werden.", "digital", "pro", "links"),
-    Post("", "Weniger Regulierung fuer Tech-Standort", "Zu strenge Digitalregulierung schadet dem Innovationsstandort und der Wettbewerbsfaehigkeit.", "digital", "contra", "rechts"),
-    Post("", "Verwaltung endlich digitalisieren", "Ein zentraler Online-Zugang zu Amtsleistungen spart Buergern und Behoerden viel Zeit.", "digital", "pro", "mitte"),
-    Post("", "Digitalpflicht darf niemanden ausschliessen", "Online-Angebote der Verwaltung brauchen weiter einen analogen Weg fuer alle ohne Zugang.", "digital", "contra", "mitte"),
-    Post("", "Chatkontrolle stoppen", "Anlasslose Nachrichtenscans verletzen das Recht auf private Kommunikation.", "digital", "pro", "links"),
-    Post("", "Ermittler brauchen digitale Befugnisse", "Bei schwerer Kriminalitaet muessen Behoerden auf verschluesselte Inhalte zugreifen koennen.", "digital", "contra", "rechts"),
-    Post("", "Recht auf schnelles Internet verankern", "Ein gesetzlicher Anspruch auf Breitband bringt auch abgelegene Orte verlaesslich ans Netz.", "digital", "pro", "rechts"),
-    Post("", "Open Source in der Verwaltung bevorzugen", "Offene Software macht den Staat unabhaengiger von einzelnen Konzernen.", "digital", "pro", "links"),
-    Post("", "KI-Einsatz in Behoerden streng pruefen", "Automatisierte Entscheidungen in Aemtern brauchen Nachvollziehbarkeit und Widerspruchsrechte.", "digital", "contra", "links"),
-    # --- bildung -----------------------------------------------------
-    Post("", "Schulen nach Sozialindex finanzieren", "Ein Sozialindex lenkt Lehrkraefte und Mittel dorthin, wo der Bedarf am groessten ist.", "bildung", "pro", "links"),
-    Post("", "Leistung an Schulen staerker belohnen", "Statt nur nach Sozialindex zu verteilen, sollten gute Ergebnisse gezielt gefoerdert werden.", "bildung", "contra", "rechts"),
-    Post("", "Digitalpakt Schule verstetigen", "Geraete, Wartung und Fortbildung brauchen eine dauerhafte Finanzierung statt Einmalgeldern.", "bildung", "pro", "mitte"),
-    Post("", "Technik ersetzt keine Lehrkraefte", "Vor neuer Ausstattung sollten Schulen genug Personal und ein tragfaehiges Konzept haben.", "bildung", "contra", "mitte"),
-    Post("", "Laenger gemeinsam lernen", "Eine spaetere Aufteilung auf Schulformen gibt Kindern aus benachteiligten Familien mehr Chancen.", "bildung", "pro", "links"),
-    Post("", "Gegliedertes Schulsystem erhalten", "Ein frueh gegliedertes System kann unterschiedliche Begabungen gezielter foerdern.", "bildung", "contra", "rechts"),
-    Post("", "Bafoeg elternunabhaengiger machen", "Eine hoehere, planbare Foerderung senkt die Huerde fuers Studium unabhaengig vom Elternhaus.", "bildung", "pro", "rechts"),
-    Post("", "Bafoeg-Reform darf Wohnkosten nicht ignorieren", "Pauschale Erhoehungen helfen wenig, wenn Mietkosten und Antragshuerden bleiben.", "bildung", "contra", "links"),
-    # --- gesundheit ----------------------------------------------
-    Post("", "Buergerversicherung einfuehren", "Eine Versicherung fuer alle verteilt die Beitragslast breiter und stabiler.", "gesundheit", "pro", "links"),
-    Post("", "Private Krankenversicherung erhalten", "Der Wettbewerb zwischen den Systemen setzt Anreize fuer bessere Leistungen.", "gesundheit", "contra", "rechts"),
-    Post("", "Pflegekraefte besser bezahlen", "Hoehere Loehne und verbindliche Personalschluessel halten Pflegekraefte im Beruf.", "gesundheit", "pro", "mitte"),
-    Post("", "Beitragssaetze nicht weiter erhoehen", "Steigende Kassenbeitraege belasten Beschaeftigte und Betriebe zusaetzlich.", "gesundheit", "contra", "mitte"),
-    Post("", "Krankenhaeuser flaechendeckend sichern", "Eine Grundversorgung in erreichbarer Naehe darf nicht dem Sparzwang geopfert werden.", "gesundheit", "pro", "links"),
-    Post("", "Kleine Kliniken buendeln fuer mehr Qualitaet", "Spezialisierte Zentren erzielen bei schweren Eingriffen bessere Ergebnisse als viele Kleinhaeuser.", "gesundheit", "contra", "rechts"),
-    Post("", "Landarztquote im Studium ausweiten", "Reservierte Studienplaetze mit Landarzt-Verpflichtung wirken gegen den Aerztemangel auf dem Land.", "gesundheit", "pro", "rechts"),
-    Post("", "Quoten loesen den Aerztemangel nicht", "Ohne bessere Arbeitsbedingungen bleiben auch Quotenaerzte nicht in der Flaeche.", "gesundheit", "contra", "links"),
+    Post("", "Strengthen digital civil rights", "Privacy and digital self-determination need to be strengthened against corporations.", "digital", "pro", "left"),
+    Post("", "Less regulation for the tech sector", "Overly strict digital regulation harms the innovation ecosystem and competitiveness.", "digital", "contra", "right"),
+    Post("", "Finally digitize public administration", "A single online access point for government services saves citizens and agencies a lot of time.", "digital", "pro", "center"),
+    Post("", "Mandatory digital services can't exclude anyone", "Online government services still need an offline path for everyone without access.", "digital", "contra", "center"),
+    Post("", "Stop chat control", "Scanning private messages without cause violates the right to private communication.", "digital", "pro", "left"),
+    Post("", "Investigators need digital powers", "For serious crimes, authorities need to be able to access encrypted content.", "digital", "contra", "right"),
+    Post("", "Enshrine a right to fast internet", "A legal right to broadband reliably connects even remote areas.", "digital", "pro", "right"),
+    Post("", "Favor open source in government", "Open software makes the state less dependent on individual corporations.", "digital", "pro", "left"),
+    Post("", "Scrutinize AI use in government closely", "Automated decisions by public agencies need transparency and a right to appeal.", "digital", "contra", "left"),
+    # --- education -----------------------------------------------------
+    Post("", "Fund schools by a social index", "A social index directs teachers and funding to where the need is greatest.", "education", "pro", "left"),
+    Post("", "Reward achievement at school more", "Instead of distributing funds solely by social index, strong results should be rewarded directly.", "education", "contra", "right"),
+    Post("", "Make the school digital pact permanent", "Devices, maintenance and training need ongoing funding instead of one-off payments.", "education", "pro", "center"),
+    Post("", "Technology doesn't replace teachers", "Before new equipment, schools need enough staff and a workable plan.", "education", "contra", "center"),
+    Post("", "Keep students together longer", "Splitting students into school tracks later gives children from disadvantaged families a better chance.", "education", "pro", "left"),
+    Post("", "Keep the tracked school system", "An early-tracked system can support different aptitudes more specifically.", "education", "contra", "right"),
+    Post("", "Make student aid less dependent on parents", "Higher, more predictable aid lowers the barrier to studying regardless of family background.", "education", "pro", "right"),
+    Post("", "Student aid reform can't ignore housing costs", "Flat-rate increases help little if rent costs and red tape in applying stay the same.", "education", "contra", "left"),
+    # --- health ----------------------------------------------
+    Post("", "Introduce a universal health insurance", "One insurance system for everyone spreads the cost of contributions more broadly and stably.", "health", "pro", "left"),
+    Post("", "Keep private health insurance", "Competition between systems creates incentives for better care.", "health", "contra", "right"),
+    Post("", "Pay care workers better", "Higher wages and binding staffing ratios keep care workers in the profession.", "health", "pro", "center"),
+    Post("", "Stop raising contribution rates", "Rising health-insurance contributions place an extra burden on workers and employers.", "health", "contra", "center"),
+    Post("", "Guarantee hospitals across the country", "Basic care within reach must not be sacrificed to budget cuts.", "health", "pro", "left"),
+    Post("", "Consolidate small clinics for quality", "Specialized centers get better outcomes on serious procedures than many small hospitals.", "health", "contra", "right"),
+    Post("", "Expand the rural-doctor quota in medical school", "Reserved study places tied to a rural-service commitment help counter the shortage of doctors in the countryside.", "health", "pro", "right"),
+    Post("", "Quotas won't fix the doctor shortage", "Without better working conditions, even quota doctors won't stay in rural areas.", "health", "contra", "left"),
     # --- migration ---------------------------------------------
-    Post("", "Sichere Fluchtwege schaffen", "Legale und geordnete Wege verringern gefaehrliche Ueberfahrten und das Geschaeft der Schlepper.", "migration", "pro", "links"),
-    Post("", "Irregulaere Migration konsequent begrenzen", "Wer kein Bleiberecht hat, sollte zuegig und verlaesslich zurueckgefuehrt werden.", "migration", "contra", "rechts"),
-    Post("", "Schnellere Asylverfahren mit fairer Beratung", "Kurze Verfahren schaffen Klarheit, wenn unabhaengige Beratung von Anfang an dabei ist.", "migration", "pro", "mitte"),
-    Post("", "Verfahren beschleunigen ohne Rechtsschutz zu kuerzen", "Tempo darf nicht auf Kosten von Anhoerung und gerichtlicher Kontrolle gehen.", "migration", "contra", "mitte"),
-    Post("", "Kommunen bei der Aufnahme besser finanzieren", "Planbare Zuschuesse fuer Unterkunft, Schule und Sprachkurse entlasten die Staedte vor Ort.", "migration", "pro", "links"),
-    Post("", "Aufnahmekapazitaet hat Grenzen", "Integration gelingt nur, wenn Wohnraum, Kita- und Schulplaetze mitwachsen.", "migration", "contra", "rechts"),
-    Post("", "Arbeitsmarktzugang frueher oeffnen", "Wer frueh arbeiten darf, wird schneller unabhaengig von Sozialleistungen.", "migration", "pro", "rechts"),
-    Post("", "Integration braucht mehr als eine Arbeitserlaubnis", "Ohne Sprachkurse, Wohnung und Anerkennung von Abschluessen bleibt Teilhabe Stueckwerk.", "migration", "contra", "links"),
-    # --- wohnen ---------------------------------------------
-    Post("", "Mietpreisbremse verschaerfen", "Strengere Obergrenzen bei Neuvermietung bremsen die Verdraengung in angespannten Lagen.", "wohnen", "pro", "links"),
-    Post("", "Mietregulierung bremst den Neubau", "Zu enge Mietregeln senken die Rendite und damit die Zahl neuer Wohnungen.", "wohnen", "contra", "rechts"),
-    Post("", "Mehr sozialen Wohnungsbau foerdern", "Dauerhafte Foerderung und laengere Bindungsfristen sichern bezahlbare Wohnungen.", "wohnen", "pro", "rechts"),
-    Post("", "Foerderung ohne Bauland verpufft", "Zuschuesse helfen wenig, solange Kommunen kein bezahlbares Bauland bereitstellen.", "wohnen", "contra", "mitte"),
-    Post("", "Bodenspekulation staerker besteuern", "Eine Abgabe auf ungenutztes Bauland bringt Grundstuecke schneller in Nutzung.", "wohnen", "pro", "links"),
-    Post("", "Neue Grundsteuer trifft am Ende Mieter", "Steigende Grundsteuern werden ueber die Nebenkosten weitergereicht.", "wohnen", "contra", "rechts"),
-    Post("", "Bauvorschriften entschlacken statt Auflagen erhoehen", "Schlankere Bauordnungen und weniger Auflagen sollen Kosten senken - Regulierung tritt zurueck.", "wohnen", "contra", "rechts"),
-    Post("", "Standards senken geht auf Kosten der Qualitaet", "Beim Laerm-, Brand- und Waermeschutz zu sparen raecht sich ueber die Lebensdauer.", "wohnen", "contra", "links"),
-    # --- sicherheit --------------------------------------
-    Post("", "Sichtbare Polizeipraesenz erhoehen", "Mehr Streifen an belebten Orten beugt Straftaten vor und staerkt das Sicherheitsgefuehl.", "sicherheit", "pro", "rechts"),
-    Post("", "Mehr Praevention statt mehr Kontrolle", "Jugend-, Sozial- und Suchtarbeit verhindern Kriminalitaet nachhaltiger als zusaetzliche Befugnisse.", "sicherheit", "contra", "links"),
-    Post("", "Polizei besser ausstatten und fortbilden", "Moderne Ausruestung und mehr Training verbessern die Arbeit im Einsatz messbar.", "sicherheit", "pro", "mitte"),
-    Post("", "Neue Befugnisse brauchen strenge Kontrolle", "Ausweitungen von Ueberwachung gehoeren an unabhaengige richterliche Aufsicht gebunden.", "sicherheit", "contra", "mitte"),
-    Post("", "Videoueberwachung an Brennpunkten ausweiten", "Kameras an wenigen klar benannten Orten helfen bei Aufklaerung und Abschreckung.", "sicherheit", "pro", "rechts"),
-    Post("", "Kameras verdraengen Kriminalitaet nur", "Ueberwachung verlagert Straftaten oft nur, statt sie zu verhindern.", "sicherheit", "contra", "links"),
-    Post("", "Unabhaengige Polizei-Beschwerdestelle einrichten", "Statt mehr Befugnisse braucht es externe Kontrolle: eine unabhaengige Beschwerdestelle staerkt Vertrauen.", "sicherheit", "contra", "links"),
-    Post("", "Zusaetzliche Kontrollstellen ueberfordern die Justiz", "Neue Aufsichtsgremien binden Personal, das bei Gerichten und Polizei schon fehlt.", "sicherheit", "contra", "rechts"),
-    # --- soziales ----------------------------------
-    Post("", "Kindergrundsicherung ausbauen", "Eine gebuendelte, unbuerokratische Leistung erreicht mehr arme Kinder als der heutige Flickenteppich.", "soziales", "pro", "links"),
-    Post("", "Sozialleistungen staerker an Gegenleistung binden", "Wer kann, sollte fuer Unterstuetzung zumutbare Mitwirkung zeigen.", "soziales", "contra", "rechts"),
-    Post("", "Rente stabil halten ohne hoehere Beitraege", "Ein stabiles Rentenniveau laesst sich mit breiterer Finanzierung sichern.", "soziales", "pro", "mitte"),
-    Post("", "Rentenniveau nicht dauerhaft per Steuer stuetzen", "Immer hoehere Zuschuesse aus dem Haushalt verdraengen andere Ausgaben.", "soziales", "contra", "mitte"),
-    Post("", "Buergergeld-Saetze regelmaessig anpassen", "Die Regelsaetze muessen mit Miet- und Lebensmittelpreisen Schritt halten.", "soziales", "pro", "links"),
-    Post("", "Buergergeld darf Arbeit nicht unattraktiv machen", "Der Abstand zwischen Lohn und Leistung muss spuerbar bleiben.", "soziales", "contra", "rechts"),
-    Post("", "Aktivierende Vermittlung statt Sanktionen", "Passgenaue Qualifizierung bringt mehr Menschen dauerhaft in Arbeit als Leistungskuerzungen.", "soziales", "pro", "rechts"),
-    Post("", "Ohne Mitwirkungspflichten fehlt der Hebel", "Foerderangebote wirken nur, wenn ihre Wahrnehmung auch verbindlich ist.", "soziales", "contra", "links"),
-    # --- europa --------------------------
-    Post("", "EU-Asylsystem solidarisch verteilen", "Ein fester Verteilmechanismus entlastet die Aussengrenzstaaten und macht Verfahren einheitlicher.", "europa", "pro", "links"),
-    Post("", "Nationale Kontrolle ueber die Grenzen behalten", "Mitgliedstaaten muessen im Zweifel selbst ueber Zuzug und Kontrollen entscheiden koennen.", "europa", "contra", "rechts"),
-    Post("", "EU-Buerokratie fuer Betriebe verschlanken", "Weniger Berichtspflichten aus Bruessel entlasten gerade kleine und mittlere Unternehmen.", "europa", "pro", "mitte"),
-    Post("", "Binnenmarktregeln nicht aufweichen", "Gemeinsame Standards sind der Kern des Binnenmarkts und sollten nicht ausgehoehlt werden.", "europa", "contra", "mitte"),
-    Post("", "Gemeinsame EU-Verteidigung ausbauen", "Gebuendelte Beschaffung und Kommandostrukturen sparen Geld und erhoehen die Wirksamkeit.", "europa", "pro", "links"),
-    Post("", "Verteidigung bleibt nationale Aufgabe", "Ueber Einsaetze und Wehretat sollten weiter die Parlamente der Mitgliedstaaten entscheiden.", "europa", "contra", "rechts"),
-    Post("", "EU-Erweiterung aktiv vorantreiben", "Eine glaubwuerdige Beitrittsperspektive stabilisiert die Nachbarschaft der Union.", "europa", "pro", "rechts"),
-    Post("", "Erweiterung ohne Reform ueberfordert die EU", "Vor neuen Mitgliedern brauchen Entscheidungsregeln und Haushalt ein Update.", "europa", "contra", "links"),
-    # --- aussenpolitik ----------
-    Post("", "Entwicklungszusammenarbeit ausbauen", "Verlaessliche Mittel fuer Bildung, Gesundheit und Klimaanpassung wirken langfristig stabilisierend.", "aussenpolitik", "pro", "links"),
-    Post("", "Entwicklungshilfe an klare Bedingungen knuepfen", "Zahlungen sollten an Reformfortschritte und Rueckuebernahme-Abkommen gekoppelt sein.", "aussenpolitik", "contra", "rechts"),
-    Post("", "Verteidigungsausgaben verlaesslich hochfahren", "Ein stetiger Aufwuchs des Wehretats hat Vorrang, damit Beschaffung planbar wird.", "aussenpolitik", "contra", "mitte"),
-    Post("", "Hoehere Wehretats brauchen klare Prioritaeten", "Mehr Geld hilft wenig ohne Reform von Beschaffung und Struktur.", "aussenpolitik", "contra", "mitte"),
-    Post("", "Diplomatie vor militaerischen Optionen", "Vermittlung und zivile Krisenpraevention sollten den Vorrang vor Eskalation haben.", "aussenpolitik", "pro", "links"),
-    Post("", "Glaubwuerdige Abschreckung sichert Frieden", "Nur wer verteidigungsfaehig ist, kann glaubwuerdig verhandeln.", "aussenpolitik", "contra", "rechts"),
-    Post("", "Ruestungsexporte strenger kontrollieren", "Klare, nachpruefbare Kriterien verhindern Lieferungen in Krisen- und Kriegsgebiete.", "aussenpolitik", "pro", "rechts"),
-    Post("", "Exportstopps treffen auch Partner", "Pauschale Ausfuhrverbote schwaechen die Zusammenarbeit mit verbuendeten Demokratien.", "aussenpolitik", "contra", "links"),
+    Post("", "Create safe escape routes", "Legal, orderly pathways reduce dangerous crossings and the smugglers' business.", "migration", "pro", "left"),
+    Post("", "Consistently limit irregular migration", "Those without a right to stay should be returned promptly and reliably.", "migration", "contra", "right"),
+    Post("", "Faster asylum procedures with fair counseling", "Short procedures create clarity as long as independent counseling is there from the start.", "migration", "pro", "center"),
+    Post("", "Speed up procedures without cutting legal protection", "Speed must not come at the expense of hearings and judicial review.", "migration", "contra", "center"),
+    Post("", "Fund municipalities better for reception", "Predictable funding for housing, schools and language courses relieves local towns and cities.", "migration", "pro", "left"),
+    Post("", "Reception capacity has limits", "Integration only works if housing, daycare and school places grow along with it.", "migration", "contra", "right"),
+    Post("", "Open labor-market access sooner", "Those allowed to work early become independent of welfare benefits faster.", "migration", "pro", "right"),
+    Post("", "Integration needs more than a work permit", "Without language courses, housing and recognized qualifications, participation stays patchy.", "migration", "contra", "left"),
+    # --- housing ---------------------------------------------
+    Post("", "Tighten the rent cap", "Stricter caps on new leases slow displacement in tight housing markets.", "housing", "pro", "left"),
+    Post("", "Rent regulation slows new construction", "Overly tight rent rules lower returns and, with them, the number of new units built.", "housing", "contra", "right"),
+    Post("", "Fund more social housing", "Ongoing subsidies and longer affordability terms secure affordable housing.", "housing", "pro", "right"),
+    Post("", "Subsidies fizzle out without building land", "Grants help little as long as municipalities don't provide affordable building land.", "housing", "contra", "center"),
+    Post("", "Tax land speculation more heavily", "A levy on unused building land brings plots into use faster.", "housing", "pro", "left"),
+    Post("", "The new property tax ends up hitting tenants", "Rising property taxes get passed on through utility bills.", "housing", "contra", "right"),
+    Post("", "Streamline building codes instead of adding rules", "Leaner building codes and fewer requirements are meant to cut costs - regulation takes a back seat.", "housing", "contra", "right"),
+    Post("", "Lowering standards costs quality later", "Skimping on noise, fire and thermal protection catches up with a building over its lifetime.", "housing", "contra", "left"),
+    # --- security --------------------------------------
+    Post("", "Increase visible police presence", "More patrols in busy areas prevent crime and strengthen the sense of safety.", "security", "pro", "right"),
+    Post("", "More prevention instead of more control", "Youth, social and addiction services prevent crime more sustainably than extra police powers.", "security", "contra", "left"),
+    Post("", "Equip and train police better", "Modern equipment and more training measurably improve work in the field.", "security", "pro", "center"),
+    Post("", "New powers need strict oversight", "Any expansion of surveillance should be tied to independent judicial oversight.", "security", "contra", "center"),
+    Post("", "Expand video surveillance at hotspots", "Cameras at a few clearly defined locations help with solving crimes and deterrence.", "security", "pro", "right"),
+    Post("", "Cameras just displace crime", "Surveillance often just shifts crime elsewhere instead of preventing it.", "security", "contra", "left"),
+    Post("", "Set up an independent police complaints office", "Instead of more powers, what's needed is external oversight: an independent complaints office builds trust.", "security", "contra", "left"),
+    Post("", "Extra oversight bodies overburden the justice system", "New oversight bodies tie up staff that courts and police are already short of.", "security", "contra", "right"),
+    # --- welfare ----------------------------------
+    Post("", "Expand the basic child benefit", "One bundled, low-bureaucracy benefit reaches more children in poverty than today's patchwork of programs.", "welfare", "pro", "left"),
+    Post("", "Tie welfare benefits more to reciprocity", "Those who are able should show reasonable engagement in exchange for support.", "welfare", "contra", "right"),
+    Post("", "Keep pensions stable without raising contributions", "A stable pension level can be secured with a broader funding base.", "welfare", "pro", "center"),
+    Post("", "Don't prop up pensions with tax money indefinitely", "Ever-higher subsidies from the budget crowd out other spending.", "welfare", "contra", "center"),
+    Post("", "Adjust basic income rates regularly", "Standard rates need to keep pace with rent and food prices.", "welfare", "pro", "left"),
+    Post("", "Basic income must not make work unattractive", "The gap between wages and benefits needs to stay noticeable.", "welfare", "contra", "right"),
+    Post("", "Active job placement instead of sanctions", "Tailored qualification programs get more people into lasting work than benefit cuts do.", "welfare", "pro", "right"),
+    Post("", "Without participation requirements, there's no lever", "Support programs only work if taking part in them is actually binding.", "welfare", "contra", "left"),
+    # --- europe --------------------------
+    Post("", "Distribute the EU asylum system fairly", "A fixed distribution mechanism relieves border states and makes procedures more consistent.", "europe", "pro", "left"),
+    Post("", "Keep national control over borders", "Member states must be able to decide on entry and controls themselves when in doubt.", "europe", "contra", "right"),
+    Post("", "Streamline EU red tape for businesses", "Fewer reporting requirements from Brussels especially relieve small and medium businesses.", "europe", "pro", "center"),
+    Post("", "Don't water down single-market rules", "Common standards are the core of the single market and shouldn't be hollowed out.", "europe", "contra", "center"),
+    Post("", "Build up joint EU defense", "Pooled procurement and command structures save money and increase effectiveness.", "europe", "pro", "left"),
+    Post("", "Defense stays a national matter", "Member states' own parliaments should keep deciding on deployments and defense budgets.", "europe", "contra", "right"),
+    Post("", "Actively push EU enlargement", "A credible path to membership stabilizes the Union's neighborhood.", "europe", "pro", "right"),
+    Post("", "Enlargement without reform overwhelms the EU", "Before new members join, decision-making rules and the budget need an update.", "europe", "contra", "left"),
+    # --- foreign_policy ----------
+    Post("", "Expand development cooperation", "Reliable funding for education, health and climate adaptation has a stabilizing effect in the long run.", "foreign_policy", "pro", "left"),
+    Post("", "Tie development aid to clear conditions", "Payments should be linked to reform progress and readmission agreements.", "foreign_policy", "contra", "right"),
+    Post("", "Increase defense spending reliably", "A steady increase in the defense budget takes priority so procurement can be planned.", "foreign_policy", "contra", "center"),
+    Post("", "Higher defense budgets need clear priorities", "More money helps little without reforming procurement and structure.", "foreign_policy", "contra", "center"),
+    Post("", "Diplomacy before military options", "Mediation and civilian crisis prevention should take priority over escalation.", "foreign_policy", "pro", "left"),
+    Post("", "Credible deterrence secures peace", "Only those capable of defending themselves can negotiate credibly.", "foreign_policy", "contra", "right"),
+    Post("", "Control arms exports more strictly", "Clear, verifiable criteria prevent shipments to crisis and war zones.", "foreign_policy", "pro", "right"),
+    Post("", "Export bans also hit partners", "Blanket export bans weaken cooperation with allied democracies.", "foreign_policy", "contra", "left"),
 ]
 
 
@@ -193,7 +193,7 @@ def _require_env(prefix: str) -> tuple[str, str]:
     email = os.environ.get(f"{prefix}_EMAIL")
     password = os.environ.get(f"{prefix}_PASSWORD")
     if not email or not password:
-        print(f"Fehlt: {prefix}_EMAIL/{prefix}_PASSWORD in der Umgebung/.env - breche ab.", file=sys.stderr)
+        print(f"Missing: {prefix}_EMAIL/{prefix}_PASSWORD in the environment/.env - aborting.", file=sys.stderr)
         sys.exit(1)
     return email, password
 
@@ -203,7 +203,7 @@ def _ensure_account(email: str, password: str, display_name: str) -> str:
     if user is None:
         user = db.sign_in(email, password)
     if user is None:
-        print(f"Konnte Account fuer {display_name} ({email}) weder anlegen noch einloggen.", file=sys.stderr)
+        print(f"Could not create or log in to account for {display_name} ({email}).", file=sys.stderr)
         sys.exit(1)
     if db.fetch_profile(user["id"]) is None:
         db.create_unique_profile(user["id"], display_name)
@@ -213,23 +213,23 @@ def _ensure_account(email: str, password: str, display_name: str) -> str:
 def main() -> None:
     if not db.is_configured() or not db.auth_configured():
         print(
-            "SUPABASE_URL/SUPABASE_SECRET_KEY/SUPABASE_PUBLISHABLE_KEY fehlen - "
-            "bitte .env setzen, bevor dieses Skript laeuft. Keine Dummy-Werte moeglich.",
+            "SUPABASE_URL/SUPABASE_SECRET_KEY/SUPABASE_PUBLISHABLE_KEY are missing - "
+            "please set .env before running this script. No placeholder values allowed.",
             file=sys.stderr,
         )
         sys.exit(1)
 
     admin_email, admin_password = _require_env(ADMIN_ACCOUNT["prefix"])
     admin_id = _ensure_account(admin_email, admin_password, ADMIN_ACCOUNT["display_name"])
-    print(f"Admin-Account bereit: {ADMIN_ACCOUNT['display_name']}")
+    print(f"Admin account ready: {ADMIN_ACCOUNT['display_name']}")
 
     for post in SEED_POSTS:
         db.insert_post(post.title, post.text, post.topic, post.perspective, admin_id, post.political_label)
-    print(f"{len(SEED_POSTS)} Seed-Posts unter dem Admin-Account angelegt.")
+    print(f"{len(SEED_POSTS)} seed posts created under the admin account.")
 
     all_posts = db.fetch_posts()
     if not all_posts:
-        print("Konnte die gerade angelegten Posts nicht wieder auslesen - Abbruch.", file=sys.stderr)
+        print("Could not read back the posts that were just created - aborting.", file=sys.stderr)
         sys.exit(1)
 
     for account in DEMO_ACCOUNTS:
@@ -250,15 +250,15 @@ def main() -> None:
         for post in matching:
             db.toggle_like(post.id, user_id)
         print(
-            f"{account['display_name']}: {len(matching)} Posts geliked "
+            f"{account['display_name']}: liked {len(matching)} posts "
             f"({account['like_perspective']}/{account['like_political_label']}, "
-            f"max {MAX_LIKES_PER_TOPIC} pro Thema)."
+            f"max {MAX_LIKES_PER_TOPIC} per topic)."
         )
 
     print(
-        "\nFertig. Zum Vorfuehren: mit einem der Demo-Accounts einloggen und den "
-        "Standard-Feed oeffnen - er sollte klar in Richtung der jeweiligen "
-        "Like-Historie verzerrt sein."
+        "\nDone. To demo: log in with one of the demo accounts and open the "
+        "standard feed - it should be clearly skewed toward that account's "
+        "like history."
     )
 
 

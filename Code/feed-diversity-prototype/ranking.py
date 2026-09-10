@@ -18,7 +18,7 @@ class Post:
     text: str
     topic: str
     perspective: str
-    # User-chosen label ('links'/'mitte'/'rechts'), independent of the topic
+    # User-chosen label ('left'/'center'/'right'), independent of the topic
     # pro/contra perspective above. None for posts created before this field
     # existed, or if the author didn't pick one - see dominant_political_label().
     political_label: str | None = None
@@ -61,7 +61,7 @@ def dominant_perspective_by_topic(engagement: list[dict]) -> dict[str, str]:
     (see db.fetch_liked_history()/fetch_commented_history()).
 
     A single global lean was the original design (see git history), but it
-    conflated unrelated topics: an account that likes "verkehr pro" posts and
+    conflated unrelated topics: an account that likes "transport pro" posts and
     "digital contra" posts isn't reliably "pro" or "contra" in general, those
     are two independent stances. Grouping by topic first, then taking the
     majority within each group the same way dominant_perspective() always
@@ -88,7 +88,7 @@ def dominant_perspective_by_topic(engagement: list[dict]) -> dict[str, str]:
 
 def dominant_political_label(labels: list[str]) -> str | None:
     """Same idea as dominant_perspective(), but for the independent
-    'links'/'mitte'/'rechts' self-labeling from Post.political_label (see
+    'left'/'center'/'right' self-labeling from Post.political_label (see
     README for why this is a user-chosen label, not an automatically
     detected one). Three options instead of two, so a majority can fail to
     exist in more ways than a plain tie: None whenever there's no signal
@@ -122,9 +122,9 @@ def standard_feed(
     `preferred_perspective_by_topic` (from the account's own like/comment
     history, see dominant_perspective_by_topic()) maps topic -> 'pro'/
     'contra'. This is deliberately per-topic instead of one account-wide
-    label: an account can be "pro" on verkehr and "contra" on digital at the
+    label: an account can be "pro" on transport and "contra" on digital at the
     same time, and a single global lean would either flatten that into one
-    arbitrary side or (worse) apply e.g. the verkehr-pro reinforcement to
+    arbitrary side or (worse) apply e.g. the transport-pro reinforcement to
     digital posts too, which has nothing to do with what the account
     actually likes there. A topic missing from the map (no engagement yet)
     falls back to the seed post's own perspective, but only for posts that
@@ -135,14 +135,14 @@ def standard_feed(
     Raw cosine similarity alone isn't a reliable stand-in for "reinforces the
     bubble": on a small dataset, a counter-perspective post on the same topic
     often shares just as much vocabulary as a same-perspective one (both
-    posts about "Windkraft-Ausbau" score similarly regardless of stance), so
+    posts about "wind power expansion" score similarly regardless of stance), so
     ranking by similarity alone let counter-perspective and unrelated-topic
     posts crowd out a feed that's supposed to look one-sided. Perspective
     match is the actual signal being demonstrated here, similarity only
     orders within it.
 
     `preferred_political_label`/the seed post's own `political_label`
-    ('links'/'mitte'/'rechts', see dominant_political_label()) works as a
+    ('left'/'center'/'right', see dominant_political_label()) works as a
     second, independent, still account-wide axis on top of perspective
     (political identity isn't topic-specific the way a pro/contra stance is)
     - within the "same perspective" tier, posts that also match on political
@@ -221,8 +221,8 @@ def diversity_aware_feed(
     account's own like/comment history, see dominant_perspective_by_topic())
     is looked up for `seed_post.topic` specifically, falling back to the seed
     post's own perspective if that topic has no engagement signal yet - e.g.
-    if the account leans "pro" on verkehr, a verkehr-seeded diversity feed
-    counters with verkehr "contra" posts, regardless of what the account
+    if the account leans "pro" on transport, a transport-seeded diversity feed
+    counters with transport "contra" posts, regardless of what the account
     thinks about digital or any other topic.
 
     `preferred_political_label`/the seed post's `political_label` adds a
@@ -383,12 +383,12 @@ def political_bubble_trend(liked_political_labels_in_order: list[str | None]) ->
     (see NIGHTLY_TASK.md - the perspective-only trend view left this second
     dimension from PR #113 without a trend of its own).
 
-    Three possible labels ('links'/'mitte'/'rechts') instead of two, so this
+    Three possible labels ('left'/'center'/'right') instead of two, so this
     can't reuse bubble_trend()'s pro/contra counters directly - tracks a
     count per label seen so far and takes whichever is highest at each
     point, same "share of likes-so-far matching the current majority"
     definition. A tie for the top spot (all counts equal, e.g. after the
-    very first like, or 1/1 links-vs-rechts) shows as `dominant_count /
+    very first like, or 1/1 left-vs-right) shows as `dominant_count /
     index` using whichever tied label is counted first - functionally the
     same "not yet dominant" signal as bubble_trend()'s explicit 50/50
     tie-break, just without special-casing exactly two options.

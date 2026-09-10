@@ -51,12 +51,12 @@ def _make_session_permanent():
 # from the categories table, so a category added there (e.g. via the
 # Supabase SQL editor) shows up in the dropdown/dashboard/validation on the
 # next request without touching this file.
-DEFAULT_TOPICS = ["klima", "verkehr", "wirtschaft", "digital"]
+DEFAULT_TOPICS = ["climate", "transport", "economy", "digital"]
 KNOWN_PERSPECTIVES = ["pro", "contra"]
 # Self-chosen political label, independent of the topic's pro/contra
-# perspective - see README ("Politische Einordnung") for why this is a
+# perspective - see README ("Political labeling") for why this is a
 # user-chosen label rather than an automatically detected one.
-KNOWN_POLITICAL_LABELS = ["links", "mitte", "rechts"]
+KNOWN_POLITICAL_LABELS = ["left", "center", "right"]
 
 # Optional registration-time survey (see 0004_onboarding_survey.sql/
 # 0005_onboarding_per_topic.sql): one pro/contra statement pair per known
@@ -68,29 +68,29 @@ KNOWN_POLITICAL_LABELS = ["links", "mitte", "rechts"]
 # on that topic exist - unanswered topics are simply left out of the map.
 ONBOARDING_QUESTIONS = [
     {
-        "topic": "klima",
-        "pro": "CO2-Bepreisung sollte deutlich steigen, auch wenn das kurzfristig teurer wird.",
-        "contra": "Klimaauflagen sollten nicht zu stark auf Kosten der Bezahlbarkeit gehen.",
+        "topic": "climate",
+        "pro": "Carbon pricing should rise significantly, even if that makes things more expensive short-term.",
+        "contra": "Climate rules shouldn't weigh too heavily on affordability.",
     },
     {
-        "topic": "verkehr",
-        "pro": "Rad/ÖPNV sollten beim Ausbau Vorrang vor dem Auto bekommen.",
-        "contra": "Der Autoverkehr bleibt für viele unverzichtbar und sollte nicht ausgebremst werden.",
+        "topic": "transport",
+        "pro": "Bikes/public transit should take priority over cars when it comes to expansion.",
+        "contra": "Car traffic remains essential for many people and shouldn't be held back.",
     },
     {
-        "topic": "wirtschaft",
-        "pro": "Höhere Mindestlöhne/kürzere Arbeitszeiten sind mir wichtiger als Kostendruck auf Betriebe.",
-        "contra": "Der Kostendruck auf Betriebe sollte stärker gewichtet werden als höhere Lohnnebenkosten.",
+        "topic": "economy",
+        "pro": "Higher minimum wages/shorter working hours matter more to me than cost pressure on businesses.",
+        "contra": "Cost pressure on businesses should be weighted more heavily than higher non-wage labor costs.",
     },
     {
         "topic": "digital",
-        "pro": "Digitalisierung von Behörden/Open-Source sollte Vorrang vor Datenschutzbedenken bekommen.",
-        "contra": "Datenschutzbedenken sollten Vorrang vor schnellerer Digitalisierung bekommen.",
+        "pro": "Digitizing government/open source should take priority over privacy concerns.",
+        "contra": "Privacy concerns should take priority over faster digitization.",
     },
 ]
 
-# Registration-time "Perspektiven-Kompass": replaces the old plain
-# links/mitte/rechts dropdown with a small two-axis quiz (register.html
+# Registration-time "perspective compass": replaces the old plain
+# left/center/right dropdown with a small two-axis quiz (register.html
 # renders these as 5-point Likert radios, scores/plots them client-side in
 # JS - see the <script> block there). Deliberately separate from
 # ONBOARDING_QUESTIONS above: those feed perspective_by_topic per topic,
@@ -98,65 +98,65 @@ ONBOARDING_QUESTIONS = [
 # form field name as the old dropdown so app.py:register() needed no
 # changes at all.
 #
-# axis="economic" sums into the x-position (links <-> rechts, the axis the
+# axis="economic" sums into the x-position (left <-> right, the axis the
 # stored label is actually derived from - see register.html's
-# COMPASS_THRESHOLD); axis="social" sums into y (progressiv <-> konservativ)
-# purely for the visual - the app has no separate social-axis field
-# anywhere downstream, this isn't secretly a second stored dimension.
-# direction is which end of its axis "stimme zu" moves the dot toward.
+# COMPASS_THRESHOLD); axis="social" sums into y (progressive <->
+# conservative) purely for the visual - the app has no separate social-axis
+# field anywhere downstream, this isn't secretly a second stored dimension.
+# direction is which end of its axis "agree" moves the dot toward.
 COMPASS_QUESTIONS = [
     {
         "id": "e1",
         "axis": "economic",
-        "direction": "rechts",
-        "text": "Niedrigere Steuern und weniger staatliche Regulierung sollten Vorrang vor einem groß angelegten Sozialstaat haben.",
+        "direction": "right",
+        "text": "Lower taxes and less government regulation should take priority over a large-scale welfare state.",
     },
     {
         "id": "e2",
         "axis": "economic",
-        "direction": "links",
-        "text": "Der Staat sollte Einkommen und Vermögen stärker umverteilen, um Ungleichheit zu verringern.",
+        "direction": "left",
+        "text": "The state should redistribute income and wealth more to reduce inequality.",
     },
     {
         "id": "e3",
         "axis": "economic",
-        "direction": "rechts",
-        "text": "Unternehmen sollten möglichst frei wirtschaften können, ohne zu viele Auflagen.",
+        "direction": "right",
+        "text": "Businesses should be able to operate as freely as possible, without too many regulations.",
     },
     {
         "id": "e4",
         "axis": "economic",
-        "direction": "links",
-        "text": "Grundlegende Dienstleistungen wie Wohnen, Energie und Nahverkehr gehören eher in öffentliche als in private Hand.",
+        "direction": "left",
+        "text": "Basic services like housing, energy and local transit belong in public rather than private hands.",
     },
     {
         "id": "s1",
         "axis": "social",
-        "direction": "konservativ",
-        "text": "Traditionen und gesellschaftliche Ordnung sind mir wichtiger als schnelle gesellschaftliche Veränderung.",
+        "direction": "conservative",
+        "text": "Tradition and social order matter more to me than rapid social change.",
     },
     {
         "id": "s2",
         "axis": "social",
-        "direction": "progressiv",
-        "text": "Vielfalt an Lebensentwürfen und Offenheit gegenüber Veränderung sind für eine Gesellschaft ein Gewinn.",
+        "direction": "progressive",
+        "text": "A diversity of lifestyles and openness to change are a benefit to society.",
     },
     {
         "id": "s3",
         "axis": "social",
-        "direction": "konservativ",
-        "text": "Klare nationale Grenzen und ein starker Staat geben mehr Sicherheit als offene internationale Zusammenarbeit.",
+        "direction": "conservative",
+        "text": "Clear national borders and a strong state provide more security than open international cooperation.",
     },
     {
         "id": "s4",
         "axis": "social",
-        "direction": "progressiv",
-        "text": "Internationale Zusammenarbeit ist wichtiger als nationale Alleingänge, auch wenn das Kompromisse bedeutet.",
+        "direction": "progressive",
+        "text": "International cooperation matters more than national go-it-alone approaches, even if that means compromises.",
     },
 ]
 
 # What "pro" / "contra" actually mean per topic. On its own a bare
-# "pro"/"contra" ("klima: pro") says almost nothing without the post in
+# "pro"/"contra" ("climate: pro") says almost nothing without the post in
 # front of you, so every place that shows a stance (feed chip, /dashboard,
 # the per-post reason line) runs it through stance_label() for a short
 # phrase instead. Framing follows the seed posts / ONBOARDING_QUESTIONS:
@@ -165,25 +165,25 @@ COMPASS_QUESTIONS = [
 # A topic with no entry (e.g. a category added later) just falls back to the
 # bare word.
 TOPIC_STANCES = {
-    "klima":         {"pro": "mehr Klimaschutz, schneller",        "contra": "mehr Rücksicht auf Kosten/Bezahlbarkeit"},
-    "verkehr":       {"pro": "Vorrang für Rad, ÖPNV und Schiene",   "contra": "Vorrang fürs Auto / Status quo"},
-    "wirtschaft":    {"pro": "mehr Umverteilung und Schutz für Beschäftigte", "contra": "Vorrang für Betriebe und Standort"},
-    "digital":       {"pro": "Grundrechte und Datenschutz zuerst",  "contra": "weniger Regeln / mehr Ermittlungsbefugnisse"},
-    "bildung":       {"pro": "mehr Umverteilung, längeres gemeinsames Lernen", "contra": "mehr Leistung und Gliederung"},
-    "gesundheit":    {"pro": "solidarisch, mehr staatliche Steuerung", "contra": "mehr Wettbewerb und Eigenanteil"},
-    "migration":     {"pro": "offener, mehr Aufnahme und Teilhabe",  "contra": "stärker begrenzen und kontrollieren"},
-    "wohnen":        {"pro": "mehr Mietregulierung und Sozialbau",   "contra": "weniger Auflagen, auf Neubau setzen"},
-    "sicherheit":    {"pro": "mehr Präsenz und Befugnisse",          "contra": "Prävention und Bürgerrechte zuerst"},
-    "soziales":      {"pro": "höhere, verlässlichere Leistungen",    "contra": "mehr Eigenverantwortung und Anreize"},
-    "europa":        {"pro": "mehr gemeinsame EU-Zuständigkeit",     "contra": "mehr nationale Kontrolle"},
-    "aussenpolitik": {"pro": "Diplomatie und zivile Mittel zuerst",  "contra": "Abschreckung und Verteidigung zuerst"},
+    "climate":        {"pro": "more climate protection, faster",       "contra": "more weight on cost/affordability"},
+    "transport":      {"pro": "priority for bikes, transit and rail",  "contra": "priority for cars / status quo"},
+    "economy":        {"pro": "more redistribution and worker protection", "contra": "priority for businesses and the market"},
+    "digital":        {"pro": "civil rights and privacy first",        "contra": "fewer rules / more investigative powers"},
+    "education":      {"pro": "more redistribution, longer shared schooling", "contra": "more achievement and tracking"},
+    "health":         {"pro": "solidarity-based, more state control",  "contra": "more competition and personal contribution"},
+    "migration":      {"pro": "more open, more admission and inclusion", "contra": "tighter limits and controls"},
+    "housing":        {"pro": "more rent regulation and social housing", "contra": "fewer rules, focus on new construction"},
+    "security":       {"pro": "more presence and police powers",       "contra": "prevention and civil liberties first"},
+    "welfare":        {"pro": "higher, more reliable benefits",        "contra": "more personal responsibility and incentives"},
+    "europe":         {"pro": "more shared EU authority",              "contra": "more national control"},
+    "foreign_policy": {"pro": "diplomacy and civilian means first",    "contra": "deterrence and defense first"},
 }
 
 
 def stance_label(topic: str, perspective: str) -> str:
-    """Short human phrase for a (topic, perspective) pair - "mehr Klimaschutz,
-    schneller" instead of just "pro". Falls back to the bare perspective for
-    topics not in TOPIC_STANCES."""
+    """Short human phrase for a (topic, perspective) pair - "more climate
+    protection, faster" instead of just "pro". Falls back to the bare
+    perspective for topics not in TOPIC_STANCES."""
     entry = TOPIC_STANCES.get(topic)
     if entry and perspective in entry:
         return entry[perspective]
@@ -213,7 +213,7 @@ MIN_UNSEEN_FOR_ROTATION = 12
 
 # Feed order == recency, like a real timeline: the top post is "just now",
 # further down is "older". Purely cosmetic, no real clock involved.
-TIME_LABELS = ["gerade eben", "2 Std", "4 Std", "7 Std", "10 Std", "1 Tag", "1 Tag", "2 Tage"]
+TIME_LABELS = ["just now", "2h", "4h", "7h", "10h", "1 day", "1 day", "2 days"]
 
 
 def known_topics() -> list[str]:
@@ -298,7 +298,7 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
         survey (fills in topics engagement has no majority for yet).
       perspective_source: {topic: "engagement"/"onboarding"} - which of the
         two backed each entry above.
-      political_label: "links"/"mitte"/"rechts"/None, same
+      political_label: "left"/"center"/"right"/None, same
         engagement-wins-over-onboarding rule, but account-wide rather than
         per topic (see ranking.dominant_political_label()).
       political_label_source: "engagement"/"onboarding"/None.
@@ -342,20 +342,20 @@ def compute_preferences(user_id: str, liked_history: list[dict] | None = None) -
 
 def _feed_item_reason(item: dict, preferred_perspective_by_topic: dict, perspective_source: dict) -> str:
     """One short, human-readable sentence for why this specific post is in
-    the feed at this position - the per-post half of "was welcher User
-    wieso angezeigt bekommt", the account-wide half is /dashboard."""
+    the feed at this position - the per-post half of "which user sees what
+    and why", the account-wide half is /dashboard."""
     post = item["post"]
     bias = preferred_perspective_by_topic.get(post.topic)
     if item.get("is_diverse_pick"):
-        return f"Diversity-Pick: bewusste Gegenmeinung zu {post.topic} („{stance_label(post.topic, post.perspective)}“)"
+        return f"Diversity pick: a deliberate counter-opinion on {post.topic} (\"{stance_label(post.topic, post.perspective)}\")"
     if bias is None:
-        return f"kein Signal zu {post.topic} – nach inhaltlicher Ähnlichkeit sortiert"
+        return f"no signal on {post.topic} - sorted by content similarity"
     source = perspective_source.get(post.topic)
-    source_label = "Fragebogen-Angabe" if source == "onboarding" else "Likes/Kommentare"
+    source_label = "your survey answer" if source == "onboarding" else "your likes/comments"
     bias_phrase = stance_label(post.topic, bias)
     if post.perspective == bias:
-        return f"verstärkt deine {source_label}-basierte Neigung bei {post.topic}: „{bias_phrase}“"
-    return f"widerspricht deiner {source_label}-basierten Neigung bei {post.topic}: „{bias_phrase}“"
+        return f"reinforces {source_label}-based lean on {post.topic}: \"{bias_phrase}\""
+    return f"goes against {source_label}-based lean on {post.topic}: \"{bias_phrase}\""
 
 
 @app.route("/")
@@ -457,7 +457,7 @@ def index():
         # signal (real engagement or an onboarding answer) - falling back
         # silently to bias_political_label (which can just be the currently
         # viewed seed post's own label) would present that incidental value
-        # as "your" lean, e.g. always showing "rechts" while tied 50/50.
+        # as "your" lean, e.g. always showing "right" while tied 50/50.
         show_political_score = preferred_political_label is not None
 
         db_post_ids = [item["post"].id for item in feed_items]
@@ -510,13 +510,13 @@ def register():
         password = request.form.get("password", "")
         display_name = request.form.get("display_name", "").strip()
         if not email or not password or not display_name:
-            error = "Bitte alle Felder ausfüllen."
+            error = "Please fill in all fields."
         elif len(password) < 6:
-            error = "Passwort muss mindestens 6 Zeichen haben."
+            error = "Password must be at least 6 characters."
         else:
             user = db.sign_up(email, password)
             if user is None:
-                error = "Registrierung fehlgeschlagen (E-Mail evtl. schon vergeben, oder Supabase nicht erreichbar)."
+                error = "Registration failed (email may already be taken, or Supabase is unreachable)."
             else:
                 # Survey is entirely optional - unanswered questions for a
                 # topic just leave that topic out of the map, same as
@@ -557,7 +557,7 @@ def login():
         password = request.form.get("password", "")
         user = db.sign_in(email, password)
         if user is None:
-            error = "E-Mail oder Passwort falsch."
+            error = "Incorrect email or password."
         else:
             profile = db.fetch_profile(user["id"]) or {}
             session["user_id"] = user["id"]
@@ -577,9 +577,9 @@ def logout():
 def dashboard():
     """Team-facing transparency view: every account side by side with its
     current per-topic bias and where each came from (real engagement vs.
-    onboarding survey) - the account-wide half of "was welcher User wieso
-    angezeigt bekommt", the per-post half is the "reason" tag on each feed
-    item in index() (see _feed_item_reason()).
+    onboarding survey) - the account-wide half of "which user sees what and
+    why", the per-post half is the "reason" tag on each feed item in
+    index() (see _feed_item_reason()).
 
     Gated behind ADMIN_DASHBOARD_TOKEN (.env) instead of being open to any
     visitor: this necessarily exposes every account's derived political
@@ -702,7 +702,7 @@ def suggest_category_endpoint():
 def like_post(post_id):
     liked = db.toggle_like(post_id, session["user_id"])
     if liked is None:
-        return jsonify({"error": "Supabase nicht erreichbar"}), 503
+        return jsonify({"error": "Supabase unavailable"}), 503
     return jsonify({"liked": liked})
 
 
@@ -719,7 +719,7 @@ def create_comment(post_id):
     if not content:
         return jsonify({"error": "empty"}), 400
     if not db.insert_comment(post_id, session["user_id"], content):
-        return jsonify({"error": "Supabase nicht erreichbar"}), 503
+        return jsonify({"error": "Supabase unavailable"}), 503
     return jsonify({"ok": True})
 
 
