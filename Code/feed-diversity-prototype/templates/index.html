@@ -64,7 +64,7 @@
           yet, your answer in the sign-up survey), your feed currently
           favors, per topic:
           {% for topic, perspective in preferred_perspective_by_topic.items() %}
-            <strong>{{ topic }}</strong>&rarr;<strong>{{ perspective }}</strong>{{ ' (survey)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
+            <strong>{{ topic }}</strong>&rarr;<strong>{{ stance_label(topic, perspective) }}</strong>{{ ' (survey)' if topic in onboarding_topics_used }}{{ ', ' if not loop.last }}
           {% endfor %}
           {% if preferred_political_label %}
             {{ ' - ' if preferred_perspective_by_topic }}also the <strong>{{ preferred_political_label }}</strong> camp{{ ' (survey)' if onboarding_political_label_used }}
