@@ -324,7 +324,7 @@ def insert_post(
     user_id: str | None,
     political_label: str | None = None,
     author_id: str | None = None,
-) -> bool:
+) -> str | None:
     """user_id is the normal path (a real logged-in account, via the "new
     post" form or seed_demo_accounts.py) - author_id is the legacy path,
     for fictional/topic-themed bylines (see supabase/migrations/0001_init.sql
@@ -333,9 +333,15 @@ def insert_post(
     display whenever a row has no user_id, so passing author_id without a
     user_id is the normal way to seed bulk demo content without creating
     real accounts for it.
+
+    Returns the new post's id (so create_post() in app.py can seed the
+    feed on it directly - with a 300+ post catalogue and an 8-post feed,
+    a freshly published post otherwise almost never wins enough
+    similarity/perspective ranking to appear on its own, see user report
+    2026-09-11), or None on failure.
     """
     if not is_configured():
-        return False
+        return None
     try:
         payload = {
             "title": title,
@@ -346,11 +352,17 @@ def insert_post(
             "user_id": user_id,
             "author_id": author_id,
         }
-        response = requests.post(f"{SUPABASE_URL}/rest/v1/posts", headers=_headers(), json=payload, timeout=5)
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/posts",
+            headers={**_headers(), "Prefer": "return=representation"},
+            json=payload,
+            timeout=5,
+        )
         response.raise_for_status()
+        rows = response.json()
     except requests.RequestException:
-        return False
-    return True
+        return None
+    return rows[0]["id"] if rows else None
 
 
 def ensure_author(name: str, handle: str, avatar: str) -> str | None:
