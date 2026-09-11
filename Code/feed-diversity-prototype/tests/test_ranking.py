@@ -106,6 +106,31 @@ def test_diversity_aware_feed_liked_ids_still_drops_reinforcing_posts():
     assert all(item["post"].id != "same-perspective" for item in feed)
 
 
+def test_diversity_aware_feed_rotates_diversity_slots_across_topics():
+    # An account with a known bias on three separate topics used to get all
+    # of its diversity slots spent countering the seed's own single topic
+    # every time - reported live 2026-09-11 ("alle 3 diversity posts waren
+    # zur gleichen Kategorie"). With diversity_every=1 every slot is a
+    # diversity slot, so the three diverse picks below must land on three
+    # different topics, not just repeat "climate" (the seed's topic) three
+    # times.
+    posts = [
+        Post("seed", "Wind Power Expansion", "Wind power energy transition climate protection expansion", "climate", "pro"),
+        Post("climate-contra", "Cost of the Expansion", "Wind power cost of the climate expansion is too high", "climate", "contra"),
+        Post("economy-contra", "Minimum Wage Concerns", "Raising the minimum wage risks economy jobs", "economy", "contra"),
+        Post("transport-contra", "Car-Free City Doubts", "A car-free city center hurts transport access", "transport", "contra"),
+    ]
+    feed = diversity_aware_feed(
+        posts,
+        seed_id="seed",
+        limit=3,
+        diversity_every=1,
+        preferred_perspective_by_topic={"climate": "pro", "economy": "pro", "transport": "pro"},
+    )
+    diverse_topics = [item["post"].topic for item in feed if item["is_diverse_pick"]]
+    assert set(diverse_topics) == {"climate", "economy", "transport"}
+
+
 def test_standard_feed_stays_within_seed_perspective_even_when_the_topic_runs_out():
     # Only one other same-topic/same-perspective post exists, so a naive
     # global similarity ranking would have to pad the rest of the feed with
