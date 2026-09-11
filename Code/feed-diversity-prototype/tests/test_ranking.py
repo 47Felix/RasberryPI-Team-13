@@ -84,6 +84,28 @@ def test_diversity_aware_feed_exclude_ids_drops_seen_posts():
     assert all(item["post"].id != "counter-perspective" for item in feed)
 
 
+def test_diversity_aware_feed_ignores_liked_ids_for_the_diversity_slot():
+    # The only counter-perspective post in POSTS is already liked. Unlike
+    # exclude_ids, liked_ids must not remove it from the diversity-marked
+    # tiers - there's only ever a handful of counter candidates per topic,
+    # so hiding liked ones there would silently turn diversity slots into
+    # unmarked reinforcing posts once an account had liked most of them
+    # (reported live 2026-09-11).
+    feed = diversity_aware_feed(
+        POSTS, seed_id="seed", limit=3, diversity_every=1, liked_ids={"counter-perspective"}
+    )
+    diverse_items = [item for item in feed if item["is_diverse_pick"]]
+    assert diverse_items
+    assert any(item["post"].id == "counter-perspective" for item in diverse_items)
+
+
+def test_diversity_aware_feed_liked_ids_still_drops_reinforcing_posts():
+    feed = diversity_aware_feed(
+        POSTS, seed_id="seed", limit=3, diversity_every=99, liked_ids={"same-perspective"}
+    )
+    assert all(item["post"].id != "same-perspective" for item in feed)
+
+
 def test_standard_feed_stays_within_seed_perspective_even_when_the_topic_runs_out():
     # Only one other same-topic/same-perspective post exists, so a naive
     # global similarity ranking would have to pad the rest of the feed with

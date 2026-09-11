@@ -330,6 +330,7 @@ def diversity_aware_feed(
     preferred_perspective_by_topic: dict[str, str] | None = None,
     preferred_political_label: str | None = None,
     exclude_ids: set[str] | None = None,
+    liked_ids: set[str] | None = None,
 ):
     """Same similarity base, but deliberately mixes in topically-related
     counter-perspective posts every `diversity_every`-th slot, so the feed
@@ -361,6 +362,17 @@ def diversity_aware_feed(
 
     `exclude_ids` drops those post ids before ranking, same as in
     standard_feed() - lets a plain reload rotate on to unseen posts.
+
+    `liked_ids` only drops posts from the *reinforcing* tiers (`same_both`,
+    same-topic-and-perspective-and-label; and `other_topics`, unrelated
+    topics) - not from the three counter/diversity tiers below. Those only
+    have a handful of candidates per topic to begin with (one topic times
+    one perspective times one political label), so also hiding already-liked
+    ones there used to run them dry once an account had liked most of a
+    topic's counter content, silently degrading diversity slots to unmarked
+    reinforcing posts instead (see user report 2026-09-11). Showing a
+    counter-perspective post you've already liked again is still more useful
+    here than showing none at all.
     """
     seed_post = next(p for p in posts if p.id == seed_id)
     preferred_perspective_by_topic = preferred_perspective_by_topic or {}
@@ -369,6 +381,9 @@ def diversity_aware_feed(
     candidates = _similarities_to_seed(posts, seed_id)
     if exclude_ids:
         candidates = [c for c in candidates if c[0].id not in exclude_ids]
+    reinforcing_candidates = candidates
+    if liked_ids:
+        reinforcing_candidates = [c for c in candidates if c[0].id not in liked_ids]
 
     def same_topic(p):
         return p.topic == seed_post.topic
@@ -378,7 +393,7 @@ def diversity_aware_feed(
 
     if bias_political:
         same_both = iter(
-            _sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and matches_political(p))
+            _sorted_by_similarity(reinforcing_candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and matches_political(p))
         )
         same_persp_diff_pol = iter(
             _sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and not matches_political(p))
@@ -390,12 +405,12 @@ def diversity_aware_feed(
             _sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective and not matches_political(p))
         )
     else:
-        same_both = iter(_sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective == bias_perspective))
+        same_both = iter(_sorted_by_similarity(reinforcing_candidates, lambda p: same_topic(p) and p.perspective == bias_perspective))
         same_persp_diff_pol = iter([])
         diff_persp_same_pol = iter(_sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective))
         double_counter = iter([])
 
-    other_topics = iter(_sorted_by_similarity(candidates, lambda p: not same_topic(p)))
+    other_topics = iter(_sorted_by_similarity(reinforcing_candidates, lambda p: not same_topic(p)))
 
     feed = []
     while len(feed) < limit:
