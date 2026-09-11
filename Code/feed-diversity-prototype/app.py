@@ -496,6 +496,19 @@ def index():
         fediverse_topic = seed_post.topic
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
+        # Posts the account already liked stay out of the feed body for
+        # good, not just for the length of the session's rotation window:
+        # _rotation_plan()'s "seen" list is capped (SEEN_HISTORY_CAP) and
+        # gets wiped entirely once the unseen pool runs low, so a like from
+        # a few reloads back used to resurface once either of those kicked
+        # in (reported live 2026-09-11). Still eligible as the seed post
+        # itself - that's never shown as a feed card either way, see
+        # _similarities_to_seed() - only excluded from the feed body.
+        if current_user:
+            liked_post_ids = db.fetch_liked_post_ids(current_user["id"], post_ids)
+            if liked_post_ids:
+                exclude_ids = (exclude_ids or set()) | liked_post_ids
+
         perspective_source = {}
         if current_user:
             prefs = compute_preferences(current_user["id"], liked_history=liked_history)
@@ -765,6 +778,7 @@ def create_post():
     perspective = request.form.get("perspective", "")
     political_label = request.form.get("political_label", "")
 
+    new_post_id = None
     if (
         title
         and content
@@ -772,9 +786,15 @@ def create_post():
         and perspective in KNOWN_PERSPECTIVES
         and political_label in KNOWN_POLITICAL_LABELS
     ):
-        db.insert_post(title, content, topic, perspective, session["user_id"], political_label)
+        new_post_id = db.insert_post(title, content, topic, perspective, session["user_id"], political_label)
 
-    return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
+    # Seed the feed on the post just published, if it saved - otherwise it's
+    # just one candidate among 300+ posts for an 8-slot feed and almost never
+    # wins enough similarity/perspective ranking to appear on its own (see
+    # user report 2026-09-11: "own posts never show up").
+    return redirect(
+        url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix"), seed_id=new_post_id)
+    )
 
 
 @app.route("/posts/latest-id")
