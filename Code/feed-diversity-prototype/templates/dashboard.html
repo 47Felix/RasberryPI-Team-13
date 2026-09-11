@@ -54,8 +54,8 @@
     {% else %}
       {% if can_show_mine or can_show_all %}
         <nav class="tabs dashboard-scope-toggle" aria-label="View">
-          {% if can_show_mine %}<a href="{{ url_for('dashboard') }}" class="tab {{ 'active' if scope == 'me' }}">Just me</a>{% endif %}
-          {% if can_show_all %}<a href="{{ url_for('dashboard', scope='all') }}" class="tab {{ 'active' if scope == 'all' }}">All accounts</a>{% endif %}
+          {% if can_show_mine %}<a href="{{ url_for('dashboard') }}" class="tab {{ 'active' if scope == 'me' }}" {% if scope == 'me' %}aria-current="page"{% endif %}>Just me</a>{% endif %}
+          {% if can_show_all %}<a href="{{ url_for('dashboard', scope='all') }}" class="tab {{ 'active' if scope == 'all' }}" {% if scope == 'all' %}aria-current="page"{% endif %}>All accounts</a>{% endif %}
         </nav>
       {% endif %}
       <div class="feed">

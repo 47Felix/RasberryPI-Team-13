@@ -95,6 +95,146 @@ verändert wurde, bevor sie behauptet, etwas sei "erledigt". Merge nach `main`
 bleibt bei Anton/Felix. Den Scheduled-Prompt nicht blind befolgen, wenn er
 veraltet wirkt - erst Git-Log / offene PRs / diese Datei prüfen.
 
+## Stand nach dem Lauf vom 11.09.2026 (siebte Nacht-Session)
+
+Der scheduled-task-Prompt für diese Session war wieder auf einem massiv
+veralteten Stand - er beschrieb als "heutige Top-Priorität" nochmal das
+Nutzer-Feedback vom 03.09. zur Zwei-Spalten-UI aus PR #83 ("sieht nach
+Claude Design aus", "kein richtiger Feed") und forderte einen kompletten
+Struktur-Umbau zu einem einzelnen scrollbaren Feed mit Tab-Umschaltung statt
+zwei Spalten. Vor dem Umsetzen wie vorgesehen zuerst diese Datei geprüft:
+dieses exakte Feedback ist laut den Sessions vom 03.-04.09. und mehreren
+weiteren Nächten seither bereits umgesetzt (PR #86: Single-Feed + Tabs statt
+Zwei-Spalten-Vergleich) und mehrfach per Playwright-Screenshot
+gegenverifiziert (siehe dritte Session weiter unten) - seitdem sind sieben
+weitere Nächte Feature-/Algorithmus-Arbeit auf dieser Struktur aufgebaut.
+Zusätzlich hat Felix die Top-Priorität dieser Datei am 10.09. per Chat
+explizit auf Algorithmus/Refresh-Überarbeitung umgestellt (`221c122`) - das
+hat gegenüber dem veralteten Scheduled-Prompt Vorrang, wie die Datei selbst
+verlangt. Auch der Ist-Zustand im Prompt ("main auf PR #81/#83") war
+komplett veraltet: main steht inzwischen bei PR #149, mit echten Accounts,
+Dashboard, politischer Achse, Fediverse-Vorschau, Bubble-Trend-Sparklines
+und (aus der letzten Nacht) einem bereits offenen PR #152 zur
+TF-IDF-Nachbarschaftsqualität.
+
+**Kontinuität statt Neuanfang:** `list_pull_requests` zeigte PR #152
+(`fix/ranking-tfidf-neighborhood-quality`, sechste Nacht-Session, siehe
+Eintrag direkt unten) offen und ungemergt für genau diesen Ordner - laut
+Kontinuitätsregel diesen Branch ausgecheckt und fortgesetzt statt neu
+anzufangen, statt einen zweiten, konkurrierenden PR zu eröffnen.
+
+**Was diese Session bearbeitet hat:** die sechste Session hatte in ihren
+"Nächsten Schritten" (Punkt 6) selbst vorgeschlagen, dass ein Folgelauf sich
+stärker auf Priorität 3 der Team-Anweisung ("alles andere") konzentrieren
+kann, da 1 (Ranking) und 2 (Rotation) bereits mit konkretem Fund/Fix bzw.
+sauberer Verifikation bearbeitet waren. Diesem Vorschlag gefolgt und
+`templates/index.html`/`dashboard.html` gezielt auf Accessibility geprüft
+(nicht kosmetisch, sondern konkrete fehlende ARIA-Semantik):
+
+- Aktiver Feed-Modus-/Dashboard-Scope-Tab hatte keine `aria-current="page"`
+  Markierung - nur visuell per CSS-Klasse unterscheidbar, für
+  Screenreader-Nutzer:innen nicht erkennbar, welcher Tab aktiv ist. Ergänzt
+  in beiden Templates.
+- Like-Button hatte weder `aria-pressed` noch ein beschreibendes
+  `aria-label` - nur ein Herz-Icon-Glyph, dessen gefüllt/leer-Zustand für
+  Screenreader unsichtbar ist. Ergänzt (`aria-pressed`, `aria-label` inkl.
+  aktueller Like-Zahl), inklusive Client-JS-Sync in `toggleLike()` nach dem
+  Fetch-Response.
+- `comments-toggle`-Button hatte kein `aria-expanded` - Screenreader können
+  den Auf-/Zu-Zustand des Kommentarbereichs nicht ansagen. Ergänzt
+  (statisch `false` initial, per JS in `toggleComments()` synchron
+  gehalten), plus `aria-live="polite"` auf `.comments-list`, damit
+  geladene/gelöschte Kommentare angesagt werden.
+- Das "↑ New posts"-Banner wird nur visuell eingeblendet (`hidden`-Attribut
+  entfernt) - ohne eigene Live-Region wird das für Screenreader-Nutzer:innen
+  nicht angesagt, da `[hidden]`-Elemente beim Laden nicht im Accessibility
+  Tree stehen. Neue eigenständige `#live-status`-Region (`sr-only`,
+  `role="status"`, `aria-live="polite"`) ergänzt, die `pollForNewPosts()`
+  zusätzlich zum sichtbaren Banner befüllt.
+
+**Testabdeckungslücke geschlossen, die über alle bisherigen Sessions
+bestand:** kein Testfile deckte `app.py`s eigentliche Flask-Routen ab -
+`tests/test_ranking.py`/`test_rotation.py`/`test_fediverse.py` testen nur
+die reinen Funktionsbausteine, jede Session vorher hat `/`, `/dashboard`,
+`/login`, `/register` etc. nur manuell per Flask-Testclient gegengeprüft
+und dann verworfen (siehe "Verifiziert"-Absätze aller bisherigen Sessions
+oben). Neue `tests/test_app.py` (13 Tests) mit gemocktem `db`/`fediverse`-
+Modul: beide Feed-Modi, leerer Post-Katalog, `/dashboard` gesperrt/nicht
+konfiguriert, `/login`/`/register`-Rendering, `/posts/latest-id`, Login-
+Pflicht auf Like/Kommentar-Endpunkten (401 ohne Session) - plus gezielte
+Assertions auf die oben ergänzten ARIA-Attribute, damit ein künftiger
+Regressions-Fund nicht wieder nur manuell auffällt.
+
+**Verifiziert:** `pytest tests/` 83/83 grün (70 vorher + 13 neue Tests in
+`test_app.py`). Zusätzlich `python3 app.py` tatsächlich gestartet (nicht nur
+Testclient) und alle Kern-Routen mit `curl` gegengeprüft (`/?mode=standard`,
+`/?mode=diversity`, `/dashboard`, `/login`, `/register` - alle 200, ohne
+Supabase-Konfiguration zeigt der Feed korrekt den leeren Zustand statt
+abzustürzen). `code-review`-Skill auf den vollen Diff (Templates + neue
+Testdatei) angewendet: keine Befunde. `security-review`-Skill ebenfalls
+angewendet (sowohl auf den bereits vorhandenen PR-Diff von der sechsten
+Session als auch separat auf die neuen Accessibility-/Test-Änderungen
+dieser Session): keine hochsicheren Befunde - reine ARIA-Attribut-Ergänzung
+und ein neues, rein lesendes Test-File ohne neuen Nutzereingabe-Pfad, keine
+Änderung an Jinja-Autoescaping, kein `| safe`.
+
+**Weiterhin dieselben zwei Blocker** (keine Supabase-Zugangsdaten, kein
+Internetzugriff zu externen Domains - erneut geprüft: `env | grep -i
+supabase` leer, `curl https://mastodon.social/` liefert `000`/keine
+Verbindung). Unverändert offen für eine Session mit Zugangsdaten/
+Netzwerkzugriff, siehe "Nächste Schritte" unten.
+
+**Kein STATUS: FERTIG-Block** - `/dashboard`s `political_label_ratio`-Frage
+(Kandidat aus der sechsten Session) ist weiterhin eine offene
+Team-Entscheidung, und ein AT-Praxistest der heute ergänzten ARIA-Attribute
+mit einem echten Screenreader (z.B. NVDA/VoiceOver) steht noch aus - diese
+Sandbox kann das nicht selbst verifizieren, nur die Attribute selbst und
+ihre JS-Synchronisierung testen.
+
+## Nächste Schritte (Priorität absteigend, ersetzt die Fassung der sechsten Session weiter unten)
+
+1. **Sobald Supabase-Zugangsdaten verfügbar sind:** unverändert offen -
+   `0003_political_label.sql`, `0006_more_categories.sql`,
+   `0007_english_content.sql`, `0010_political_label_english.sql` in
+   Dateinamen-Reihenfolge anwenden (`apply_schema.py`), danach
+   `seed_demo_accounts.py` laufen lassen.
+2. **Fediverse-Anbindung live verifizieren**, sobald normaler
+   Internetzugriff verfügbar ist.
+3. **Deployment tatsächlich durchführen** (`deploy/README.md`), sobald
+   jemand mit VM-Zugriff Zeit hat.
+4. **Die heute ergänzten ARIA-Attribute mit einem echten Screenreader
+   gegenprüfen** (NVDA/VoiceOver/JAWS) - diese Sandbox kann nur die
+   Attribute selbst und ihre JS-Synchronisierung testen, nicht das
+   tatsächliche Vorlese-Erlebnis.
+5. **`/dashboard` optional um `political_label_ratio` erweitern** (aus der
+   sechsten Session, weiterhin offene Design-/Team-Entscheidung).
+6. Politisches Label als optionales statt Pflichtfeld - weiterhin keine
+   Team-Entscheidung bekannt, nicht umgesetzt.
+7. Falls es noch offene PRs für diesen Ordner gibt, wenn der nächste Lauf
+   startet: gegen den dann aktuellen main-Stand prüfen/rebasen, bevor
+   inhaltlich weitergearbeitet wird (Merge bleibt bei Anton/Felix). Stand
+   dieser Session: PR #152 ist der einzige offene PR für
+   `Code/feed-diversity-prototype/` und wurde in dieser Session direkt
+   fortgesetzt (siehe oben) statt einen zweiten zu eröffnen.
+8. Sollte kein neuer Anhaltspunkt fürs Ranking/Rotation vorliegen, bleibt
+   Priorität 3 ("alles andere") der sinnvollste nächste Fokus - z.B.
+   weitere Testabdeckung für `create_post`/`toggle_like`/Kommentar-Routen
+   mit eingeloggter Session (diese Session hat nur den "nicht eingeloggt"-
+   Fall dieser Endpunkte getestet), oder ein zweiter Blick auf
+   `register.html`/`login.html` auf dieselbe Art fehlender ARIA-Semantik.
+
+## Was in dieser Session NICHT versucht wurde (mit Absicht)
+
+- Keine Supabase-Migrationen/Seed-Skripte ohne Zugangsdaten ausgeführt
+- Kein Login/SSH/Deployment auf die Team-VM
+- Kein Merge des PRs nach `main` (bleibt bei Anton/Felix)
+- Kein weiterer Struktur-Umbau des Feeds trotz veraltetem Prompt - siehe
+  Begründung oben, wäre ein Rückschritt ohne aktuellen Anlass gewesen
+- Kein `/dashboard`-Ratio-Feature - weiterhin eine Design-Entscheidung, kein
+  klarer Bugfix (siehe sechste Session)
+- Keine visuelle/Layout-Änderung an Feed/Karten - nur ARIA-Attribute und
+  ihre JS-Synchronisierung, keine CSS-/Struktur-Änderung
+
 ## Stand nach dem Lauf vom 10.09.2026 (sechste Nacht-Session)
 
 Der scheduled-task-Prompt für diese Session war wieder auf einem veralteten

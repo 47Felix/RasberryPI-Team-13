@@ -41,9 +41,11 @@
 
     <nav class="tabs" aria-label="Feed mode">
       <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='standard') }}"
-         class="tab {{ 'active' if mode == 'standard' }}">Standard</a>
+         class="tab {{ 'active' if mode == 'standard' }}"
+         {% if mode == 'standard' %}aria-current="page"{% endif %}>Standard</a>
       <a href="{{ url_for('index', seed_id=seed_id, mix=mix, mode='diversity') }}"
-         class="tab {{ 'active' if mode == 'diversity' }}">Diversity-aware</a>
+         class="tab {{ 'active' if mode == 'diversity' }}"
+         {% if mode == 'diversity' %}aria-current="page"{% endif %}>Diversity-aware</a>
     </nav>
     <div class="tab-caption">
       <p style="margin:0;">
@@ -84,6 +86,7 @@
     <button type="button" id="refresh-banner" class="refresh-banner" hidden onclick="window.location.reload()">
       ↑ New posts - refresh
     </button>
+    <div id="live-status" class="sr-only" role="status" aria-live="polite"></div>
 
     {% if rotation_active %}
       <p class="rotate-note">Every reload moves the feed on to posts you haven't seen yet - so "refresh" brings up new posts.</p>
@@ -133,16 +136,18 @@
                     type="button"
                     class="like-button {{ 'liked' if item.liked }}"
                     data-post-id="{{ item.post.id }}"
+                    aria-pressed="{{ 'true' if item.liked else 'false' }}"
+                    aria-label="{{ 'Unlike' if item.liked else 'Like' }} this post ({{ item.likes }} like{{ '' if item.likes == 1 else 's' }})"
                     onclick="toggleLike(this)">
-                    <span class="like-icon">{{ '♥' if item.liked else '♡' }}</span>
+                    <span class="like-icon" aria-hidden="true">{{ '♥' if item.liked else '♡' }}</span>
                     <span class="like-count">{{ item.likes }}</span>
                   </button>
                 </div>
               </div>
 
               <div class="comments" data-post-id="{{ item.post.id }}">
-                <button type="button" class="comments-toggle" onclick="toggleComments(this)">💬 {{ item.comments }} comments</button>
-                <div class="comments-list" hidden></div>
+                <button type="button" class="comments-toggle" aria-expanded="false" onclick="toggleComments(this)">💬 {{ item.comments }} comments</button>
+                <div class="comments-list" hidden aria-live="polite"></div>
                 {% if current_user %}
                   <form class="comment-form" hidden onsubmit="return submitComment(event, this)">
                     <input type="text" name="content" maxlength="300" placeholder="Comment as {{ current_user.handle }}…" required>
@@ -326,6 +331,7 @@
         .then(function (data) {
           if (data.id && data.id !== LATEST_POST_ID) {
             document.getElementById("refresh-banner").hidden = false;
+            document.getElementById("live-status").textContent = "New posts available - refresh to see them.";
           }
         })
         .catch(function () { /* offline/unreachable - just try again next tick */ });
@@ -361,9 +367,15 @@
           var icon = button.querySelector(".like-icon");
           var count = button.querySelector(".like-count");
           var delta = data.liked ? 1 : -1;
+          var newCount = parseInt(count.textContent, 10) + delta;
           icon.textContent = data.liked ? "♥" : "♡";
           button.classList.toggle("liked", data.liked);
-          count.textContent = parseInt(count.textContent, 10) + delta;
+          button.setAttribute("aria-pressed", data.liked ? "true" : "false");
+          button.setAttribute(
+            "aria-label",
+            (data.liked ? "Unlike" : "Like") + " this post (" + newCount + (newCount === 1 ? " like)" : " likes)")
+          );
+          count.textContent = newCount;
         });
     }
 
@@ -381,6 +393,7 @@
         list.setAttribute("hidden", "");
         if (form) form.setAttribute("hidden", "");
       }
+      button.setAttribute("aria-expanded", opening ? "true" : "false");
     }
 
     function renderComments(list, comments) {

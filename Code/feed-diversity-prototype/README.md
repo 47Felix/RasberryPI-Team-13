@@ -569,3 +569,28 @@ purpose.
       switch; small-vs-large dataset behavior and the never-freezes
       guarantee were already covered by `tests/test_rotation.py`. Nothing
       found to fix here.
+- [x] Automated route-level test coverage for `app.py` (2026-09-11 night
+      session): `pytest`/`ranking.py`/`_rotation_plan()` were covered, but no
+      test file exercised the Flask routes themselves (`/`, `/dashboard`,
+      `/login`, `/register`, the like/comment JSON endpoints) - every past
+      session had only checked these by hand with a Flask test client and
+      never committed it. New `tests/test_app.py` (13 tests) mocks the `db`/
+      `fediverse` modules and asserts on both modes, the empty-catalogue
+      state, `/dashboard`'s locked/unauthorized states, and the new
+      accessibility attributes below.
+- [x] Accessibility pass on `templates/index.html`/`dashboard.html`
+      (2026-09-11 night session, per the "Accessibility/UX polish" item in
+      NIGHTLY_TASK.md's next-steps list): added `aria-current="page"` to the
+      active feed-mode/dashboard-scope tab, `aria-pressed` + a descriptive
+      `aria-label` (kept in sync with the like count) on the like button,
+      `aria-expanded` on the comments-toggle button (kept in sync in
+      `toggleComments()`), `aria-live="polite"` on the comments list so a
+      loaded/deleted comment is announced, and a dedicated visually-hidden
+      `aria-live="polite"` status region (`#live-status`) so the "new posts
+      available" state is announced to screen readers - the visible
+      "↑ New posts" banner alone isn't reliably announced since it's
+      `[hidden]` at load. Deliberately did not touch layout/visual design -
+      the feed-as-real-app structure (single feed, mode tabs, avatar/handle/
+      timestamp) was already built and verified in earlier sessions (see
+      NIGHTLY_TASK.md's session log), this only closes gaps in how that
+      existing structure is exposed to assistive technology.
