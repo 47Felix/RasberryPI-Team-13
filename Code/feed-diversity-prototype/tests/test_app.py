@@ -135,3 +135,28 @@ def test_like_requires_login(client):
 def test_comment_post_requires_login(client):
     response = client.post("/posts/p1/comments", json={"content": "hi"})
     assert response.status_code == 401
+
+
+def test_index_fetches_liked_post_ids_only_once_per_request(client, monkeypatch):
+    # index() used to call db.fetch_liked_post_ids() a second time (scoped to
+    # just the shown feed items) purely to set item["liked"], on top of the
+    # already-fetched, strictly wider call used to exclude liked posts from
+    # the candidate pool - a redundant Supabase round-trip on every page load
+    # for a logged-in account. Only one call should happen now, and the
+    # "liked" flag should still reflect the same ids.
+    calls = []
+
+    def fake_fetch_liked_post_ids(user_id, post_ids):
+        calls.append(set(post_ids))
+        return {"p1"}
+
+    monkeypatch.setattr(app_module.db, "fetch_liked_post_ids", fake_fetch_liked_post_ids)
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = "u1"
+        sess["display_name"] = "Demo User"
+        sess["handle"] = "@demo-user"
+
+    response = client.get("/?mode=standard")
+    assert response.status_code == 200
+    assert len(calls) == 1

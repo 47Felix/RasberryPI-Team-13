@@ -406,6 +406,123 @@ oberflächlich "geprüft" zu haben.
   ("visuelles Redesign") - laut Git-Log/dieser Datei mehrfach bereits
   umgesetzt und verifiziert, siehe Begründung oben
 
+## Stand nach dem Lauf vom 11.09.2026 (sechste Nacht-Session, dritte auf PR #152)
+
+**Erst mal ein Lücke in der eigenen Doku-Kette festgestellt, bevor inhaltlich
+weitergearbeitet wurde:** diese Datei war stehengeblieben auf dem Stand nach
+PR #148 (fünfte Session, siehe Eintrag unten), obwohl `main` seitdem sieben
+weitere gemergte Commits hat (#153/#155-160 - Reload-/Rotations-Fixes,
+Diversity-Slot-Themenrotation, Ausschluss gelikter Posts, Mobile-Lesbarkeit,
+Sign-up-Umfrage sichtbar), alle laut Commit-Botschaften live mit Anton beim
+DTEW-Stand entstanden, nicht ueber diese Nacht-Routine - deshalb ohne Eintrag
+hier. Zusaetzlich lag bereits ein offener PR #152
+(`fix/ranking-tfidf-neighborhood-quality`) mit zwei eigenen, in der PR-
+Beschreibung dokumentierten Naechten (10.09. TF-IDF-Nachbarschafts-Fix aus
+der Team-Prioritaet-1-Anweisung, 11.09. Accessibility-Pass + erste
+Route-Test-Datei `tests/test_app.py`) - laut Kontinuitaets-Regel an dieser
+Stelle fortgesetzt statt neu angefangen. Main mit dem PR-Branch verglichen:
+keine inhaltliche Ueberschneidung mit den sieben live-Fixes, PR #152 war
+laut eigenem Kommentar dort bereits per Merge auf dem aktuellen main-Stand
+(nur zwei danach dazugekommene, hier irrelevante Vault-Commits fehlten,
+keine Konflikte).
+
+**Frischer, kritischer Blick auf `ranking.py`/`app.py` (Team-Prioritaet 1/2),
+zwei konkrete Bugs gefunden und mit Regressionstest behoben:**
+
+1. `standard_feed()`s `preferred_political_ratio`-Zweig (genau der von Felix
+   genannte Randfall "ein Bucket laeuft leer"): wenn ein Label laut Ratio
+   mehr Slots bekommen sollte als tatsaechlich Kandidaten mit diesem Label
+   existieren, brach die Slot-Vergabe vorzeitig ab - die beiden
+   Fallback-Stufen danach (`no_signal`/`other_political`) greifen aber nur
+   fuer Posts, deren Label *nicht* Teil der Ratio ist, koennen also nicht
+   mit ueberschuessigen Posts eines anderen, noch nicht ausgeschoepften
+   Ratio-Labels auffuellen. Ergebnis: der Feed kam kuerzer zurueck als
+   `limit`, obwohl reichlich passende Kandidaten des anderen Labels
+   uebrig waren. Reproduziert (3 "left"-Posts, 20 "right"-Posts, ratio
+   60/40, limit 8 -> Feed hatte nur 6 statt 8 Eintraege), gefixt durch
+   einen Auffuell-Schritt, der vor den beiden alten Fallback-Stufen aus
+   verbleibenden Kandidaten *irgendeines* Ratio-Labels nach Similarity
+   auffuellt. Neuer Test
+   `test_standard_feed_ratio_tops_up_from_a_surplus_label_when_one_bucket_runs_dry`.
+   Auf dem echten ~250-Post-Datensatz mit nur zwei/drei Labels und vielen
+   Posts pro Topic vermutlich selten sichtbar, aber genau der Randfall, den
+   die Team-Anweisung explizit zum Pruefen nannte - und mit kleinerem
+   Datensatz (z.B. neues Thema mit wenigen Posts) real.
+2. `app.py:index()` rief `db.fetch_liked_post_ids()` zweimal pro Request auf:
+   einmal fuer den gesamten Post-Katalog (um bereits gelikte Posts aus dem
+   Kandidatenpool zu nehmen), einmal zusaetzlich nur fuer die im Feed
+   gezeigten Posts, nur um `item["liked"]` zu setzen - obwohl die zweite
+   Menge immer eine Teilmenge der ersten ist. Ein unnoetiger
+   Supabase-Roundtrip bei jedem einzelnen Seitenaufruf fuer eingeloggte
+   Accounts. Gefixt: die zweite Abfrage entfernt, `item["liked"]` prueft
+   jetzt gegen das bereits vorhandene `liked_post_ids`. Neuer Test
+   `test_index_fetches_liked_post_ids_only_once_per_request` (zaehlt Calls
+   ueber ein Monkeypatch).
+
+**Zusaetzlich unabhaengig nachgerechnet statt nur der PR-152-Behauptung
+vertraut:** Session-Cookie-Groesse (von Felix explizit als Sorge genannt,
+`SEEN_HISTORY_CAP=60` UUIDs plus restliche Session-Keys) mit
+`itsdangerous`/Flasks eigenem Signing-Serializer nachgebaut - 60 UUIDs plus
+realistisch lange Anzeigename/Handle-Werte ergeben rund 2 KB signierten
+Cookie-Wert, deutlich unter dem gaengigen 4-KB-Browser-Limit. Kein
+Handlungsbedarf, aber jetzt tatsaechlich nachgemessen statt nur behauptet.
+
+**Kandidaten gesehen, bewusst NICHT umgesetzt (Unsicherheit):**
+- `ranking.diversity_score()` (die einfache Convenience-Wrapper-Funktion,
+  nicht `diversity_score_for_perspective()`/`_for_political_label()`) wird
+  von `app.py` nirgends importiert/aufgerufen - toter Code in Produktion,
+  nur noch von den eigenen Unit-Tests genutzt. Der Docstring beschreibt sie
+  aber ausdruecklich als bewusst behaltene Convenience-API "fuer Aufrufer,
+  die keinen Account-weiten bias_perspective mitfuehren" - koennte
+  absichtlich fuer einen noch nicht existierenden Aufrufer bereitstehen.
+  Nicht geloescht, da unklar ob das eine bewusste API-Entscheidung oder
+  schlicht Restcode ist - Felix/Anton koennen das besser einschaetzen.
+- `diversity_aware_feed()`s `pick_reinforcing_post()` probiert im
+  `bias_political`-Zweig als zweite Fallback-Stufe "irgendein Post aus
+  einem anderen Topic" *vor* den spezifischeren Stufen 3-5 (gleiches Topic,
+  aber nur teilweise passend). Wirkt auf den ersten Blick rueckwaerts,
+  ist aber auf dem echten ~250-Post/12-Topic-Datensatz praktisch nie
+  erreichbar bevor Stufe 2 schon einen Treffer liefert (12 Topics geben
+  reichlich "anderes Topic"-Auswahl) - vermutlich harmlos in der Praxis.
+  Ohne konkret gemeldetes Problem nicht umgebaut, um kein Verhalten ohne
+  Anlass zu aendern - als Beobachtung hier notiert statt stillschweigend
+  ignoriert.
+
+**Verifiziert:** `pytest tests/` 88/88 gruen (86 vorher + 2 neue Tests).
+Kein neuer Nutzereingabe-Pfad (reine Algorithmus-Logik auf bereits
+validierten `Post`-Objekten, und eine entfernte statt hinzugefuegte
+DB-Abfrage) - keine Security-Review-relevante Aenderung.
+
+**Weiterhin dieselben Blocker wie in jeder bisherigen Session:**
+`env | grep -i supabase` liefert nichts, kein Internetzugriff zu externen
+Domains. PR #152 bleibt offen, wartet weiterhin auf Anton/Felix (keine
+Review-Aktivitaet). Kein Merge (bleibt bei Anton/Felix), kein PR-Split -
+die zwei Fixes dieser Nacht auf denselben Branch/PR #152 gepusht, da
+inhaltlich zur selben "Algorithmus/Refresh-Ueberarbeitung"-Prioritaet
+gehoerend und PR #152 laut Kontinuitaets-Regel weiterhin der richtige Ort
+dafuer ist.
+
+## Naechste Schritte (Prioritaet absteigend)
+
+1. **Sobald jemand mit Repo-Schreibrecht Zeit hat:** PR #152 reviewen/mergen
+   - inhaltlich jetzt drei Naechte Arbeit (TF-IDF-Fix, Accessibility +
+     Routen-Tests, die zwei Bugfixes oben), alles gruen getestet, aber ohne
+     jede Review-Aktivitaet seit Erstellung am 10.09.
+2. Die zwei oben genannten Kandidaten (`diversity_score()` toter Code,
+   `pick_reinforcing_post()`-Stufenreihenfolge) sind bewusst unangetastet -
+   falls das Team eine Meinung dazu hat, bitte hier oder im PR vermerken.
+3. Sobald Supabase-Zugangsdaten/Netzwerkzugriff verfuegbar sind: die in
+   fruaheren Eintraegen genannten Schritte (Migrationen anwenden,
+   Seed-Skripte laufen lassen, Fediverse live verifizieren) bleiben
+   unveraendert offen - siehe die aelteren Eintraege unten fuer die
+   vollstaendige Liste.
+4. Falls Prioritaet 1/2 (Algorithmus/Refresh) beim naechsten Blick weiterhin
+   sauber wirken: mit Prioritaet 3 ("alles andere") weitermachen, aber mit
+   frischem Blick pruefen statt die bereits als erledigt dokumentierten
+   Punkte (Redesign, politische Einordnung, Beispiel-Accounts, Fediverse-
+   Recherche, Deployment-Vorbereitung - alle laut README bereits umgesetzt)
+   nochmal anzufassen ohne neuen Anlass.
+
 ## Stand nach dem Lauf vom 09.09.2026 (fünfte Nacht-Session, Nacht auf 10.09.)
 
 Der scheduled-task-Prompt für diese Session war wieder auf einem veralteten

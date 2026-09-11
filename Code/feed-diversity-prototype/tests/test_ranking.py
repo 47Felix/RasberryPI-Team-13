@@ -539,3 +539,31 @@ def test_standard_feed_ratio_takes_priority_over_the_single_label_fallback():
     labels = [item["post"].political_label for item in feed]
     assert labels.count("left") == 5
     assert labels.count("right") == 5
+
+
+def test_standard_feed_ratio_tops_up_from_a_surplus_label_when_one_bucket_runs_dry():
+    # Edge case explicitly called out for review: a 60/40 ratio asks for 5
+    # "left" slots (out of limit=8), but only 3 "left" candidates actually
+    # exist. Before this fix, the interleave step just stopped once left's
+    # scarce bucket was exhausted, and the fallback tiers couldn't rescue the
+    # shortfall because both explicitly exclude any label that's *part of*
+    # the ratio (they only cover unlabeled/other-label posts) - the feed came
+    # back with 6 posts instead of the requested 8, even though plenty more
+    # "right" candidates were available to fill the gap.
+    seed = Post("seed", "Wind Power Expansion", "Wind power energy transition climate protection", "climate", "pro", "left")
+    scarce_left = [
+        Post(f"left-{i}", f"Left Post {i}", "Wind power energy transition climate protection topic", "climate", "pro", "left")
+        for i in range(3)
+    ]
+    abundant_right = [
+        Post(f"right-{i}", f"Right Post {i}", "Wind power energy transition climate protection topic", "climate", "pro", "right")
+        for i in range(20)
+    ]
+    posts = [seed] + scarce_left + abundant_right
+
+    feed = standard_feed(posts, seed_id="seed", limit=8, preferred_political_ratio={"left": 0.6, "right": 0.4})
+
+    assert len(feed) == 8
+    labels = [item["post"].political_label for item in feed]
+    assert labels.count("left") == 3
+    assert labels.count("right") == 5

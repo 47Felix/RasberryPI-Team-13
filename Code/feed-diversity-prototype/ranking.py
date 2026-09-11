@@ -321,9 +321,26 @@ def standard_feed(
         ranked = _interleave_by_share(buckets, slots)
         used_ids = {post.id for post, _ in ranked}
         remaining = [c for c in candidates if c[0].id not in used_ids]
+        if len(ranked) < limit:
+            # A label's bucket ran dry before using up its full proportional
+            # slot allocation (e.g. only 3 "left" candidates exist but the
+            # ratio calls for 5). The two fallback tiers below only ever
+            # cover posts whose label is *not* part of the ratio at all, so
+            # without this step a still-abundant label (e.g. "right") could
+            # never claim the freed-up slots even though it has plenty more
+            # matching posts left - the feed would just come back shorter
+            # than `limit` instead of filling it. Top up from any remaining
+            # candidate that still matches one of the ratio's labels, by
+            # similarity, before falling through to the no-signal/other-label
+            # tiers.
+            ratio_fill = _sorted_by_similarity(remaining, lambda p: p.political_label in preferred_political_ratio)
+            take = ratio_fill[: limit - len(ranked)]
+            ranked = ranked + take
+            used_ids |= {post.id for post, _ in take}
+            remaining = [c for c in remaining if c[0].id not in used_ids]
         # Same fallback tiers as the winner-take-all branch, restricted to
         # whatever's left after the proportional picks above (only reached
-        # if a label's bucket ran dry before using up its full slot count).
+        # if every ratio label's supply is exhausted).
         no_signal = _sorted_by_similarity(remaining, lambda p: p.political_label is None)
         other_political = _sorted_by_similarity(
             remaining, lambda p: p.political_label is not None and p.political_label not in preferred_political_ratio
