@@ -105,6 +105,13 @@ ONBOARDING_QUESTIONS = [
 # conservative) purely for the visual - the app has no separate social-axis
 # field anywhere downstream, this isn't secretly a second stored dimension.
 # direction is which end of its axis "agree" moves the dot toward.
+#
+# One statement per axis per direction (down from two each, 8 total) as of
+# 2026-09-11: reported live that almost nobody opened/finished the sign-up
+# survey - see register.html's `open` details and shortened intro text for
+# the other half of that fix. Still balanced (one "pulls left"/"pulls right"
+# statement per axis), just shorter to sit through. COMPASS_THRESHOLD in
+# register.html's JS is scaled down to match the smaller per-axis range.
 COMPASS_QUESTIONS = [
     {
         "id": "e1",
@@ -119,18 +126,6 @@ COMPASS_QUESTIONS = [
         "text": "The state should redistribute income and wealth more to reduce inequality.",
     },
     {
-        "id": "e3",
-        "axis": "economic",
-        "direction": "right",
-        "text": "Businesses should be able to operate as freely as possible, without too many regulations.",
-    },
-    {
-        "id": "e4",
-        "axis": "economic",
-        "direction": "left",
-        "text": "Basic services like housing, energy and local transit belong in public rather than private hands.",
-    },
-    {
         "id": "s1",
         "axis": "social",
         "direction": "conservative",
@@ -141,18 +136,6 @@ COMPASS_QUESTIONS = [
         "axis": "social",
         "direction": "progressive",
         "text": "A diversity of lifestyles and openness to change are a benefit to society.",
-    },
-    {
-        "id": "s3",
-        "axis": "social",
-        "direction": "conservative",
-        "text": "Clear national borders and a strong state provide more security than open international cooperation.",
-    },
-    {
-        "id": "s4",
-        "axis": "social",
-        "direction": "progressive",
-        "text": "International cooperation matters more than national go-it-alone approaches, even if that means compromises.",
     },
 ]
 
