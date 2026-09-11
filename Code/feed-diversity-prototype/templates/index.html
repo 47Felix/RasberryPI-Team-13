@@ -306,14 +306,19 @@
     // that pinned seed_id forever afterwards, so a plain browser reload kept
     // re-requesting the same pinned post instead of rotating to unseen
     // content - only closing the tab and reopening the bare URL actually
-    // reset it. Clearing the query string from the visible URL right after
-    // load (without reloading the page) fixes that: in-page links still
-    // carry the real seed_id in their href, so tab/mix switching keeps
-    // working, but the next native reload (F5) hits the bare path and
-    // rotates like a fresh open.
-    if (window.location.search) {
-      window.history.replaceState(null, "", window.location.pathname);
-    }
+    // reset it. Drop just seed_id from the visible URL right after load
+    // (without reloading the page): in-page links still carry the real
+    // seed_id in their href, so tab/mix switching keeps working, but the
+    // next native reload (F5) hits a URL with no seed_id and rotates like a
+    // fresh open. mode/mix stay in the URL so a reload doesn't silently
+    // drop back to the Standard tab (regression reported 2026-09-11).
+    (function () {
+      var url = new URL(window.location.href);
+      if (url.searchParams.has("seed_id")) {
+        url.searchParams.delete("seed_id");
+        window.history.replaceState(null, "", url.pathname + url.search);
+      }
+    })();
 
     var CURRENT_USER_ID = {{ current_user.id | tojson if current_user else 'null' }};
     var LATEST_POST_ID = {{ latest_post_id | tojson }};
