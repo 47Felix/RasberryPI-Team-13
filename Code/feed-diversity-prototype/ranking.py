@@ -336,22 +336,26 @@ def diversity_aware_feed(
     counter-perspective posts every `diversity_every`-th slot, so the feed
     stays relevant (same topic) while avoiding pure echo-chamber reinforcement.
 
-    Every slot in this feed is already restricted to "same topic as the seed
-    post" vs. "other topics" (see `same_topic()` below), so the relevant bias
-    is just the seed's own topic: `preferred_perspective_by_topic` (from the
-    account's own like/comment history, see dominant_perspective_by_topic())
-    is looked up for `seed_post.topic` specifically, falling back to the seed
-    post's own perspective if that topic has no engagement signal yet - e.g.
-    if the account leans "pro" on transport, a transport-seeded diversity feed
-    counters with transport "contra" posts, regardless of what the account
-    thinks about digital or any other topic.
+    Each diversity slot rotates to the next topic in
+    `preferred_perspective_by_topic` (the account's own like/comment history,
+    see dominant_perspective_by_topic()) instead of always countering the
+    seed post's own topic - otherwise every diversity slot in a single feed
+    challenges the same one topic, which reads as "the same counter-opinion
+    over and over" rather than showing the bubble exists across several
+    topics (reported live 2026-09-11: "alle 3 diversity posts waren zur
+    gleichen Kategorie"). Falls back to just the seed's own topic when
+    there's no multi-topic engagement signal yet (new account/too little
+    history) - e.g. if the account leans "pro" on transport and "contra" on
+    digital, successive diversity slots alternate between a transport
+    "contra" counter and a digital "pro" counter, regardless of which topic
+    the current seed happens to be.
 
     `preferred_political_label`/the seed post's `political_label` adds a
     second, independent, still account-wide axis the same way it does in
     standard_feed() (political identity isn't topic-specific) - and as of
     2026-09-10 (Felix) it's the *primary* one, perspective is the secondary
-    tiebreak, mirroring the swap in standard_feed(). When it's set,
-    same-topic candidates split into four groups instead of two
+    tiebreak, mirroring the swap in standard_feed(). When it's set, each
+    rotated topic's candidates split into four groups instead of two
     (matches/differs on perspective, crossed with matches/differs on
     political label). A diversity slot prefers a post that differs on
     *both* axes ("double counter") over one that differs on the political
@@ -363,16 +367,21 @@ def diversity_aware_feed(
     `exclude_ids` drops those post ids before ranking, same as in
     standard_feed() - lets a plain reload rotate on to unseen posts.
 
-    `liked_ids` only drops posts from the *reinforcing* tiers (`same_both`,
-    same-topic-and-perspective-and-label; and `other_topics`, unrelated
-    topics) - not from the three counter/diversity tiers below. Those only
-    have a handful of candidates per topic to begin with (one topic times
-    one perspective times one political label), so also hiding already-liked
-    ones there used to run them dry once an account had liked most of a
-    topic's counter content, silently degrading diversity slots to unmarked
-    reinforcing posts instead (see user report 2026-09-11). Showing a
-    counter-perspective post you've already liked again is still more useful
-    here than showing none at all.
+    `liked_ids` only drops posts from the *reinforcing* fallback fill
+    (same-topic-and-perspective-and-label matches, and posts on topics with
+    no bias signal at all) - never from the counter/diversity picks. Topic
+    rotation already spreads those thin (one topic times one perspective
+    times one political label each), so also hiding already-liked ones
+    would run them dry once an account had liked most of a topic's counter
+    content, silently degrading diversity slots to unmarked reinforcing
+    posts instead (see user report 2026-09-11). Showing a counter-perspective
+    post you've already liked again is still more useful than showing none.
+
+    A picked post is flagged `is_diverse_pick` whenever it objectively
+    counters its *own* topic's bias (perspective and/or political label),
+    regardless of whether it was deliberately chosen for a diversity slot or
+    turned up as reinforcing-fallback filler (e.g. an "other topic" filler
+    pick that happens to counter that topic's own lean still gets flagged).
     """
     seed_post = next(p for p in posts if p.id == seed_id)
     preferred_perspective_by_topic = preferred_perspective_by_topic or {}
@@ -391,54 +400,78 @@ def diversity_aware_feed(
     def matches_political(p):
         return bias_political is not None and p.political_label == bias_political
 
-    if bias_political:
-        same_both = iter(
-            _sorted_by_similarity(reinforcing_candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and matches_political(p))
-        )
-        same_persp_diff_pol = iter(
-            _sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and not matches_political(p))
-        )
-        diff_persp_same_pol = iter(
-            _sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective and matches_political(p))
-        )
-        double_counter = iter(
-            _sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective and not matches_political(p))
-        )
-    else:
-        same_both = iter(_sorted_by_similarity(reinforcing_candidates, lambda p: same_topic(p) and p.perspective == bias_perspective))
-        same_persp_diff_pol = iter([])
-        diff_persp_same_pol = iter(_sorted_by_similarity(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective))
-        double_counter = iter([])
+    def topic_bias_perspective(topic: str) -> str | None:
+        preferred = preferred_perspective_by_topic.get(topic)
+        if preferred:
+            return preferred
+        return seed_post.perspective if topic == seed_post.topic else None
 
-    other_topics = iter(_sorted_by_similarity(reinforcing_candidates, lambda p: not same_topic(p)))
+    def is_post_diverse(post) -> bool:
+        target_bias = topic_bias_perspective(post.topic)
+        if target_bias is None:
+            return False
+        return post.perspective != target_bias or (bias_political is not None and not matches_political(post))
+
+    # Topics the diversity slots rotate through, round-robin, one per slot -
+    # every topic the account has an actual perspective lean for, so a
+    # multi-topic bubble gets challenged on more than just whichever topic
+    # the current seed happens to be.
+    diversity_topics = list(preferred_perspective_by_topic.keys()) or [seed_post.topic]
+    used_ids: set[str] = set()
+
+    def best_unused(pool, pred):
+        for post, score in _sorted_by_similarity(pool, pred):
+            if post.id not in used_ids:
+                return post, score
+        return None
+
+    topic_cycle = 0
+
+    def pick_diversity_post():
+        nonlocal topic_cycle
+        for _ in range(len(diversity_topics)):
+            topic = diversity_topics[topic_cycle % len(diversity_topics)]
+            topic_cycle += 1
+            target_bias = topic_bias_perspective(topic)
+            if bias_political:
+                picked = (
+                    best_unused(candidates, lambda p: p.topic == topic and p.perspective != target_bias and not matches_political(p))
+                    or best_unused(candidates, lambda p: p.topic == topic and p.perspective == target_bias and not matches_political(p))
+                    or best_unused(candidates, lambda p: p.topic == topic and p.perspective != target_bias and matches_political(p))
+                )
+            else:
+                picked = best_unused(candidates, lambda p: p.topic == topic and p.perspective != target_bias)
+            if picked is not None:
+                return picked
+        return None
+
+    def pick_reinforcing_post():
+        if bias_political:
+            return (
+                best_unused(reinforcing_candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and matches_political(p))
+                or best_unused(reinforcing_candidates, lambda p: not same_topic(p))
+                or best_unused(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective and matches_political(p))
+                or best_unused(candidates, lambda p: same_topic(p) and p.perspective == bias_perspective and not matches_political(p))
+                or best_unused(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective and not matches_political(p))
+            )
+        return (
+            best_unused(reinforcing_candidates, lambda p: same_topic(p) and p.perspective == bias_perspective)
+            or best_unused(reinforcing_candidates, lambda p: not same_topic(p))
+            or best_unused(candidates, lambda p: same_topic(p) and p.perspective != bias_perspective)
+        )
 
     feed = []
     while len(feed) < limit:
         is_diversity_slot = (len(feed) + 1) % diversity_every == 0
-        picked = None
-        if is_diversity_slot:
-            # Primary axis (political label) differing wins the slot before
-            # a post that only differs on the secondary axis (perspective).
-            picked = next(double_counter, None) or next(same_persp_diff_pol, None) or next(diff_persp_same_pol, None)
-
+        picked = pick_diversity_post() if is_diversity_slot else None
         if picked is None:
-            # Same ordering principle for the non-diversity fallback: a
-            # primary-axis (political) match outranks a secondary-axis
-            # (perspective) match when both are on offer.
-            picked = (
-                next(same_both, None)
-                or next(other_topics, None)
-                or next(diff_persp_same_pol, None)
-                or next(same_persp_diff_pol, None)
-                or next(double_counter, None)
-            )
-
+            picked = pick_reinforcing_post()
         if picked is None:
             break
 
         post, score = picked
-        is_diverse_pick = same_topic(post) and (post.perspective != bias_perspective or (bias_political is not None and not matches_political(post)))
-        feed.append({"post": post, "score": score, "is_diverse_pick": is_diverse_pick})
+        used_ids.add(post.id)
+        feed.append({"post": post, "score": score, "is_diverse_pick": is_post_diverse(post)})
 
     return feed
 
