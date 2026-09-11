@@ -504,10 +504,16 @@ def index():
         # in (reported live 2026-09-11). Still eligible as the seed post
         # itself - that's never shown as a feed card either way, see
         # _similarities_to_seed() - only excluded from the feed body.
-        if current_user:
-            liked_post_ids = db.fetch_liked_post_ids(current_user["id"], post_ids)
-            if liked_post_ids:
-                exclude_ids = (exclude_ids or set()) | liked_post_ids
+        #
+        # Kept separate from exclude_ids (not merged in here) because
+        # diversity_aware_feed() needs to treat it differently: merging it
+        # into a plain exclude_ids used to also starve the diversity-marked
+        # tiers, which only have a handful of counter-perspective/-camp
+        # candidates per topic to begin with - liking most of them made
+        # diversity slots silently fall back to unmarked reinforcing posts
+        # (reported live 2026-09-11). See diversity_aware_feed()'s liked_ids
+        # param.
+        liked_post_ids = db.fetch_liked_post_ids(current_user["id"], post_ids) if current_user else set()
 
         perspective_source = {}
         if current_user:
@@ -530,6 +536,7 @@ def index():
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
                 exclude_ids=exclude_ids,
+                liked_ids=liked_post_ids,
             )
         else:
             active_feed = standard_feed(
@@ -539,7 +546,7 @@ def index():
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
                 preferred_political_ratio=preferred_political_ratio,
-                exclude_ids=exclude_ids,
+                exclude_ids=(exclude_ids or set()) | liked_post_ids if liked_post_ids else exclude_ids,
             )
 
         feed_items = _decorate_feed(active_feed, extra_meta)
