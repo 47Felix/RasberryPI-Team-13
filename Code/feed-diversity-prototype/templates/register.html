@@ -35,14 +35,12 @@
         <label for="password">Password</label>
         <input type="password" name="password" id="password" required minlength="6">
 
-        <details class="disclosure" style="margin:0.9rem 0;">
-          <summary>Short sign-up survey (optional, skippable at any time)</summary>
+        <details class="disclosure" style="margin:0.9rem 0;" open>
+          <summary>Quick sign-up survey - shows your feed's starting bias (skip anytime)</summary>
           <p class="tab-caption" style="border:none;padding:0.5rem 0;">
-            Helps the feed have a direction per topic from the start instead of
-            starting from zero - for each topic on its own, e.g. "pro" on
-            transport and "contra" on digital at the same time. Gets
-            immediately overridden per topic by your real likes/comments on
-            that topic as soon as you make some. Nothing here is required.
+            Gives your feed a per-topic direction from the start. Overridden
+            by your real likes/comments as soon as you make some - nothing
+            here is required.
           </p>
 
           {% for question in onboarding_questions %}
@@ -55,11 +53,8 @@
           {% endfor %}
 
           <p class="tab-caption" style="border:none;padding:0.9rem 0 0.4rem;">
-            <strong>Perspective compass</strong> - answer a few statements, the
-            dot below moves along live. Your political camp
-            (left/center/right) is derived from that automatically, just like
-            above with the topics everything here stays optional and gets
-            immediately overridden by real likes/comments.
+            <strong>Perspective compass</strong> - the dot moves live as you
+            answer. Same deal: optional, overridden by real activity.
           </p>
 
           {% for q in compass_questions %}
@@ -96,9 +91,11 @@
 
   <script>
     var COMPASS_QUESTIONS = {{ compass_questions | tojson }};
-    // Out of a possible +-8 per axis (4 questions * max 2 each) - a
-    // 3.75-wide "center" band around zero (-1.5..1.5 out of a -8..8 range).
-    var COMPASS_THRESHOLD = 1.5;
+    // Out of a possible +-4 per axis (2 questions * max 2 each, cut down
+    // from 4 each on 2026-09-11 - see COMPASS_QUESTIONS in app.py) - same
+    // proportional 18.75%-wide "center" band around zero as before
+    // (-0.75..0.75 out of a -4..4 range, was -1.5..1.5 out of -8..8).
+    var COMPASS_THRESHOLD = 0.75;
 
     function computeCompass() {
       var x = 0, y = 0, interacted = false;
@@ -121,8 +118,11 @@
       var hiddenInput = document.getElementById('compass-result-label');
       if (!dot || !readout || !hiddenInput) return;
 
-      var leftPercent = Math.max(6, Math.min(94, 50 + (result.x / 8) * 50));
-      var topPercent = Math.max(6, Math.min(94, 50 - (result.y / 8) * 50));
+      // /4 matches COMPASS_QUESTIONS's new 2-questions-per-axis max range
+      // (was /8 for 4 questions/axis) - otherwise the dot could only ever
+      // reach the inner half of the plot, never the edges.
+      var leftPercent = Math.max(6, Math.min(94, 50 + (result.x / 4) * 50));
+      var topPercent = Math.max(6, Math.min(94, 50 - (result.y / 4) * 50));
       dot.style.left = leftPercent + '%';
       dot.style.top = topPercent + '%';
 

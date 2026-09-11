@@ -105,6 +105,13 @@ ONBOARDING_QUESTIONS = [
 # conservative) purely for the visual - the app has no separate social-axis
 # field anywhere downstream, this isn't secretly a second stored dimension.
 # direction is which end of its axis "agree" moves the dot toward.
+#
+# One statement per axis per direction (down from two each, 8 total) as of
+# 2026-09-11: reported live that almost nobody opened/finished the sign-up
+# survey - see register.html's `open` details and shortened intro text for
+# the other half of that fix. Still balanced (one "pulls left"/"pulls right"
+# statement per axis), just shorter to sit through. COMPASS_THRESHOLD in
+# register.html's JS is scaled down to match the smaller per-axis range.
 COMPASS_QUESTIONS = [
     {
         "id": "e1",
@@ -119,18 +126,6 @@ COMPASS_QUESTIONS = [
         "text": "The state should redistribute income and wealth more to reduce inequality.",
     },
     {
-        "id": "e3",
-        "axis": "economic",
-        "direction": "right",
-        "text": "Businesses should be able to operate as freely as possible, without too many regulations.",
-    },
-    {
-        "id": "e4",
-        "axis": "economic",
-        "direction": "left",
-        "text": "Basic services like housing, energy and local transit belong in public rather than private hands.",
-    },
-    {
         "id": "s1",
         "axis": "social",
         "direction": "conservative",
@@ -141,18 +136,6 @@ COMPASS_QUESTIONS = [
         "axis": "social",
         "direction": "progressive",
         "text": "A diversity of lifestyles and openness to change are a benefit to society.",
-    },
-    {
-        "id": "s3",
-        "axis": "social",
-        "direction": "conservative",
-        "text": "Clear national borders and a strong state provide more security than open international cooperation.",
-    },
-    {
-        "id": "s4",
-        "axis": "social",
-        "direction": "progressive",
-        "text": "International cooperation matters more than national go-it-alone approaches, even if that means compromises.",
     },
 ]
 
@@ -496,6 +479,25 @@ def index():
         fediverse_topic = seed_post.topic
         fediverse_posts = fediverse.fetch_public_posts(fediverse_topic)
 
+        # Posts the account already liked stay out of the feed body for
+        # good, not just for the length of the session's rotation window:
+        # _rotation_plan()'s "seen" list is capped (SEEN_HISTORY_CAP) and
+        # gets wiped entirely once the unseen pool runs low, so a like from
+        # a few reloads back used to resurface once either of those kicked
+        # in (reported live 2026-09-11). Still eligible as the seed post
+        # itself - that's never shown as a feed card either way, see
+        # _similarities_to_seed() - only excluded from the feed body.
+        #
+        # Kept separate from exclude_ids (not merged in here) because
+        # diversity_aware_feed() needs to treat it differently: merging it
+        # into a plain exclude_ids used to also starve the diversity-marked
+        # tiers, which only have a handful of counter-perspective/-camp
+        # candidates per topic to begin with - liking most of them made
+        # diversity slots silently fall back to unmarked reinforcing posts
+        # (reported live 2026-09-11). See diversity_aware_feed()'s liked_ids
+        # param.
+        liked_post_ids = db.fetch_liked_post_ids(current_user["id"], post_ids) if current_user else set()
+
         perspective_source = {}
         if current_user:
             prefs = compute_preferences(current_user["id"], liked_history=liked_history)
@@ -517,6 +519,7 @@ def index():
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
                 exclude_ids=exclude_ids,
+                liked_ids=liked_post_ids,
             )
         else:
             active_feed = standard_feed(
@@ -526,7 +529,7 @@ def index():
                 preferred_perspective_by_topic=preferred_perspective_by_topic,
                 preferred_political_label=preferred_political_label,
                 preferred_political_ratio=preferred_political_ratio,
-                exclude_ids=exclude_ids,
+                exclude_ids=(exclude_ids or set()) | liked_post_ids if liked_post_ids else exclude_ids,
             )
 
         feed_items = _decorate_feed(active_feed, extra_meta)
@@ -765,6 +768,7 @@ def create_post():
     perspective = request.form.get("perspective", "")
     political_label = request.form.get("political_label", "")
 
+    new_post_id = None
     if (
         title
         and content
@@ -772,9 +776,15 @@ def create_post():
         and perspective in KNOWN_PERSPECTIVES
         and political_label in KNOWN_POLITICAL_LABELS
     ):
-        db.insert_post(title, content, topic, perspective, session["user_id"], political_label)
+        new_post_id = db.insert_post(title, content, topic, perspective, session["user_id"], political_label)
 
-    return redirect(url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix")))
+    # Seed the feed on the post just published, if it saved - otherwise it's
+    # just one candidate among 300+ posts for an 8-slot feed and almost never
+    # wins enough similarity/perspective ranking to appear on its own (see
+    # user report 2026-09-11: "own posts never show up").
+    return redirect(
+        url_for("index", mode=request.form.get("mode"), mix=request.form.get("mix"), seed_id=new_post_id)
+    )
 
 
 @app.route("/posts/latest-id")
