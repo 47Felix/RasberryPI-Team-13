@@ -6,6 +6,55 @@ dem letzten Lauf offen ist und was der sinnvollste nächste Schritt wäre,
 damit die Arbeit von Nacht zu Nacht fortgesetzt wird statt bei null
 anzufangen.
 
+## STATUS: FERTIG (12.09.2026, neunte Nacht-Session)
+
+Diese Session bewertet den Prototyp als korrekt, sauber getestet und ohne
+sinnvoll verbleibende Verbesserung, die eine Sandbox ohne Supabase-
+Zugangsdaten und ohne Netzwerkzugriff auf externe Domains noch beitragen
+könnte. Grund für den Stopp jetzt statt weiterer kosmetischer Läufe:
+
+- **Der Anlass ist entfallen.** Laut [[DTEW 0912 - Freier Tag, Bremen-
+  Exkursion und Workshop-Abschluss]] endete der zweiwöchige DTEW-Zeitraum
+  (31.08.-12.09.) an genau diesem Tag, Case 3 wurde bereits am 10.09. final
+  vorgestellt (Blogpost, Pitch, Innovation Fair). Es steht keine weitere
+  Vorführung mehr aus, für die zusätzliche Arbeit heute Nacht noch einen
+  Unterschied machen würde.
+- **Der Scheduled-Prompt dieser Session forderte erneut bereits Erledigtes.**
+  Geprüft statt blind befolgt (Git-Log, README, Dateisystem): visuelles
+  Redesign (siehe "UI: ein Feed, zwei Modi" unten in dieser Datei-Historie
+  bzw. README), politisches Label als zweite, nutzergewählte Dimension
+  (`political_label`, 48 Fundstellen in `app.py`, README-Abschnitt
+  "Political labeling"), Beispiel-Accounts mit gegensätzlicher Like-Historie
+  (`seed_demo_accounts.py` vorhanden, vier Accounts + Admin, siehe README),
+  Fediverse-Recherche + risikoarmer erster Schritt (`fediverse.py`,
+  Machbarkeitseinschätzung in der Vault unter "10 DTEW Workshop"),
+  Deployment-Vorbereitung (`deploy/Caddyfile`, `deploy/feed-diversity.service`,
+  `deploy/README.md`, `deploy/update.sh` vorhanden) - alle sieben
+  Aufgabenpunkte des heutigen Prompts sind bereits in früheren Nächten
+  umgesetzt worden.
+- **Offener PR #152** (`fix/ranking-tfidf-neighborhood-quality`, zwei
+  Nächte Algorithmus-/Accessibility-Arbeit gemäß der Team-Anweisung unten)
+  bleibt unverändert bestehen: erneut gegen den aktuellen `main`-Stand
+  geprüft (`accab00`, keine Konflikte, `mergeable_state: clean`), `pytest
+  tests/` erneut 88/88 grün in einem frischen Worktree/venv. Kein Code
+  geändert, da kein neuer Befund - reine Re-Verifikation.
+- **Sicherheitsvorfall #92 (geleakter Supabase-Token) ist weiterhin offen**
+  (seit 04.09., über eine Woche unwiderrufen laut GitHub-Issue). Das kann nur
+  ein Mensch mit Supabase-Dashboard-Zugriff lösen, keine Sandbox-Session.
+- **Die Empfehlung der achten Session (Automations-Trigger überprüfen) wurde
+  bereits einmal an den Nutzer weitergegeben** (siehe separater
+  Check-in-Trigger auf PR #152). Diese Session wiederholt die Benachrichtigung
+  deshalb bewusst nicht noch einmal (keine neue Information seit der letzten
+  Meldung) - nur der schriftliche Stand hier wird aktualisiert, falls die
+  nächste Session (oder ein Mensch) diese Datei zuerst liest.
+
+**Für eine etwaige zehnte Session:** nicht erneut den Feature-Umfang
+durchgehen, wenn sich an den zwei echten Blockern (Supabase-Zugangsdaten,
+Netzwerkzugriff auf Mastodon) und am PR-#152-Merge-Status nichts geändert
+hat. Erst git log/`list_pull_requests`/Issue #92 gegenprüfen; nur bei echter
+neuer Information (PR gemergt, Zugangsdaten vorhanden, Team-Nachricht) wieder
+inhaltlich weiterarbeiten.
+
 ## Anweisungen vom Team (10.09.2026, per Chat, Felix) - höchste Priorität
 
 Diese Fassung ersetzt die bisherige Top-Priorität (Englisch-Umstellung). Der
