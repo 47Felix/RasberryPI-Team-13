@@ -95,6 +95,68 @@ verändert wurde, bevor sie behauptet, etwas sei "erledigt". Merge nach `main`
 bleibt bei Anton/Felix. Den Scheduled-Prompt nicht blind befolgen, wenn er
 veraltet wirkt - erst Git-Log / offene PRs / diese Datei prüfen.
 
+## Stand nach dem Lauf vom 12.09.2026 (achte Nacht-Session) - Workshop-Ende, kein neuer Substanzfund
+
+Der scheduled-task-Prompt für diese Session war wieder derselbe massiv
+veraltete Text wie in Session 6/7 (03.09.-Feedback zur Zwei-Spalten-UI,
+"kein richtiger Feed", geforderter Struktur-Umbau zu Single-Feed+Tabs). Vor
+dem Umsetzen wie vorgesehen zuerst Git-Log/`list_pull_requests`/diese Datei
+geprüft statt blind zu folgen: exakt dasselbe Feedback ist bereits in PR #86
+(04.09.) umgesetzt und seither in mindestens drei weiteren Nächten (dritte,
+sechste, siebte Session, siehe oben) per Playwright-Screenshot und/oder
+Code-Lesen erneut gegenverifiziert. Diese Session hat das ein weiteres Mal
+mit frischem Blick geprüft statt den Notizen blind zu vertrauen (Flask-
+Testclient-Smoke-Test aller Routen + Lese-Durchgang durch `ranking.py`s
+beide "bewusst nicht umgesetzt"-Kandidaten aus Session 7) - kein neuer Befund,
+keine Regression seit der letzten Verifikation.
+
+**Wichtiger neuer Kontext, der in keiner vorherigen Session vorlag:** laut
+[[DTEW 0912 - Freier Tag, Bremen-Exkursion und Workshop-Abschluss]] ist
+Samstag 12.09. der **letzte Tag des zweiwöchigen DTEW-Zeitraums** (31.08.-
+12.09.) - kein weiterer Workshop-Tag folgt. Case 3 (dieser Prototyp) wurde
+laut derselben Notiz bereits am 10.09. final vorgestellt (Blogpost,
+1-Minuten-Pitch, Innovation Fair, Farewell Party) - die Zielgruppe, für die
+"sieht nicht wie ein echter Feed aus" ursprünglich ein Problem war (Peer-
+Jury), hat den Prototyp also bereits in genau der seit dem 04.09. bestehenden
+Struktur gesehen und bewertet. Ein Struktur-Umbau heute Nacht hätte keine neue
+Vorführung mehr, für die er relevant wäre, und hätte nur das Risiko getragen,
+sieben Nächte verifizierter Feature-/Bugfix-Arbeit (echte Accounts, Dashboard,
+politische Achse, Fediverse-Vorschau, TF-IDF-Fix, Accessibility, Routentests)
+grundlos zu gefährden.
+
+**Geprüft und bewusst nicht angefasst (weiterhin "Kandidat für Team-
+Entscheidung", nicht neu bewertet, da kein neuer Anlass):**
+`ranking.diversity_score()` (Zeile 558, weiterhin nicht von `app.py`
+importiert) und die Fallback-Tier-Reihenfolge in
+`diversity_aware_feed().pick_reinforcing_post()` (Zeile 500-513, weiterhin
+auf dem echten Datensatz praktisch unerreichbar) - beide bereits in Session 7
+dokumentiert, keine neuen Erkenntnisse dazu.
+
+**Verifiziert:** `pytest tests/` 88/88 grün (unverändert seit Session 6).
+Flask-Testclient gegen `/`, `/?mode=standard`, `/?mode=diversity`,
+`/dashboard`, `/login`, `/register` - alle 200 (ohne Supabase-Konfiguration,
+leerer Katalog rendert korrekt). Kein Code geändert - reine
+Verifikation/Dokumentation, deshalb kein neuer Commit auf `main`, kein
+zusätzlicher PR (siehe "Wann aufhören" oben: keine kosmetischen Diffs
+erzeugen, um beschäftigt auszusehen).
+
+**Nicht Code-Arbeit, aber wichtiger als jede weitere Ranking-/UI-Politur
+heute Nacht:** laut derselben Notiz ist der geleakte Supabase-Token
+([#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92)) seit dem
+04.09. weiterhin nicht widerrufen und der Prototyp weiterhin live deployed -
+sicherheitsrelevant und unabhängig vom Workshop-Ende, aber nur von einem
+Menschen mit Supabase-Dashboard-Zugriff lösbar, nicht von dieser Sandbox.
+
+**Empfehlung ans Team (keine Automations-Entscheidung, die diese Session
+selbst treffen kann):** Da der Case bereits final vorgestellt wurde und keine
+weitere Vorführung mehr aussteht, ist unklar, welchen Wert weitere nächtliche
+Automations-Läufe an diesem Prototyp noch schaffen - siehe dieselbe
+Einschätzung bereits in [[DTEW 0912 - Freier Tag, Bremen-Exkursion und
+Workshop-Abschluss]] zur DTEW-Vorbereitungs-Automation. Vorschlag: der
+zugehörige Scheduled Task/Trigger sollte überprüft und ggf. deaktiviert oder
+zumindest der Prompt-Text aktualisiert werden, statt unverändert weiter jede
+Nacht gegen denselben, seit dem 04.09. gelösten Punkt zu laufen.
+
 ## Stand nach dem Lauf vom 11.09.2026 (siebte Nacht-Session)
 
 Der scheduled-task-Prompt für diese Session war wieder auf einem massiv
