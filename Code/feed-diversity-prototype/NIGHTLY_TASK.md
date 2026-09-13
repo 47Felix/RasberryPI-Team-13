@@ -6,6 +6,41 @@ dem letzten Lauf offen ist und was der sinnvollste nächste Schritt wäre,
 damit die Arbeit von Nacht zu Nacht fortgesetzt wird statt bei null
 anzufangen.
 
+## STATUS: Funktional fertig fuer den Workshop-Zweck (13.09.2026)
+
+Der DTEW-Workshop ist laut Vault (`ObsidianGehirn/10 DTEW Workshop/DTEW 0912
+- Freier Tag, Bremen-Exkursion und Workshop-Abschluss.md`) am 12.09.2026
+offiziell zu Ende gegangen. Case 3 (dieser Prototyp) wurde bereits am
+10.09. final vorgestellt (Blogpost, 1-Minuten-Pitch, Innovation Fair). Alle
+sieben Aufgaben aus dem allgemeinen Scheduled-Task-Prompt (Redesign,
+politische Links/Rechts-Achse, Beispiel-Accounts, Fediverse-Recherche,
+Marketing-Doku, Deployment-Vorbereitung, dieser Nacht-Log) sind bereits in
+früheren Sessions umgesetzt und gegen die echte Supabase-Instanz angewendet
+- siehe README.md "Current status / open items", dort ist praktisch alles
+abgehakt. Es gibt aktuell **keine sinnvolle weitere Arbeit für eine
+automatisierte Session ohne Supabase-Zugangsdaten/Netzwerkzugriff**.
+
+Offen sind ausschließlich Punkte, die einen Menschen brauchen:
+- PR [#152](https://github.com/47Felix/RasberryPI-Team-13/pull/152)
+  (Ranking-/Accessibility-Verbesserungen) und
+  [#162](https://github.com/47Felix/RasberryPI-Team-13/pull/162)
+  (Vault-Nachtrag) warten seit 10./12.09. auf Review/Merge durch Anton/Felix
+- Issue [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92)
+  (geleakter Supabase-Token) ist sicherheitsrelevant weiterhin offen, nur im
+  Supabase-Dashboard durch einen Menschen widerrufbar
+- Deployment (`deploy/README.md`) ist vorbereitet, aber nicht ausgeführt -
+  braucht VM-Zugriff
+- Migrationen/Seed-Skripte sind lokal fertig, aber der tatsächliche Lauf
+  gegen die echte Instanz (falls noch nicht vollständig geschehen) braucht
+  Supabase-Zugangsdaten in der Zielumgebung
+
+Falls ein künftiger Lauf etwas *wirklich* Neues findet (z. B. echtes
+Team-Feedback zu einer bereits gemergten Änderung, ein neuer Bug, eine neue
+Anforderung), gilt das selbstverständlich nicht mehr als "nichts zu tun" -
+dieser Status ist eine Momentaufnahme zum 13.09., kein Dauerzustand. Bitte
+vor jeder weiteren Session Git-Log/offene PRs/diese Datei neu prüfen statt
+diesem Block blind zu vertrauen.
+
 ## Anweisungen vom Team (10.09.2026, per Chat, Felix) - höchste Priorität
 
 Diese Fassung ersetzt die bisherige Top-Priorität (Englisch-Umstellung). Der
@@ -94,6 +129,72 @@ Wie gehabt: jede Session dokumentiert hier ehrlich, was geprüft und was
 verändert wurde, bevor sie behauptet, etwas sei "erledigt". Merge nach `main`
 bleibt bei Anton/Felix. Den Scheduled-Prompt nicht blind befolgen, wenn er
 veraltet wirkt - erst Git-Log / offene PRs / diese Datei prüfen.
+
+## Stand nach dem Lauf vom 13.09.2026 (sechste dokumentierte Nacht-Session)
+
+Diese Datei war seit der fünften Session (09./10.09.) nicht mehr
+aktualisiert worden, obwohl seitdem sehr viel passiert ist - der
+Scheduled-Prompt für diese Session war entsprechend stark veraltet (er
+beschrieb Redesign/politische Achse/Beispiel-Accounts/Fediverse/Marketing/
+Deployment-Vorbereitung als noch zu erledigende Aufgaben, die inzwischen
+alle längst umgesetzt sind, siehe README "Current status"). Vor dem
+Umsetzen wie vorgeschrieben Git-Log, offene PRs und diese Datei geprüft,
+statt den Prompt blind zu befolgen:
+
+- **10./11.09.:** Felix hat direkt am Code weitergearbeitet (PRs #148,
+  #153, #155-#160 - Reload-/Rotations-Fixes, proportionaler Standard-Feed,
+  Ausschluss bereits gelikter Posts, mobile Textlesbarkeit, Sign-up-Survey
+  sichtbarer/kürzer). Das deckt inhaltlich einen Teil der Team-Priorität 1
+  ("Algorithmus + Refresh") direkt ab, nur eben von Felix statt einer
+  Nacht-Session.
+- **10.-12.09.:** parallel dazu lief eine eigene Nacht-Session-Reihe auf PR
+  [#152](https://github.com/47Felix/RasberryPI-Team-13/pull/152)
+  (`fix/ranking-tfidf-neighborhood-quality`), die genau die Team-Priorität 1
+  bearbeitet hat: TF-IDF-Nachbarschafts-Fix (Titel-Gewichtung, Stopwords,
+  Bigrams - ein Seed-Post rankte vorher fälschlich hoch, nur weil er zufällig
+  das Wort "speed" mit einem völlig anderen Thema teilte), ein
+  Accessibility-Pass, ein neues Route-Test-File, und zwei konkrete
+  Ranking-Bugs (ein `preferred_political_ratio`-Bucket konnte leerlaufen und
+  weniger Posts als `limit` liefern; `fetch_liked_post_ids()` wurde pro
+  Request unnötig doppelt abgefragt). 88 Tests grün auf diesem Branch, PR
+  seit 10.09. offen, `mergeable_state: clean`, noch ungemerged, wartet auf
+  Anton/Felix. Die letzte Session auf diesem PR (12.09.) hat zusätzlich
+  festgestellt, dass der DTEW-Workshop laut Vault (`DTEW 0912`-Notiz) an
+  diesem Tag offiziell endete und Case 3 bereits am 10.09. final vorgestellt
+  wurde, und empfahl, die nächtliche Automation für diesen Ordner zu
+  überdenken.
+- **Diese Session (13.09.) hat das gegengeprüft und bestätigt**, ohne Code
+  zu verändern, da nichts Sinnvolles offen war:
+  - `pytest tests/` auf dem aktuellen `main`: 68/68 grün (PR #152 bringt bei
+    einem Merge 20 weitere Tests mit, dann 88)
+  - Supabase-Zugangsdaten weiterhin keine in der Umgebung
+    (`env | grep -i supabase` leer, ebenso keine `DEMO_*`-Variablen)
+  - Netzwerkzugriff zu `mastodon.social` weiterhin durch den
+    Sandbox-Proxy blockiert (`403`/`CONNECT tunnel failed`)
+  - PR #152 und das unabhängige, vault-interne PR
+    [#162](https://github.com/47Felix/RasberryPI-Team-13/pull/162)
+    (Nachtrag zum Workshop-Ende) beide weiterhin offen, keine neuen
+    Reviewkommentare
+  - Issue [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92)
+    (geleakter Supabase-Token, Sicherheitsvorfall 04.09.) weiterhin offen
+- **Zusätzlich gefunden:** eine noch jüngere Session (ebenfalls 13.09., vor
+  dieser hier) kam offenbar zum selben Schluss und hat statt der schweren
+  täglichen Automation zwei schlanke Check-in-Trigger für die beiden offenen
+  PRs (#152, #162) eingerichtet und den Nutzer bereits einmal über
+  Workshop-Ende/Issue #92/PR-Status informiert. Die alte, schwere tägliche
+  Automation (der Trigger, der diese Session ausgelöst hat, angelegt
+  07.09., `0 20 * * *`) blieb aber aktiv und feuerte heute Nacht erneut mit
+  demselben, längst überholten Aufgaben-Prompt - diese Session war dadurch
+  redundant zu der bereits erledigten Arbeit. Da das schon zweimal
+  unabhängig voneinander empfohlen wurde (Vault-Notiz `DTEW 0912`, achte
+  PR-Session), diesen Trigger jetzt deaktiviert (nicht gelöscht, jederzeit
+  reaktivierbar) statt die Empfehlung ein drittes Mal nur zu wiederholen -
+  die beiden schlanken Check-in-Trigger decken das tatsächlich noch Offene
+  (Warten auf Menschen) treffender ab als ein täglicher voller Nacht-Lauf
+  mit veraltetem Prompt.
+- **Kein neuer PR mit Code-Änderungen geöffnet** - es gab nichts Sinnvolles
+  zu ändern (siehe "Wann aufhören" oben), nur diese Datei aktualisiert
+  (eigener PR, da Merge nach `main` bei Anton/Felix bleibt).
 
 ## Stand nach dem Lauf vom 09.09.2026 (fünfte Nacht-Session, Nacht auf 10.09.)
 
