@@ -13,22 +13,28 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 Stand 14.09.2026 (per GitHub-API geprüft) – 8 offene Issues.
 
-> [!note] DTEW-Workshop abgeschlossen, Challenge I gestartet (14.09.2026)
-> Die 11 bisherigen DTEW-Workshop-Issues (#92-#102) wurden geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Einzige Ausnahme: #92 (Sicherheitsvorfall) bleibt offen, siehe dort. Das Team beginnt jetzt mit [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)): #167-#169 klären Zugang/Scope, #171-#174 sind ein vorläufiger technischer Vorschlag (DHT11->Node-RED->MQTT->Alarm), parallel begonnen statt auf Moodle zu warten - siehe Kommentar auf #169.
+> [!note] Challenge I: echte Aufgabenstellung erhalten (14.09.2026)
+> Die 11 bisherigen DTEW-Workshop-Issues (#92-#102) wurden geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Einzige Ausnahme: #92 (Sicherheitsvorfall) bleibt offen. Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
 
 - [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.) – weiterhin offen, braucht einen Menschen mit Supabase-Dashboard-Zugriff, keine automatisierte Session kann das lösen
-- [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167) Moodle-Zugang zu "Signale und Bussysteme" (Kurs-ID 1574) einholen – **Blocker für Challenge I**, braucht Einschreibekennwort von der Lehrkraft
-- [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) Git auf dem Pi einrichten und Repo klonen – unabhängig vom Moodle-Blocker sofort umsetzbar
-- [#169](https://github.com/47Felix/RasberryPI-Team-13/issues/169) Challenge I: Aufgabenstellung aus Moodle-Kurs ableiten und Team-Tasks planen – hängt an #167
-- [#171](https://github.com/47Felix/RasberryPI-Team-13/issues/171) DHT11-Sensor fest verkabeln + Sketch auf strukturierte Ausgabe umstellen
-- [#172](https://github.com/47Felix/RasberryPI-Team-13/issues/172) Sensordaten per Node-RED einlesen und über MQTT veröffentlichen
-- [#173](https://github.com/47Felix/RasberryPI-Team-13/issues/173) Schwellwert-Überwachung + Alarm bei Kühlkettenbruch
-- [#174](https://github.com/47Felix/RasberryPI-Team-13/issues/174) Kühlketten-Überwachung im Vault dokumentieren
+- [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167) Moodle-Zugang zu "Signale und Bussysteme" (Kurs-ID 1574) einholen – Aufgabentext liegt zwar schon vor, offen ob der volle Kurs (I2C/SPI-Grundlagen) noch gebraucht wird, siehe Kommentar dort
+- [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) Git auf dem Pi einrichten und Repo klonen
+- [#176](https://github.com/47Felix/RasberryPI-Team-13/issues/176) Track A – Sensor-Arduino: Sensoren unterschiedlicher Formate auslesen (analog/digital/Bus)
+- [#177](https://github.com/47Felix/RasberryPI-Team-13/issues/177) Track B – Je Sensor eine LED mit Helligkeit proportional zum Messwert (PWM)
+- [#178](https://github.com/47Felix/RasberryPI-Team-13/issues/178) Track C – I2C-Bus: Sensor-Arduino(s) an den Raspberry Pi
+- [#179](https://github.com/47Felix/RasberryPI-Team-13/issues/179) Track D – Aktor-Arduino: Lüfter (Transistor/H-Brücke) + Ventil (Servo)
+- [#180](https://github.com/47Felix/RasberryPI-Team-13/issues/180) Track E – I2C: Raspberry Pi steuert den Aktor-Arduino
+- [#181](https://github.com/47Felix/RasberryPI-Team-13/issues/181) Track F – Pi-Backend: SQL-Logging + Regellogik (Gesamtintegration)
 
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
 
 ## ✅ Geschlossen (was wurde gemacht)
 
+- **[#169](https://github.com/47Felix/RasberryPI-Team-13/issues/169) Challenge I: Aufgabenstellung aus Moodle-Kurs ableiten und Team-Tasks planen** – Aufgabentext erhalten (14.09.), in 6 Tracks heruntergebrochen (#176-#181), siehe [[Challenge I - Ice Truck Problem]].
+- **[#171](https://github.com/47Felix/RasberryPI-Team-13/issues/171) DHT11-Sensor fest verkabeln + Sketch auf strukturierte Ausgabe umstellen** – als überholt geschlossen (14.09.), Node-RED/MQTT-Ansatz passte nicht zur echten Aufgabenstellung (I2C-Bus, Aktorik, SQL). Ersetzt durch Track A/C (#176/#178).
+- **[#172](https://github.com/47Felix/RasberryPI-Team-13/issues/172) Sensordaten per Node-RED einlesen und über MQTT veröffentlichen** – als überholt geschlossen (14.09.), gleicher Grund wie #171. Ersetzt durch Track C (#178).
+- **[#173](https://github.com/47Felix/RasberryPI-Team-13/issues/173) Schwellwert-Überwachung + Alarm bei Kühlkettenbruch** – als überholt geschlossen (14.09.); die echte Aufgabe verlangt eine Regelschleife (Lüfter/Ventil ansteuern), keinen reinen Alarm. Ersetzt durch Track F (#181).
+- **[#174](https://github.com/47Felix/RasberryPI-Team-13/issues/174) Kühlketten-Überwachung im Vault dokumentieren** – als überholt geschlossen (14.09.), Doku passiert jetzt im Rahmen von Track F (#181).
 - **[#100](https://github.com/47Felix/RasberryPI-Team-13/issues/100) Board-Zugriff der Nacht-Automation repariert** – bereits erledigt, nur nie geschlossen; mit Workshop-Ende (14.09.) formal geschlossen.
 - **[#101](https://github.com/47Felix/RasberryPI-Team-13/issues/101) Vielfalts-Score im Feed-Prototyp umgesetzt** – bereits erledigt, nur nie geschlossen; mit Workshop-Ende (14.09.) formal geschlossen.
 - **[#102](https://github.com/47Felix/RasberryPI-Team-13/issues/102) Feed-UI auf echtes Single-Feed-Layout umgebaut** – bereits erledigt, nur nie geschlossen; mit Workshop-Ende (14.09.) formal geschlossen.
