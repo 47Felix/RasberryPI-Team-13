@@ -54,6 +54,15 @@
   UNGETESTET auf echter Hardware ueber diese Sandbox hinaus - Verkabelung
   nach obiger Tabelle noch nicht mit echtem Multimeter/Oszilloskop
   gegengeprueft, nur gegen die Library-Signaturen kompiliert.
+
+  Benoetigte Bibliotheken (Sketch -> Bibliothek einbinden -> Bibliotheken
+  verwalten... bzw. Strg+Umschalt+I in der Arduino-IDE):
+    - "DHT sensor library" (Adafruit) - sonst "DHT.h: No such file or
+      directory" beim Kompilieren
+    - Abhaengigkeit "Adafruit Unified Sensor" mitinstallieren (meist
+      automatischer Vorschlag beim Installieren der DHT-Bibliothek)
+    - "Servo" ist bei der Arduino-IDE bereits vorinstalliert, keine
+      zusaetzliche Installation noetig
 */
 
 #include <DHT.h>
