@@ -25,7 +25,7 @@ Kein Rechtsrat, nur eine Umsetzung nach bestem Wissen. Vor einer echten Veroeffe
 | Urheberrecht | UrhG | Keine Fremd-Assets: alles selbst geschrieben, keine CDNs/Fonts/Icons von Dritten |
 | Barrierefreiheit (BFSG) | BFSG (seit 28.06.2025) | Trifft ein reines Schulprojekt ohne Geschaeftsverkehr nicht, WCAG bleibt trotzdem gute Uebung |
 
-## Was im Code umgesetzt wurde (`Code/pi-dashboard/`)
+## Was im Code umgesetzt wurde (`Tresor-Kurzprojekt/Code/pi-dashboard/`)
 
 - **`/impressum`** und **`/datenschutz`** als eigene Seiten, in `base.html` per Footer auf **jeder** Seite verlinkt (2-Klick-Regel).
 - Betreiber-, Kontakt- und Verantwortlichen-Angaben kommen aus **Umgebungsvariablen** (`.env` auf dem Pi), nicht aus dem Repo. Fehlt ein Wert, zeigt die Seite an der Stelle einen gelben "noch auszufuellen"-Kasten, statt falsche oder leere Angaben zu machen.
@@ -58,8 +58,8 @@ Kein Rechtsrat, nur eine Umsetzung nach bestem Wissen. Vor einer echten Veroeffe
 ## Deploy auf dem Pi (nach Merge)
 
 ```bash
-cp Code/pi-dashboard/app.py ~/tresor-dashboard/app.py
-cp Code/pi-dashboard/templates/*.html ~/tresor-dashboard/templates/
+cp Tresor-Kurzprojekt/Code/pi-dashboard/app.py ~/tresor-dashboard/app.py
+cp Tresor-Kurzprojekt/Code/pi-dashboard/templates/*.html ~/tresor-dashboard/templates/
 # .env um die DASHBOARD_IMPRESSUM_*-Zeilen ergaenzen
 sudo systemctl restart tresor-dashboard
 ```
