@@ -1,56 +1,44 @@
-"""Regellogik fuer Challenge I Track F: zwei Kuehlstufen aus Schwellwerten.
+"""Regellogik fuer Challenge I Track F: zwei Kuehlstufen aus der DHT11-Temperatur.
 
-ANNAHME (Platzhalter, siehe README.md): hoeherer Analogwert = hoehere
-Temperatur im Kuehlraum. Die konkreten Schwellwerte haengen an der
-Kalibrierung des tatsaechlichen Sensors und an der noch ausstehenden
-Moodle-Aufgabenstellung (Issue #167) - hier bewusst als benannte
-Konstanten statt Magic Numbers, damit sie sich nach Klaerung von #167
-an einer Stelle anpassen lassen, ohne die Logik selbst zu aendern.
+Port von computeCoolingStage()/applyCoolingStage() aus
+ice_truck_single_board.ino (siehe "Naechste Schritte" dort, Issue #180) -
+jetzt wo I2C zum Pi verkabelt ist, kann die Kuehlstufen-Entscheidung hier
+statt lokal auf dem Arduino getroffen werden. Gleiche Schwellwerte wie im
+Sketch - Platzhalter, haengen an der noch offenen Moodle-Aufgabenstellung
+(Issue #167) und an der realen Sensor-Kalibrierung.
 
-Hardware-Update (Felix, 14.09., siehe Issue #179): kein Luefter/DC-Motor
-vorhanden, nur der Servo. Beide Kuehlstufen laufen deshalb ueber
-valve_angle (kleiner Winkel = leichte Kuehlung, groesserer Winkel =
-starke Kuehlung). fan_pwm wird weiterhin berechnet und mitgeschickt -
-vorbereitet fuer den Moment, wo ein Luefter beschafft wird - richtet
-ohne verkabelten Transistor/H-Bruecke aber nichts aus.
+Das alte Zwei-Board-Modell (analog_raw ueber LDR + door_open) ist raus: der
+LDR misst Licht, nicht Temperatur (siehe README), und es gibt in der
+tatsaechlich verkabelten Hardware keinen Tuerkontakt mehr - nur einen
+generischen Toggle-Taster ohne dokumentierten Bezug zur Kuehlung.
 """
 
 from __future__ import annotations
 
-LIGHT_COOLING_THRESHOLD = 600
-STRONG_COOLING_THRESHOLD = 850
-ANALOG_MAX = 1023
+FAN_ON_TEMP_C = 8.0
+VALVE_ON_TEMP_C = 12.0
+TEMP_SPAN_C = 6.0
 
 MAX_FAN_PWM = 255
 MAX_VALVE_ANGLE = 180
-LIGHT_STAGE_MAX_ANGLE = 90
 
-DOOR_OPEN_VALVE_BOOST = 30
+MIN_FAN_PWM_WHEN_ON = 40
+MIN_VALVE_ANGLE_WHEN_ON = 30
 
 
-def compute_setpoints(analog_raw: int, door_open: bool) -> tuple[int, int]:
-    if analog_raw <= LIGHT_COOLING_THRESHOLD:
-        fan_pwm = 0
-    else:
-        span = ANALOG_MAX - LIGHT_COOLING_THRESHOLD
-        fan_pwm = round((analog_raw - LIGHT_COOLING_THRESHOLD) / span * MAX_FAN_PWM)
-        fan_pwm = min(fan_pwm, MAX_FAN_PWM)
+def compute_setpoints(temperature_c: float) -> tuple[int, int]:
+    if temperature_c < FAN_ON_TEMP_C:
+        return 0, 0
 
-    if analog_raw <= LIGHT_COOLING_THRESHOLD:
-        valve_angle = 0
-    elif analog_raw <= STRONG_COOLING_THRESHOLD:
-        span = STRONG_COOLING_THRESHOLD - LIGHT_COOLING_THRESHOLD
-        valve_angle = round(
-            (analog_raw - LIGHT_COOLING_THRESHOLD) / span * LIGHT_STAGE_MAX_ANGLE
-        )
-    else:
-        span = ANALOG_MAX - STRONG_COOLING_THRESHOLD
-        progress = (analog_raw - STRONG_COOLING_THRESHOLD) / span
-        valve_angle = LIGHT_STAGE_MAX_ANGLE + round(
-            progress * (MAX_VALVE_ANGLE - LIGHT_STAGE_MAX_ANGLE)
-        )
+    above_fan_threshold = min(max(temperature_c - FAN_ON_TEMP_C, 0.0), TEMP_SPAN_C)
+    fan_pwm = round((above_fan_threshold / TEMP_SPAN_C) * MAX_FAN_PWM)
+    fan_pwm = max(MIN_FAN_PWM_WHEN_ON, min(fan_pwm, MAX_FAN_PWM))
 
-    if door_open and valve_angle > 0:
-        valve_angle = min(MAX_VALVE_ANGLE, valve_angle + DOOR_OPEN_VALVE_BOOST)
+    if temperature_c < VALVE_ON_TEMP_C:
+        return fan_pwm, 0
 
-    return fan_pwm, min(valve_angle, MAX_VALVE_ANGLE)
+    above_valve_threshold = min(max(temperature_c - VALVE_ON_TEMP_C, 0.0), TEMP_SPAN_C)
+    valve_angle = round((above_valve_threshold / TEMP_SPAN_C) * MAX_VALVE_ANGLE)
+    valve_angle = max(MIN_VALVE_ANGLE_WHEN_ON, min(valve_angle, MAX_VALVE_ANGLE))
+
+    return fan_pwm, valve_angle

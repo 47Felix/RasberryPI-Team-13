@@ -96,6 +96,18 @@ const float FAN_ON_TEMP_C = 8.0;    // Stufe 1: Luefter an
 const float VALVE_ON_TEMP_C = 12.0; // Stufe 2: zusaetzlich Ventil (Servo) auf
 const float TEMP_SPAN_C = 6.0;      // fuer die Rampe von Stufe 1 bis "voll offen"
 
+// TEMPORAERER Kalibrierungs-Offset: dieser DHT11 liefert konstant ca. 20-22
+// Grad zu wenig (z.B. 1 C gemessen bei ~23 C tatsaechlicher Raumtemperatur,
+// siehe pi-backend/read_live.py-Test 14.09.). Das ist ein Hardware-Problem
+// (Pull-up/Verkabelung am Datenpin D2), kein Rundungsfehler - dieser Offset
+// ist nur ein Workaround, damit computeCoolingStage() in der Zwischenzeit
+// sinnvoll reagiert (u.a. damit Luefter/Servo ueberhaupt testbar sind).
+// Sobald die Verkabelung geprueft/repariert ist, auf 0.0 setzen oder neu
+// kalibrieren. Gleicher Wert wie DHT11_TEMPERATURE_OFFSET_C in
+// pi-backend/hardware.py - dort NICHT nochmal addieren, sonst zaehlt's
+// doppelt.
+const float DHT11_TEMPERATURE_OFFSET_C = 20.0;
+
 const uint8_t MAX_FAN_PWM = 255;
 const uint8_t MAX_VALVE_ANGLE = 180;
 
@@ -144,7 +156,7 @@ void loop() {
     float t = dht.readTemperature();
     if (!isnan(h) && !isnan(t)) {
       latestHumidityPct = h;
-      latestTemperatureC = t;
+      latestTemperatureC = t + DHT11_TEMPERATURE_OFFSET_C;
     }
     // Bei NAN (Lesefehler): letzten gueltigen Wert behalten statt auf 0
     // zu springen - ein einzelner Ausreisser soll die Kuehlstufe nicht
