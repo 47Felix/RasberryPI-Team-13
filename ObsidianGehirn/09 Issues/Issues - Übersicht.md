@@ -11,15 +11,19 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 14.09.2026 (per GitHub-API geprüft) – 4 offene Issues.
+Stand 14.09.2026 (per GitHub-API geprüft) – 8 offene Issues.
 
 > [!note] DTEW-Workshop abgeschlossen, Challenge I gestartet (14.09.2026)
-> Die 11 bisherigen DTEW-Workshop-Issues (#92-#102) wurden geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Einzige Ausnahme: #92 (Sicherheitsvorfall) bleibt offen, siehe dort. Das Team beginnt jetzt mit [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)), dafür die drei neuen Issues #167-#169.
+> Die 11 bisherigen DTEW-Workshop-Issues (#92-#102) wurden geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Einzige Ausnahme: #92 (Sicherheitsvorfall) bleibt offen, siehe dort. Das Team beginnt jetzt mit [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)): #167-#169 klären Zugang/Scope, #171-#174 sind ein vorläufiger technischer Vorschlag (DHT11->Node-RED->MQTT->Alarm), parallel begonnen statt auf Moodle zu warten - siehe Kommentar auf #169.
 
 - [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.) – weiterhin offen, braucht einen Menschen mit Supabase-Dashboard-Zugriff, keine automatisierte Session kann das lösen
 - [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167) Moodle-Zugang zu "Signale und Bussysteme" (Kurs-ID 1574) einholen – **Blocker für Challenge I**, braucht Einschreibekennwort von der Lehrkraft
 - [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) Git auf dem Pi einrichten und Repo klonen – unabhängig vom Moodle-Blocker sofort umsetzbar
 - [#169](https://github.com/47Felix/RasberryPI-Team-13/issues/169) Challenge I: Aufgabenstellung aus Moodle-Kurs ableiten und Team-Tasks planen – hängt an #167
+- [#171](https://github.com/47Felix/RasberryPI-Team-13/issues/171) DHT11-Sensor fest verkabeln + Sketch auf strukturierte Ausgabe umstellen
+- [#172](https://github.com/47Felix/RasberryPI-Team-13/issues/172) Sensordaten per Node-RED einlesen und über MQTT veröffentlichen
+- [#173](https://github.com/47Felix/RasberryPI-Team-13/issues/173) Schwellwert-Überwachung + Alarm bei Kühlkettenbruch
+- [#174](https://github.com/47Felix/RasberryPI-Team-13/issues/174) Kühlketten-Überwachung im Vault dokumentieren
 
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
 
