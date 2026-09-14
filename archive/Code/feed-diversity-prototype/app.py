@@ -543,9 +543,12 @@ def index():
         show_political_score = preferred_political_label is not None
 
         db_post_ids = [item["post"].id for item in feed_items]
-        liked_ids = db.fetch_liked_post_ids(current_user["id"], db_post_ids) if current_user else set()
+        # liked_post_ids (fetched above for the whole catalogue, used to
+        # exclude already-liked posts from the candidate pool) already covers
+        # every id in db_post_ids - a second, narrower fetch here would just
+        # be a redundant Supabase round-trip on every single page load.
         for item in feed_items:
-            item["liked"] = item["post"].id in liked_ids
+            item["liked"] = item["post"].id in liked_post_ids
             if current_user:
                 item["reason"] = _feed_item_reason(item, preferred_perspective_by_topic, perspective_source)
 

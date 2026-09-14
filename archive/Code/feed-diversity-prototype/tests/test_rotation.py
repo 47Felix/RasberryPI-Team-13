@@ -78,6 +78,24 @@ def test_stale_seen_ids_not_in_the_catalogue_are_ignored():
     assert "gone1" not in seen_after and "gone2" not in seen_after
 
 
+def test_small_catalogue_below_the_rotation_floor_disables_rotation_gracefully():
+    # A catalogue smaller than MIN_UNSEEN_FOR_ROTATION (e.g. a brand-new
+    # deployment with only a handful of posts) can never fill a fresh
+    # rotation cycle - checked as part of the 2026-09-10 algorithm-review
+    # brief (NIGHTLY_TASK.md: "Verhalten bei kleinem vs. großem Datensatz").
+    # _rotation_plan() must fall back to "no rotation" every time instead of
+    # excluding every post (which would leave standard_feed()/
+    # diversity_aware_feed() with an empty candidate pool).
+    tiny = [f"p{i}" for i in range(3)]
+    seen: list[str] = []
+    for _ in range(10):
+        seed_id, exclude_ids, seen, rotation_active = _rotation_plan(tiny, seen, None)
+        assert seed_id == "p0"
+        assert exclude_ids is None
+        assert rotation_active is False
+        seen = seen + [seed_id]
+
+
 def test_repeated_reloads_keep_advancing_and_never_get_stuck():
     # Simulate app.index()'s session bookkeeping across many reloads: every
     # reload must either show a not-recently-seen post as its seed or have
