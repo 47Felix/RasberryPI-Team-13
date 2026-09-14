@@ -23,6 +23,39 @@ but classic content-based filtering via TF-IDF + cosine similarity
   deliberately mixes in the most similar post with **the same topic but the
   opposite perspective** every `diversity_every` slots and flags it.
 
+**Similarity quality on the real ~250-post dataset (checked 2026-09-10,
+Felix's algorithm-review brief):** a plain, default-settings TF-IDF
+vectorizer produced visibly bad neighborhoods once the seed dataset grew
+past a handful of posts - a short post's few body sentences gave the
+title's on-topic vocabulary no extra weight over incidental body words, so
+e.g. the seed post "Speed up wind power expansion" (climate) ranked an
+unrelated migration post ("Speed up procedures without cutting legal
+protection") above other genuine climate posts, purely because both share
+the word "speed". Fixed in `_post_text()`/`_tfidf_matrix()`: the title is
+now counted twice, plus English stop words and word bigrams (catches short
+domain phrases like "speed limit" that unigrams alone conflate with
+unrelated posts sharing just one of the two words). Verified against the
+real seed corpus (`seed_demo_accounts.py` + both `seed_more_posts*.py`
+files, 250 posts) and covered by a regression test
+(`test_similarity_ranking_prefers_genuine_topic_match_over_a_shared_incidental_word`
+in `tests/test_ranking.py`). `_tfidf_matrix()` falls back to an untuned
+vectorizer if the tuned settings would leave nothing to vectorize (e.g. a
+post consisting only of stop words) - user-authored text is a real
+boundary case, this route must never 500.
+
+Also checked, no changes needed: `standard_feed()`'s proportional
+`preferred_political_ratio` mix already has test coverage for a single
+labeled like, exact ties and an empty bucket (see
+`test_political_label_ratio_*`/`test_standard_feed_ratio_*` in
+`tests/test_ranking.py`); `diversity_every` still visibly interrupts the
+feed at the right cadence on the full 250-post dataset; a fully cold
+account (no likes, no onboarding answers, seed post itself without a
+`political_label`) renders a sane feed instead of erroring out; and
+`standard_feed`/`diversity_aware_feed` are deterministic across repeated
+calls with identical input (both now covered by an explicit regression
+test - the earlier lack of one was itself a gap, not a bug: nothing here
+ever depended on dict/set iteration order for tie-breaking).
+
 **Account bias from like history:** for logged-in accounts, it's no longer
 just the currently selected seed post that decides which perspective "wins" -
 `ranking.dominant_perspective()` evaluates whether an account has liked
@@ -515,3 +548,49 @@ purpose.
       this sandbox by the network allowlist, see above)
 - [x] Cache the Fediverse fetch instead of live per `/` call (`fediverse.py`,
       `FEDIVERSE_CACHE_SECONDS`, see its own section above)
+- [x] Algorithm review against the real ~250-post dataset (2026-09-10 night
+      session, per the brief at the top of `NIGHTLY_TASK.md`): found and
+      fixed a real TF-IDF neighborhood-quality bug (see "Two feed modes"
+      above), checked proportional-ratio edge cases/`diversity_every`
+      effectiveness/cold start/determinism with nothing else to fix
+- [x] Session cookie size checked for `SEEN_HISTORY_CAP = 60`: a signed
+      session with 60 UUIDs plus the other session keys (user id, display
+      name, handle) comes to about 2 KB, roughly half the 4 KB browser
+      cookie limit - no change needed at the current cap
+- [x] Dead-code sweep across `app.py`/`ranking.py`/`db.py`/`fediverse.py`
+      (2026-09-10 night session): every function/constant traced to at
+      least one real call site beyond its own definition, nothing found to
+      remove
+- [x] Feed-refresh rotation (`app.py`: `_rotation_plan()`) re-checked against
+      the brief in `NIGHTLY_TASK.md` beyond what PR #148 already fixed: the
+      "↑ New posts" poll banner's reload is a plain
+      `window.location.reload()`, which preserves any `?seed_id=` already in
+      the URL, so it can never fight an explicit pin from the dropdown/tab
+      switch; small-vs-large dataset behavior and the never-freezes
+      guarantee were already covered by `tests/test_rotation.py`. Nothing
+      found to fix here.
+- [x] Automated route-level test coverage for `app.py` (2026-09-11 night
+      session): `pytest`/`ranking.py`/`_rotation_plan()` were covered, but no
+      test file exercised the Flask routes themselves (`/`, `/dashboard`,
+      `/login`, `/register`, the like/comment JSON endpoints) - every past
+      session had only checked these by hand with a Flask test client and
+      never committed it. New `tests/test_app.py` (13 tests) mocks the `db`/
+      `fediverse` modules and asserts on both modes, the empty-catalogue
+      state, `/dashboard`'s locked/unauthorized states, and the new
+      accessibility attributes below.
+- [x] Accessibility pass on `templates/index.html`/`dashboard.html`
+      (2026-09-11 night session, per the "Accessibility/UX polish" item in
+      NIGHTLY_TASK.md's next-steps list): added `aria-current="page"` to the
+      active feed-mode/dashboard-scope tab, `aria-pressed` + a descriptive
+      `aria-label` (kept in sync with the like count) on the like button,
+      `aria-expanded` on the comments-toggle button (kept in sync in
+      `toggleComments()`), `aria-live="polite"` on the comments list so a
+      loaded/deleted comment is announced, and a dedicated visually-hidden
+      `aria-live="polite"` status region (`#live-status`) so the "new posts
+      available" state is announced to screen readers - the visible
+      "↑ New posts" banner alone isn't reliably announced since it's
+      `[hidden]` at load. Deliberately did not touch layout/visual design -
+      the feed-as-real-app structure (single feed, mode tabs, avatar/handle/
+      timestamp) was already built and verified in earlier sessions (see
+      NIGHTLY_TASK.md's session log), this only closes gaps in how that
+      existing structure is exposed to assistive technology.
