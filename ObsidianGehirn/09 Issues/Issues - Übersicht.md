@@ -11,26 +11,30 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 09.09.2026 (per GitHub-API geprüft) – weiterhin 11 offene Issues, alle aus dem DTEW-Workshop (Digitale Demokratie / Feed-Diversity-Prototyp), siehe [[DTEW Hamburg - Übersicht]] und das [Kanban-Board](https://47felix.github.io/RasberryPI-Team-13/archive/DTEW-Workshop/kanban-board/) (Pfad seit 11.09.2026 unter `archive/`, siehe [[Doku-Regeln]]).
+Stand 14.09.2026 (per GitHub-API geprüft) – 4 offene Issues.
 
-> [!note] DTEW-Workshop abgeschlossen (11.09.2026)
-> Der Workshop ist vorbei und der Code/die Deliverables sind archiviert (siehe [[Doku-Regeln]]). Diese 11 Issues beziehen sich alle darauf - eher kollektiv schließen als einzeln weiterverfolgen, sobald das Team das bestätigt.
+> [!note] DTEW-Workshop abgeschlossen, Challenge I gestartet (14.09.2026)
+> Die 11 bisherigen DTEW-Workshop-Issues (#92-#102) wurden geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Einzige Ausnahme: #92 (Sicherheitsvorfall) bleibt offen, siehe dort. Das Team beginnt jetzt mit [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)), dafür die drei neuen Issues #167-#169.
 
-- [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.)
-- [#93](https://github.com/47Felix/RasberryPI-Team-13/issues/93) Prototyp-Arbeitstitel/Namen entscheiden – Logo-Entwurf "Perspektiv" liegt seit 08.09. als Datei im Repo-Root vor, seit 09.09. zusätzlich drei eigene Logo-Konzepte unter `archive/DTEW-Workshop/logo-concepts/`, Entscheidung im Team steht noch aus, siehe [[DTEW - Strategie-Praesentation]]
-- [#94](https://github.com/47Felix/RasberryPI-Team-13/issues/94) Social Business Model Canvas im Team abstimmen
-- [#95](https://github.com/47Felix/RasberryPI-Team-13/issues/95) Onboarding-Entwurf gegen aktuellen Prototyp-Code-Stand abgleichen
-- [#96](https://github.com/47Felix/RasberryPI-Team-13/issues/96) Logo visuell gestalten – seit 09.09. drei Logo-Konzepte (Split-Bubble, Kompass, Overlap-Circles, je SVG+PNG) unter `archive/DTEW-Workshop/logo-concepts/` abgelegt, Team-Entscheidung steht noch aus, siehe [[DTEW - Strategie-Praesentation]]
-- [#97](https://github.com/47Felix/RasberryPI-Team-13/issues/97) Donnerstag (03.09.) rückwirkend dokumentieren
-- [#98](https://github.com/47Felix/RasberryPI-Team-13/issues/98) Retrospektive vorbereiten (Sprint-Ende Montag 07.09.)
-- [#99](https://github.com/47Felix/RasberryPI-Team-13/issues/99) Rollen im Team festlegen (Scrum Master / Product Owner)
-- [#100](https://github.com/47Felix/RasberryPI-Team-13/issues/100) Board-Zugriff der Nacht-Automation repariert
-- [#101](https://github.com/47Felix/RasberryPI-Team-13/issues/101) Vielfalts-Score im Feed-Prototyp umgesetzt
-- [#102](https://github.com/47Felix/RasberryPI-Team-13/issues/102) Feed-UI auf echtes Single-Feed-Layout umgebaut
+- [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.) – weiterhin offen, braucht einen Menschen mit Supabase-Dashboard-Zugriff, keine automatisierte Session kann das lösen
+- [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167) Moodle-Zugang zu "Signale und Bussysteme" (Kurs-ID 1574) einholen – **Blocker für Challenge I**, braucht Einschreibekennwort von der Lehrkraft
+- [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) Git auf dem Pi einrichten und Repo klonen – unabhängig vom Moodle-Blocker sofort umsetzbar
+- [#169](https://github.com/47Felix/RasberryPI-Team-13/issues/169) Challenge I: Aufgabenstellung aus Moodle-Kurs ableiten und Team-Tasks planen – hängt an #167
 
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
 
 ## ✅ Geschlossen (was wurde gemacht)
+
+- **[#100](https://github.com/47Felix/RasberryPI-Team-13/issues/100) Board-Zugriff der Nacht-Automation repariert** – bereits erledigt, nur nie geschlossen; mit Workshop-Ende (14.09.) formal geschlossen.
+- **[#101](https://github.com/47Felix/RasberryPI-Team-13/issues/101) Vielfalts-Score im Feed-Prototyp umgesetzt** – bereits erledigt, nur nie geschlossen; mit Workshop-Ende (14.09.) formal geschlossen.
+- **[#102](https://github.com/47Felix/RasberryPI-Team-13/issues/102) Feed-UI auf echtes Single-Feed-Layout umgebaut** – bereits erledigt, nur nie geschlossen; mit Workshop-Ende (14.09.) formal geschlossen.
+- **[#93](https://github.com/47Felix/RasberryPI-Team-13/issues/93) Prototyp-Arbeitstitel/Namen entscheiden** – als obsolet geschlossen (14.09.), DTEW-Workshop vorbei, Entscheidung nicht mehr relevant.
+- **[#94](https://github.com/47Felix/RasberryPI-Team-13/issues/94) Social Business Model Canvas im Team abstimmen** – als obsolet geschlossen (14.09.).
+- **[#95](https://github.com/47Felix/RasberryPI-Team-13/issues/95) Onboarding-Entwurf gegen aktuellen Prototyp-Code-Stand abgleichen** – als obsolet geschlossen (14.09.).
+- **[#96](https://github.com/47Felix/RasberryPI-Team-13/issues/96) Logo visuell gestalten** – als obsolet geschlossen (14.09.).
+- **[#97](https://github.com/47Felix/RasberryPI-Team-13/issues/97) Donnerstag (03.09.) rückwirkend dokumentieren** – als obsolet geschlossen (14.09.).
+- **[#98](https://github.com/47Felix/RasberryPI-Team-13/issues/98) Retrospektive vorbereiten (Sprint-Ende Montag 07.09.)** – als obsolet geschlossen (14.09.).
+- **[#99](https://github.com/47Felix/RasberryPI-Team-13/issues/99) Rollen im Team festlegen (Scrum Master / Product Owner)** – als obsolet geschlossen (14.09.), DTEW-spezifisch; für Challenge I bei Bedarf neu aufsetzen.
 
 - **[#37](https://github.com/47Felix/RasberryPI-Team-13/issues/37) Track G – Arduino zu Pi Anbindung** – Arduino sendet `EVENT:READY/GRANTED/DENIED/ALARM/LOCKED` per USB-Serial an den Pi, Autodetect + Reconnect verifiziert per echtem Hardware-Test (28.08.2026). Siehe [[Erweiterung - Raspberry Pi Dashboard]].
 - **[#38](https://github.com/47Felix/RasberryPI-Team-13/issues/38) Track H – Backend/Logging auf dem Pi** – Flask-App liest Serial im Hintergrund-Thread, loggt alle Ereignisse mit UTC-Zeitstempel in SQLite (`tresor.db`), läuft als systemd-Service `tresor-dashboard`. Per Mock- und echtem Hardware-Test bestätigt.
