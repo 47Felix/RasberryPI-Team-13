@@ -7,7 +7,7 @@ tags: [projekt, pi-dashboard, arduino, kurzprojekt]
 > [!info] Stand
 > 28.08.2026 – **Echter Hardware-Test mit angeschlossenem Arduino durchgeführt** (nicht mehr nur Mock-Serial), Sketch direkt vom Pi per `arduino-cli` geflasht (siehe "Sketch vom Pi flashen" unten). Dabei zwei Software-Bugs gefunden und gefixt: (1) Arduino meldete nach dem automatischen Wiederverriegeln kein Ereignis, Dashboard zeigte "offen" dauerhaft weiter an → neues `EVENT:LOCKED` ergänzt; (2) Dashboard aktualisierte sich nur bei manuellem Neuladen → neuer `/api/status`-JSON-Endpunkt + JS-Polling alle 2s. Zusaetzlich Dashboard-Design ueberarbeitet (v2, Monitoring-Look + dramatischer Alarm mit Sirene/Strobe/GIF, PR #54). Vorher (27.08.2026): Software-Seite komplett per simuliertem Arduino (`socat`) end-to-end getestet, dabei einen Discord-Alarm-Bug gefixt (Cloudflare blockte den User-Agent).
 
-Setzt auf [[WS-Kurzprojekt Freitag]] auf: der Tresor-Arduino-Sketch (`Code/arduino-tresor/tresor_integration/tresor_integration.ino`) meldet seine Ereignisse jetzt per USB-Serial an den Pi, der sie loggt und über eine kleine Weboberfläche im WLAN anzeigt. Deckt GitHub-Issues #37-#42 ab (Tracks G-J + 2 Stretch-Ziele).
+Setzt auf [[WS-Kurzprojekt Freitag]] auf: der Tresor-Arduino-Sketch (`Tresor-Kurzprojekt/Code/arduino-tresor/tresor_integration/tresor_integration.ino`) meldet seine Ereignisse jetzt per USB-Serial an den Pi, der sie loggt und über eine kleine Weboberfläche im WLAN anzeigt. Deckt GitHub-Issues #37-#42 ab (Tracks G-J + 2 Stretch-Ziele).
 
 ## Architektur
 
@@ -30,7 +30,7 @@ Pi: ~/tresor-dashboard/app.py (Flask, systemd-Service "tresor-dashboard")
 
 ## Wo was liegt
 
-- **Code im Repo** (versioniert, `Code/pi-dashboard/`): `app.py`, `templates/*.html`, `requirements.txt`, `tresor-dashboard.service`. Das ist die Referenzkopie, siehe [[Git Workflow]]/[[Branch-Strategie]] fuer Aenderungen daran (Branch+PR, nicht direkt deployen ohne Commit).
+- **Code im Repo** (versioniert, `Tresor-Kurzprojekt/Code/pi-dashboard/`): `app.py`, `templates/*.html`, `requirements.txt`, `tresor-dashboard.service`. Das ist die Referenzkopie, siehe [[Git Workflow]]/[[Branch-Strategie]] fuer Aenderungen daran (Branch+PR, nicht direkt deployen ohne Commit).
 - **Live auf dem Pi**: `~/tresor-dashboard/` (App-Code identisch zum Repo, plus `venv/` und `.env`, beide NICHT versioniert, siehe `.gitignore`).
 - **`.env` auf dem Pi enthaelt**: `DASHBOARD_ADMIN_PASSWORD` (zufaellig generiert, steht nicht hier im Vault – siehe [[⚠️ Zugangsdaten - Hinweis]]), `DASHBOARD_SECRET_KEY` (Flask-Session), `DISCORD_BOT_TOKEN` (Kopie vom gleichen Bot-Token, das auch die Azure-VM nutzt), `DISCORD_ALARM_CHANNEL_ID` (aktuell `pi-projekt`-Kanal). Seit 08.09.2026 zusaetzlich die Impressums-Angaben (`DASHBOARD_IMPRESSUM_NAME`, `DASHBOARD_IMPRESSUM_ADDRESS`, `DASHBOARD_IMPRESSUM_CONTACT`, `DASHBOARD_IMPRESSUM_RESPONSIBLE`, `DASHBOARD_DATENSCHUTZ_AUFSICHT`) sowie optional `DASHBOARD_HTTPS` und `DASHBOARD_ACCESS_LOG` – Details in [[Rechtliches - Dashboard-Website]].
 - **Erreichbar unter**: `http://team13-1.local:5000` im Schul-WLAN, oder ueber Tailscale (`http://100.100.186.55:5000`) – siehe [[Pi Zugriff]] fuer den neuen Tailscale-Zugangsweg.
@@ -81,8 +81,8 @@ arduino-cli core update-index
 arduino-cli core install arduino:avr
 arduino-cli lib install Keypad
 arduino-cli lib install Servo
-arduino-cli compile --fqbn arduino:avr:uno Code/arduino-tresor/tresor_integration
-arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno Code/arduino-tresor/tresor_integration
+arduino-cli compile --fqbn arduino:avr:uno Tresor-Kurzprojekt/Code/arduino-tresor/tresor_integration
+arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno Tresor-Kurzprojekt/Code/arduino-tresor/tresor_integration
 ```
 
 1. **Install-Pfad-Falle**: Das offizielle Install-Script installiert standardmäßig nach `./bin` im **aktuellen Arbeitsverzeichnis**, nicht nach `~/bin`. `export PATH=$PATH:$HOME/bin` (naheliegende Annahme) zeigt dann ins Leere → `command not found`. Fix: `export PATH=$PATH:<tatsaechlicher-install-pfad>/bin`, dauerhaft in `~/.bashrc`.
@@ -92,12 +92,12 @@ arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno Code/arduino-tresor/tr
 
 ## Dashboard-Design (28.08.2026)
 
-Frontend (`Code/pi-dashboard/templates/*.html`) zweimal überarbeitet, angelehnt an einen Grafana-Referenzscreenshot (`Code/image.png`):
+Frontend (`Tresor-Kurzprojekt/Code/pi-dashboard/templates/*.html`) zweimal überarbeitet, angelehnt an einen Grafana-Referenzscreenshot (`Tresor-Kurzprojekt/Code/image.png`):
 
 1. **Erste Fassung** (PR [#52](https://github.com/47Felix/RasberryPI-Team-13/pull/52)): dunkles Monitoring-Design mit Monospace-Font, Panel-Header/-Body-Struktur, farbigem Akzent-Rand je Status. Bei `EVENT:ALARM` blinkt die Seite rot, ein GIF (`static/alarm.gif`) poppt auf, drei per Web Audio API synthetisierte Beeps ertönen.
 2. **Zweite Fassung** (PR [#54](https://github.com/47Felix/RasberryPI-Team-13/pull/54)): näher am Referenzbild – Sidebar mit Icon-Nav, Topbar mit Breadcrumb + Pill-Badges, abgerundete Panels mit Farbverläufen statt eckigem Terminal-Look, neues Mini-Balkendiagramm "Ereignisse nach Typ". Alarm deutlich dramatischer: Vollbild-Rot-Strobe, Screen-Shake, Warnstreifen-Banner oben/unten, größeres GIF mit Glow, durchgehende Zwei-Ton-Sirene (statt einmaliger Beeps) per Web Audio API, läuft solange der Alarm aktiv ist.
 
-Deploy auf dem Pi nach Merge: `cp Code/pi-dashboard/templates/*.html ~/tresor-dashboard/templates/ && sudo systemctl restart tresor-dashboard`.
+Deploy auf dem Pi nach Merge: `cp Tresor-Kurzprojekt/Code/pi-dashboard/templates/*.html ~/tresor-dashboard/templates/ && sudo systemctl restart tresor-dashboard`.
 
 ## Was noch fehlt
 
@@ -112,7 +112,7 @@ Deploy auf dem Pi nach Merge: `cp Code/pi-dashboard/templates/*.html ~/tresor-da
 ## Sonstiges
 
 - Die Pi-Systemuhr ging beim Deployment falsch (zeigte 24.08. statt 27.08.) – vermutlich fehlende RTC-Batterie + NTP-Sync noch nicht durchgelaufen. Betrifft die Zeitstempel im Event-Log! Siehe [[Offene Punkte]].
-- Ein Teammitglied hatte parallel schon eigene Debugging-Versuche mit `Serial.println(key)` unternommen (Notiz: "in der Serial kommt keine Zahl wenn ich auf dem Keypad drücke") – nicht geloescht, als Referenz stehen gelassen, liegt seit dem Sketch-Ordner-Cleanup (28.08.2026, PR [#47](https://github.com/47Felix/RasberryPI-Team-13/pull/47)) unter `Code/arduino-tresor/tresor_integration/debug-referenz/` (`tresor_integration_v2.ino`, Screenshot, `message.txt`) statt direkt im Sketch-Ordner – Grund: Arduino/`arduino-cli` kompiliert sonst alle `.ino`-Dateien im selben Ordner zusammen, was mit der zweiten `setup()`/`loop()`-Kopie fehlgeschlagen waere. Mein Ansatz loggt strukturierte Ereignisse statt Rohtasten, sollte das Problem umgehen, sobald der neue Sketch geflasht ist.
+- Ein Teammitglied hatte parallel schon eigene Debugging-Versuche mit `Serial.println(key)` unternommen (Notiz: "in der Serial kommt keine Zahl wenn ich auf dem Keypad drücke") – nicht geloescht, als Referenz stehen gelassen, liegt seit dem Sketch-Ordner-Cleanup (28.08.2026, PR [#47](https://github.com/47Felix/RasberryPI-Team-13/pull/47)) unter `Tresor-Kurzprojekt/Code/arduino-tresor/tresor_integration/debug-referenz/` (`tresor_integration_v2.ino`, Screenshot, `message.txt`) statt direkt im Sketch-Ordner – Grund: Arduino/`arduino-cli` kompiliert sonst alle `.ino`-Dateien im selben Ordner zusammen, was mit der zweiten `setup()`/`loop()`-Kopie fehlgeschlagen waere. Mein Ansatz loggt strukturierte Ereignisse statt Rohtasten, sollte das Problem umgehen, sobald der neue Sketch geflasht ist.
 
 ## Rechtliches (Impressum / Datenschutz)
 

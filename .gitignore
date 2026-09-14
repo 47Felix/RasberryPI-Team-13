@@ -16,9 +16,9 @@ ObsidianGehirn/.obsidian/plugins/*/data.json
 
 # Pi-Dashboard: Laufzeit-Artefakte (venv, SQLite-DB, .env mit Admin-Passwort/Discord-Token)
 # leben nur auf dem Pi, nie committen
-Code/pi-dashboard/venv/
-Code/pi-dashboard/tresor.db
-Code/pi-dashboard/.env
+Tresor-Kurzprojekt/Code/pi-dashboard/venv/
+Tresor-Kurzprojekt/Code/pi-dashboard/tresor.db
+Tresor-Kurzprojekt/Code/pi-dashboard/.env
 
 # Python-Bytecode-Cache (entsteht z.B. beim lokalen Testen der Flask-App)
 __pycache__/
