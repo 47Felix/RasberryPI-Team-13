@@ -32,9 +32,13 @@ python3 -m pytest tests/ -v
 
 9 Tests, alle gruen: Regellogik (`rules.py`, beide Kuehlstufen + Tuer-Boost + Grenzwerte), SQLite-Logging (`db.py`), und der Mock-I2C-Bus (`hardware.py`, `MockI2CBus`) im Zusammenspiel - gleiches Prinzip wie der `socat`-Mock-Test fuer den Tresor-Arduino (siehe `Tresor-Kurzprojekt/Code/pi-dashboard`, Vault-Notiz "Erweiterung - Raspberry Pi Dashboard").
 
+## Hardware-Update (Felix, 14.09., siehe Issue #179)
+
+Kein Luefter/DC-Motor vorhanden, nur der Servo (Wiederverwendung aus dem Tresor-Kurzprojekt). Beide Kuehlstufen laufen deshalb ueber `valve_angle` (kleiner Winkel = leichte Kuehlung, groesserer Winkel = starke Kuehlung, siehe `rules.py`). Der Luefter-Pfad (Transistor/H-Bruecke, `fan_pwm`) bleibt als Code-Stub bestehen - wird weiterhin berechnet und per I2C mitgeschickt, wirkt aber ohne verkabelte Hardware nicht. Erst umsetzen, wenn ein Luefter/DC-Motor beschafft ist.
+
 ## Was noch fehlt (braucht physischen Hardware-Zugriff)
 
-- [ ] **Beide Arduino-Sketches kompilieren + flashen** und auf echten Boards testen (Track A/B/D) - Verkabelung von Thermistor/Fotowiderstand, Tuerkontakt, zwei LEDs, Transistor/H-Bruecke fuer den Luefter, Servo fuer das Ventil
+- [ ] **Beide Arduino-Sketches kompilieren + flashen** und auf echten Boards testen (Track A/B/D) - Verkabelung von Thermistor/Fotowiderstand, Tuerkontakt, zwei LEDs, Servo fuer das Ventil (Luefter/Transistor siehe Hardware-Update oben)
 - [ ] **I2C-Verkabelung** SDA/SCL beider Arduinos mit dem Pi verbinden, gemeinsame GND, Pull-up-Widerstaende pruefen falls noetig (Track C/E)
 - [ ] **`RealI2CBus` gegen echten Bus testen** (`smbus2`, `/dev/i2c-1` auf dem Pi - Issue [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) muss zuerst erledigt sein)
 - [ ] **Schwellwerte in `rules.py` kalibrieren** (`FAN_ON_THRESHOLD`, `VALVE_ON_THRESHOLD` sind Platzhalter) - haengt an der eigentlichen Aufgabenstellung aus dem Moodle-Kurs (Issue [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167), noch nicht freigeschaltet) und an der realen Sensor-Kalibrierung

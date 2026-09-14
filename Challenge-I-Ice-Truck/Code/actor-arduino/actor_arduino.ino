@@ -9,8 +9,17 @@
     siehe Challenge-I-Ice-Truck/Code/pi-backend/rules.py), dieser Sketch
     setzt nur um, was er per I2C bekommt
 
+  Hardware-Update (Felix, 14.09., siehe Issue #179): kein Luefter/DC-Motor
+  vorhanden, nur der Servo. Der Luefter-Pin bleibt als Code-Stub bestehen
+  (nimmt weiterhin 0-255 per I2C entgegen) fuer den Moment, wo ein Luefter
+  beschafft wird - ohne verkabelten Transistor/H-Bruecke bewirkt
+  analogWrite() hier aktuell nichts. Beide Kuehlstufen laufen bis dahin
+  ueber den Servo (siehe rules.py: valve_angle deckt "leicht" und "stark"
+  ab).
+
   Pins:
-    - D9 (PWM): Transistor-Basis fuer den Luefter (DC-Motor aus dem Kit)
+    - D9 (PWM): Transistor-Basis fuer den Luefter (DC-Motor, aktuell nicht
+      vorhanden/verkabelt - siehe Hardware-Update oben)
     - D6: Servo-Signal fuer das Ventil (Winkel = Oeffnungsgrad, 0-180)
 
   I2C: Slave-Adresse 0x09, erwartet auf Wire.onReceive() genau 2 Bytes:
