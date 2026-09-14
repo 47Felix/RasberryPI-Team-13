@@ -3,8 +3,8 @@
 
   Challenge I, Tracks A+B+D auf EINEM Arduino Uno - das ist die tatsaechlich
   verkabelte Hardware (Stand 14.09.2026), anders als die urspruengliche
-  Zwei-Arduino-Aufteilung (sensor-arduino + actor-arduino, per I2C an den
-  Pi angebunden, siehe ../sensor-arduino und ../actor-arduino): dort war
+  Zwei-Arduino-Aufteilung (sensor_arduino + actor_arduino, per I2C an den
+  Pi angebunden, siehe ../sensor_arduino und ../actor_arduino): dort war
   noch kein zweiter Arduino/keine I2C-Verbindung zum Pi vorhanden. Diese
   Version deckt alle drei Sensor-Formate und beide Aktoren auf einem Board
   ab, die Kuehlstufen-Entscheidung passiert lokal auf dem Arduino statt im
@@ -40,7 +40,7 @@
   I2C (A4/A5): Pins bewusst frei/unbeschaltet gelassen, noch keine
   Pi-Anbindung. Wire.begin()/Wire.onRequest() sind trotzdem schon aktiv
   (Slave-Adresse 0x08, liefert dieselben 3 Sensor-Bytes wie
-  ../sensor-arduino/sensor_arduino.ino), damit Track C (Pi liest per I2C
+  ../sensor_arduino/sensor_arduino.ino), damit Track C (Pi liest per I2C
   mit) ohne Aenderung an diesem Sketch anschliessen kann, sobald SDA/SCL
   tatsaechlich verkabelt sind. Bis dahin schadet der unbeschaltete Wire.begin()
   nicht (kein Pull-up-Traffic ohne angeschlossenen Bus).
@@ -87,7 +87,7 @@ const uint8_t I2C_SLAVE_ADDRESS = 0x08;
 
 // DHT11 braucht laut Datenblatt mind. 1-2s Pause zwischen Messungen.
 const unsigned long DHT_READ_INTERVAL_MS = 2000;
-// LDR/LED-Update, gleiches Intervall wie im sensor-arduino-Sketch.
+// LDR/LED-Update, gleiches Intervall wie im sensor_arduino-Sketch.
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 const unsigned long DEBOUNCE_DELAY_MS = 50;
 
@@ -230,7 +230,7 @@ void applyCoolingStage(uint8_t stage) {
   valveServo.write(valveAngle);
 }
 
-// Gleiches Byte-Format wie ../sensor-arduino/sensor_arduino.ino, plus
+// Gleiches Byte-Format wie ../sensor_arduino/sensor_arduino.ino, plus
 // Feuchte, damit der Pi (sobald angebunden) den vollen DHT11-Messwert
 // mitbekommt statt nur die Temperatur.
 void sendSensorDataToPi() {
