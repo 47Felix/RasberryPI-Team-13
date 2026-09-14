@@ -34,11 +34,11 @@ python3 -m pytest tests/ -v
 
 ## Hardware-Update (Felix, 14.09., siehe Issue #179)
 
-Fruehere Annahme "kein Luefter vorhanden" war falsch/vorlaeufig - siehe naechster Abschnitt, ein Luefter ist tatsaechlich angeschlossen. Fuer den `pi-backend`/I2C-Split-Entwurf (`rules.py`, `sensor-arduino`, `actor-arduino`) bleibt trotzdem dokumentiert, wie beide Kuehlstufen ohne Luefter allein ueber `valve_angle` liefen (kleiner Winkel = leicht, groesserer Winkel = stark) - relevant, falls der Luefter mal wieder abgeklemmt wird.
+Fruehere Annahme "kein Luefter vorhanden" war falsch/vorlaeufig - siehe naechster Abschnitt, ein Luefter ist tatsaechlich angeschlossen. Fuer den `pi-backend`/I2C-Split-Entwurf (`rules.py`, `sensor_arduino`, `actor_arduino`) bleibt trotzdem dokumentiert, wie beide Kuehlstufen ohne Luefter allein ueber `valve_angle` liefen (kleiner Winkel = leicht, groesserer Winkel = stark) - relevant, falls der Luefter mal wieder abgeklemmt wird.
 
 ## Hardware-Update 2 (Felix, 14.09.): reale Verkabelung ist EIN Board, nicht zwei
 
-Tatsaechlich verkabelt ist bisher ein einzelner Arduino Uno mit allen drei Sensoren, allen drei LEDs und beiden Aktoren gleichzeitig - nicht die urspruenglich angenommene Zwei-Arduino-I2C-Aufteilung (`sensor-arduino` + `actor-arduino`). Neuer Sketch `arduino-single-board/ice_truck_single_board.ino` deckt das ab:
+Tatsaechlich verkabelt ist bisher ein einzelner Arduino Uno mit allen drei Sensoren, allen drei LEDs und beiden Aktoren gleichzeitig - nicht die urspruenglich angenommene Zwei-Arduino-I2C-Aufteilung (`sensor_arduino` + `actor_arduino`). Neuer Sketch `ice_truck_single_board/ice_truck_single_board.ino` deckt das ab:
 
 | Bauteil | Rolle | Pin(s) |
 |---|---|---|
@@ -56,7 +56,7 @@ Wichtig: der Taster an D4 ist ein **Taster**, kein Kippschalter - haelt seinen Z
 
 Kuehlstufen-Logik laeuft in dieser Version lokal auf dem Arduino (`computeCoolingStage()`/`applyCoolingStage()` im neuen Sketch), basierend auf der DHT11-Temperatur - nicht auf dem LDR (der misst Licht, nicht Temperatur). I2C zum Pi ist vorbereitet (Slave-Adresse 0x08, liefert Temp/Feuchte/LDR/Taster auf Anfrage) aber SDA/SCL bewusst noch unverkabelt ("reserviert für später") - sobald das steht, kann die Kuehlstufen-Entscheidung nach `pi-backend/rules.py` wandern (Issue #180), analog zum urspruenglichen Zwei-Board-Entwurf.
 
-`sensor-arduino/` und `actor-arduino/` bleiben als Referenz fuer den Zwei-Board-Entwurf stehen (z.B. falls ein zweites Board dazukommt), sind aber **nicht** die aktuell verkabelte Hardware.
+`sensor_arduino/` und `actor_arduino/` bleiben als Referenz fuer den Zwei-Board-Entwurf stehen (z.B. falls ein zweites Board dazukommt), sind aber **nicht** die aktuell verkabelte Hardware.
 
 ## Was noch fehlt (braucht physischen Hardware-Zugriff)
 
@@ -68,7 +68,7 @@ Kuehlstufen-Logik laeuft in dieser Version lokal auf dem Arduino (`computeCoolin
 
 ## Wo was liegt
 
-- `arduino-single-board/ice_truck_single_board.ino` - **aktuell verkabelte Hardware** (ein Board, alle Sensoren+Aktoren, siehe Hardware-Update 2 oben), Tracks A/B/D lokal, C vorbereitet
-- `sensor-arduino/sensor_arduino.ino` - Track A, B, C (Zwei-Board-Entwurf, Referenz)
-- `actor-arduino/actor_arduino.ino` - Track D, E (Zwei-Board-Entwurf, Referenz)
+- `ice_truck_single_board/ice_truck_single_board.ino` - **aktuell verkabelte Hardware** (ein Board, alle Sensoren+Aktoren, siehe Hardware-Update 2 oben), Tracks A/B/D lokal, C vorbereitet
+- `sensor_arduino/sensor_arduino.ino` - Track A, B, C (Zwei-Board-Entwurf, Referenz)
+- `actor_arduino/actor_arduino.ino` - Track D, E (Zwei-Board-Entwurf, Referenz)
 - `pi-backend/` - Track C, E, F (Pi-Seite): `hardware.py` (I2C real+mock), `rules.py` (Regellogik), `db.py` (SQLite), `app.py` (Hauptschleife), `tests/`
