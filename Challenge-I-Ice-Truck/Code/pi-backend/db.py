@@ -10,8 +10,10 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS readings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp_utc TEXT NOT NULL,
-    analog_raw INTEGER NOT NULL,
-    door_open INTEGER NOT NULL,
+    temperature_c REAL NOT NULL,
+    humidity_pct REAL NOT NULL,
+    ldr_raw INTEGER NOT NULL,
+    button INTEGER NOT NULL,
     fan_pwm INTEGER NOT NULL,
     valve_angle INTEGER NOT NULL
 );
@@ -27,18 +29,22 @@ def connect(db_path: str) -> sqlite3.Connection:
 
 def log_reading(
     conn: sqlite3.Connection,
-    analog_raw: int,
-    door_open: bool,
+    temperature_c: float,
+    humidity_pct: float,
+    ldr_raw: int,
+    button: int,
     fan_pwm: int,
     valve_angle: int,
 ) -> None:
     conn.execute(
-        "INSERT INTO readings (timestamp_utc, analog_raw, door_open, fan_pwm, valve_angle) "
-        "VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO readings (timestamp_utc, temperature_c, humidity_pct, ldr_raw, button, fan_pwm, valve_angle) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
         (
             datetime.now(timezone.utc).isoformat(),
-            analog_raw,
-            int(door_open),
+            temperature_c,
+            humidity_pct,
+            ldr_raw,
+            button,
             fan_pwm,
             valve_angle,
         ),

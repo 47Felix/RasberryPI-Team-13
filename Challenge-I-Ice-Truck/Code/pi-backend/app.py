@@ -23,10 +23,13 @@ DB_PATH = "challenge_i.db"
 
 
 def run_once(bus: I2CBus, conn) -> tuple[int, int]:
-    analog_raw, door_open = bus.read_sensor_arduino()
-    fan_pwm, valve_angle = rules.compute_setpoints(analog_raw, door_open)
-    bus.write_actor_setpoints(fan_pwm, valve_angle)
-    db.log_reading(conn, analog_raw, door_open, fan_pwm, valve_angle)
+    temperature_c, humidity_pct, ldr_raw, button = bus.read_sensor_arduino()
+    fan_pwm, valve_angle = rules.compute_setpoints(temperature_c)
+    # Kein bus.write_actor_setpoints(...) hier: die Kuehlstufe wird aktuell
+    # noch lokal auf dem Arduino angewendet (siehe hardware.py), das ist
+    # erst Issue #180. Wir lesen/loggen bereits mit, damit die Historie
+    # steht, sobald die Aktorik umzieht.
+    db.log_reading(conn, temperature_c, humidity_pct, ldr_raw, button, fan_pwm, valve_angle)
     return fan_pwm, valve_angle
 
 
