@@ -15,6 +15,27 @@ Um gleichbleibende Qualität/Haltbarkeit von Lebensmitteln zu sichern, muss die 
 - [[Kurs - Elektrotechnik]] (Signale, Widerstände, Schaltungen)
 - "Signale und Bussysteme" (Kurs-ID 1574) – passt inhaltlich genau, **benötigt Einschreibekennwort**, siehe [[Offene Punkte]]
 
+## Konkrete Aufgabenstellung (erhalten 14.09.2026)
+
+> Der Kühlraum eines Transportes kann über zwei Mechanismen geregelt werden:
+>
+> Für einfache Kühlanforderungen sind im Kühlraum Lüfter vorhanden, die in ihrer Drehzahl geregelt werden können. Diese Lüfter werden von einem Arduino über einen Transistor oder eine H-Brücke angesteuert.
+> Für höhere Anforderungen (niedrige Temperaturen) kann bei Bedarf kalte Luft über ein Ventil in den Kühlraum gelassen werden. Der Durchfluss des Ventils wird über einen Servomotor eingestellt, der ebenfalls an dem Arduino angeschlossen ist. Zur Ermittlung der Temperatur werden im Kühlraum mehrere Arduinos installiert, die die Daten der angeschlossenen Sensoren aufnehmen und an einen zentralen Raspberry Pi weiterleiten. Da mehrere Arduinos mit dem Raspberry Pi kommunizieren, bietet sich ein Busprotokoll wie I2C an.
+>
+> An den Arduinos ist je Sensor eine LED angeschlossen, die leuchtet, wenn Daten an den Sensoren gemessen werden. Die Helligkeit der LEDs ist ein Indikator für die Höhe der Messwerte des jeweiligen Sensors.
+>
+> Die angeschlossenen Sensoren liefern Daten unterschiedlichen Formats (analog, Digital 1/0 und über ein Bus-Protokoll, z.B. I2C, SPI, o.ä.).
+>
+> Die Messdaten werden in einer SQL-Datenbank auf dem Raspberry Pi protokolliert. Zudem wertet der Raspberry Pi die Sensordaten aus und steuert den Lüfter und das Ventil über den für die Aktoren zuständigen Arduino.
+
+**Kernanforderungen daraus:**
+- Mindestens ein **Sensor-Arduino** (mehrere im Original-Szenario) liest Sensoren unterschiedlicher Formate (analog, digital 1/0, Bus-Protokoll wie I2C/SPI) und steuert je Sensor eine LED, deren **Helligkeit (PWM) proportional zum Messwert** ist
+- Ein **Aktor-Arduino** steuert Lüfter (Transistor/H-Brücke, drehzahlgeregelt) und Ventil (Servomotor)
+- **I2C-Bus** zwischen (mehreren) Arduino(s) und dem Raspberry Pi
+- Raspberry Pi: **SQL-Datenbank-Logging** der Messwerte + Auswertungslogik, die darüber den Lüfter/das Ventil über den Aktor-Arduino ansteuert (Regelkreis: Pi wertet aus → Pi entscheidet → Pi schickt Stellwert an Aktor-Arduino)
+
+Damit ist das vorherige technische Vorgehen (Node-RED/MQTT/Discord-Alarm, Issues #171-#174) **überholt** - die echte Aufgabe verlangt I2C-Bus + SQL + Aktorik, kein reines Monitoring-Dashboard. Siehe [[Issues - Übersicht]] für den aktuellen Issue-Stand.
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 
