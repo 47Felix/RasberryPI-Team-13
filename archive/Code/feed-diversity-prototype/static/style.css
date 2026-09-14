@@ -13,7 +13,13 @@
   --surface: #fbf8f2;
   --ink: #201c16;
   --muted: #6b6154;
-  --faint: #99907f;
+  /* Darkened from the original #99907f (2026-09-11, readability report):
+     that value only cleared ~2.9:1 contrast against --paper/--surface, well
+     under the WCAG AA text minimum of 4.5:1 - illegible in bright light or
+     on a phone, which is exactly where it was reported. #756b58 keeps the
+     same warm brownish-gray hue (still visibly lighter/lower-emphasis than
+     --muted) but clears ~4.7:1 on --paper and ~4.95:1 on --surface. */
+  --faint: #756b58;
   --line: #ddd3c0;
   --line-strong: #201c16;
 
@@ -118,7 +124,7 @@ a {
   align-items: baseline;
   gap: 0.6rem;
   font-family: var(--font-meta);
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   color: var(--muted);
 }
 
@@ -129,14 +135,14 @@ a {
 
 .topbar .brand-mark {
   font-family: var(--font-display);
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   font-weight: 700;
   letter-spacing: 0.005em;
 }
 
 .topbar .brand-tag {
   font-family: var(--font-meta);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
@@ -162,7 +168,7 @@ a {
 .disclosure summary {
   cursor: pointer;
   font-family: var(--font-meta);
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
@@ -179,7 +185,7 @@ a {
 
 .about-text {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   margin: 0 0 0.9rem;
   font-family: var(--font-body);
   text-transform: none;
@@ -214,7 +220,7 @@ a {
 .tab-caption {
   margin: 0;
   padding: 0.6rem 0 0.9rem;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: var(--muted);
   border-bottom: 1px solid var(--line);
   margin-bottom: 1rem;
@@ -226,7 +232,7 @@ a {
   gap: 0.5rem 1.1rem;
   margin: 0.5rem 0 0.35rem;
   font-family: var(--font-meta);
-  font-size: 0.76rem;
+  font-size: 0.88rem;
 }
 
 .score-row .score-label {
@@ -254,7 +260,7 @@ a {
   background: var(--surface);
   color: var(--accent-ink);
   font-family: var(--font-meta);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -266,7 +272,7 @@ a {
 /* Shown when a plain reload rotates the feed on to unseen posts (index()). */
 .rotate-note {
   margin: 0.3rem 0 0;
-  font-size: 0.76rem;
+  font-size: 0.88rem;
   color: var(--muted);
   font-style: italic;
 }
@@ -298,7 +304,7 @@ a {
 .suggested-label {
   margin: 0 0 0.45rem 2.85rem;
   font-family: var(--font-meta);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-weight: 600;
@@ -308,7 +314,7 @@ a {
 .feed-reason {
   margin: 0 0 0.45rem 2.85rem;
   font-family: var(--font-meta);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   color: var(--muted);
 }
 
@@ -326,7 +332,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   background: var(--paper);
 }
 
@@ -349,13 +355,13 @@ a {
   align-items: baseline;
   gap: 0.35rem;
   font-family: var(--font-meta);
-  font-size: 0.76rem;
+  font-size: 0.88rem;
 }
 
 .post-header .author {
   font-weight: 700;
   font-family: var(--font-body);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .post-header .handle,
@@ -367,7 +373,7 @@ a {
 .post-title {
   margin: 0.3rem 0 0.2rem;
   font-family: var(--font-display);
-  font-size: 1.08rem;
+  font-size: 1.12rem;
   font-weight: 700;
   line-height: 1.25;
 }
@@ -375,7 +381,7 @@ a {
 .post-text {
   margin: 0 0 0.65rem;
   color: var(--ink);
-  font-size: 0.93rem;
+  font-size: 1rem;
 }
 
 .post-footer {
@@ -398,7 +404,7 @@ a {
   align-items: center;
   gap: 0.2rem;
   font-family: var(--font-meta);
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   border-radius: var(--radius-round);
@@ -422,7 +428,7 @@ a {
 }
 
 .chip-mark {
-  font-size: 0.6rem;
+  font-size: 0.78rem;
 }
 
 /* Sub-label inside a topic chip: spells out what "pro"/"contra" means for
@@ -478,7 +484,7 @@ a {
 
 .compass-label {
   font-family: var(--font-meta);
-  font-size: 0.66rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--muted);
@@ -495,7 +501,7 @@ a {
   height: 1.05rem;
   border-radius: 50%;
   font-family: var(--font-meta);
-  font-size: 0.6rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--surface);
   background: var(--muted);
@@ -549,7 +555,7 @@ a {
 
 .tilt-bar-caption {
   font-family: var(--font-meta);
-  font-size: 0.64rem;
+  font-size: 0.8rem;
   color: var(--muted);
   margin: 0.3rem 0 0;
 }
@@ -616,7 +622,7 @@ a {
 .compass-plot-axis-label {
   position: absolute;
   font-family: var(--font-meta);
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--muted);
@@ -649,7 +655,7 @@ a {
 .compass-plot-readout {
   text-align: center;
   font-family: var(--font-meta);
-  font-size: 0.7rem;
+  font-size: 0.84rem;
   color: var(--muted);
   margin: 0.4rem 0 1rem;
 }
@@ -670,7 +676,7 @@ a {
   display: flex;
   gap: 0.85rem;
   font-family: var(--font-meta);
-  font-size: 0.76rem;
+  font-size: 0.88rem;
   color: var(--faint);
 }
 
@@ -682,7 +688,7 @@ a {
   border: none;
   background: none;
   font-family: var(--font-meta);
-  font-size: 0.74rem;
+  font-size: 0.86rem;
   color: var(--faint);
   cursor: pointer;
   /* Padding + negative margin keeps the visible size/alignment the same
@@ -705,7 +711,7 @@ a {
 
 .comment {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
 }
 
 .comment strong {
@@ -717,7 +723,7 @@ a {
   border: none;
   background: none;
   font-family: var(--font-meta);
-  font-size: 0.7rem;
+  font-size: 0.84rem;
   color: var(--contra);
   cursor: pointer;
   /* Same touch-target padding trick as .comments-toggle above. */
@@ -753,7 +759,7 @@ a {
 
 .empty-state {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   padding: 1.5rem 0;
   text-align: center;
   border-top: 1px solid var(--line);
@@ -780,7 +786,7 @@ a {
 
 .settings-row label {
   font-family: var(--font-meta);
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -849,7 +855,7 @@ a {
   border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   background: var(--surface);
-  font-size: 0.64rem;
+  font-size: 0.8rem;
   text-transform: none;
   letter-spacing: normal;
   font-weight: 500;
@@ -858,7 +864,7 @@ a {
 
 .suggest-hint {
   margin-left: 0.4rem;
-  font-size: 0.7rem;
+  font-size: 0.84rem;
   font-weight: 400;
   text-transform: none;
   letter-spacing: normal;
@@ -910,7 +916,7 @@ input[type="range"]::-moz-range-thumb {
 
 .mix-value {
   font-family: var(--font-meta);
-  font-size: 0.76rem;
+  font-size: 0.88rem;
   font-weight: 600;
   color: var(--accent-ink);
   white-space: nowrap;
@@ -952,7 +958,7 @@ input[type="range"]::-moz-range-thumb {
 
 .trend-caption {
   margin-top: 0.5rem;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   color: var(--muted);
 }
 
@@ -983,7 +989,7 @@ noscript button {
 .fediverse-item {
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--line);
-  font-size: 0.86rem;
+  font-size: 0.95rem;
 }
 
 .fediverse-item:last-child {
@@ -993,13 +999,13 @@ noscript button {
 .fediverse-item .fediverse-meta {
   display: block;
   font-family: var(--font-meta);
-  font-size: 0.7rem;
+  font-size: 0.84rem;
   color: var(--faint);
   margin-top: 0.3rem;
 }
 
 .fediverse-empty {
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   padding: 0.5rem 0;
 }
