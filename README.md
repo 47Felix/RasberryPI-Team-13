@@ -6,8 +6,8 @@ Projekt-Repository für das Lernfeld **Smart Systems 2026** (ITECH), Team 13.
 
 Über drei Challenges hinweg wird eine IoT-Lösung für ein Kühl-Truck-Szenario entwickelt:
 
-1. **Challenge I – The Ice Truck Problem** (Signale & Bus-Systeme): Kühlkette lückenlos überwachen.
-2. **Challenge II – The Ice Truck Extension** (Kommunikationssysteme & Entwicklungswerkzeuge): mobile App zur Überwachung/Steuerung von außerhalb.
+1. **Challenge I – The Ice Truck Problem** (Signale & Bus-Systeme): Sensor-Arduino(s) lesen Temperatur/Feuchte/Licht/Taster (analog, digital, Bus-Protokoll) aus, je Sensor eine PWM-LED zeigt den Messwert an, ein Aktor-Arduino regelt Lüfter (Transistor/H-Brücke) und Ventil (Servo). Der Pi liest alles per I2C, loggt es in SQL und steuert die Aktorik.
+2. **Challenge II – The Ice Truck Extension** (Kommunikationssysteme & Entwicklungswerkzeuge): Temperaturdaten anzeigen und Aktoren fernsteuern von mobilen Endgeräten aus – per MQTT (ITECH-Broker oder lokaler Mosquitto) und Node-RED als Integrationsschicht, mit MQTT Dash/MQTT Explorer statt einer selbstgebauten App.
 3. **Challenge III – Ice Truck in Cloud** (IoT in Cloud): Daten in einer Cloud speichern und auswerten.
 
 ## Hardware
@@ -16,12 +16,12 @@ Projekt-Repository für das Lernfeld **Smart Systems 2026** (ITECH), Team 13.
 - Node-RED zur grafischen Verknüpfung von GPIOs, MQTT, HTTP
 - Mosquitto als lokaler MQTT-Broker
 - LED-Testschaltung an GPIO4 (Pin 7), gesteuert über einen Node-RED-Flow mit zwei Inject-Buttons ("LED an" / "LED aus")
-- Arduino Uno (Elegoo-Kit) für Challenge I: DHT22 (Temp/Feuchte), Fotowiderstand (LDR), Taster, 3 Status-LEDs, Lüfter über Transistor, Servo fürs Kühlraum-Ventil – siehe [Challenge-I-Ice-Truck/Code/README.md](Challenge-I-Ice-Truck/Code/README.md) für Pinbelegung/Details
+- Arduino Uno (Elegoo-Kit) für Challenge I: DHT22 (Temp/Feuchte), Fotowiderstand (LDR), Taster, 3 Status-LEDs, Lüfter über Transistor, Servo fürs Kühlraum-Ventil
 
-## Challenges
+## Challenges – Code & Stand
 
-- **Challenge I** (Signale & Bus-Systeme): Code in `Challenge-I-Ice-Truck/Code/` – Arduino-Sketch + Pi-Backend (SQLite-Logging, Regellogik), real verkabelt, siehe dortiges README für aktuellen Stand/offene Punkte
-- **Challenge II** (Kommunikationssysteme & Entwicklungswerkzeuge): Code in `Challenge-II-Ice-Truck-Extension/Code/` – MQTT-Topic-Schema + Node-RED-Bridge, mobile Anzeige/Steuerung per MQTT Dash/Explorer statt Eigenbau-App, siehe dortiges README
+- **Challenge I** (Signale & Bus-Systeme): [`Challenge-I-Ice-Truck/Code/`](Challenge-I-Ice-Truck/Code/README.md) – Arduino-Sketch (Pinbelegung siehe dort) + Pi-Backend (SQLite-Logging, Regellogik), real verkabelt, siehe README für aktuellen Stand/offene Punkte
+- **Challenge II** (Kommunikationssysteme & Entwicklungswerkzeuge): [`Challenge-II-Ice-Truck-Extension/Code/`](Challenge-II-Ice-Truck-Extension/Code/README.md) – MQTT-Topic-Schema + Node-RED-Bridge, mobile Anzeige/Steuerung per MQTT Dash/Explorer statt Eigenbau-App
 - **Challenge III**: noch nicht begonnen
 
 ## Wichtige Dienste auf dem Pi
