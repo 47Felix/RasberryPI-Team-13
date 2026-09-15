@@ -15,7 +15,14 @@ Projekt-Repository für das Lernfeld **Smart Systems 2026** (ITECH), Team 13.
 - Raspberry Pi (Hostname `Team13-1`, Raspberry Pi OS / Debian trixie, 64-bit)
 - Node-RED zur grafischen Verknüpfung von GPIOs, MQTT, HTTP
 - Mosquitto als lokaler MQTT-Broker
-- Aktuell in Arbeit: LED-Testschaltung an GPIO4 (Pin 7), gesteuert über einen Node-RED-Flow mit zwei Inject-Buttons ("LED an" / "LED aus")
+- LED-Testschaltung an GPIO4 (Pin 7), gesteuert über einen Node-RED-Flow mit zwei Inject-Buttons ("LED an" / "LED aus")
+- Arduino Uno (Elegoo-Kit) für Challenge I: DHT22 (Temp/Feuchte), Fotowiderstand (LDR), Taster, 3 Status-LEDs, Lüfter über Transistor, Servo fürs Kühlraum-Ventil – siehe [Challenge-I-Ice-Truck/Code/README.md](Challenge-I-Ice-Truck/Code/README.md) für Pinbelegung/Details
+
+## Challenges
+
+- **Challenge I** (Signale & Bus-Systeme): Code in `Challenge-I-Ice-Truck/Code/` – Arduino-Sketch + Pi-Backend (SQLite-Logging, Regellogik), real verkabelt, siehe dortiges README für aktuellen Stand/offene Punkte
+- **Challenge II** (Kommunikationssysteme & Entwicklungswerkzeuge): Code in `Challenge-II-Ice-Truck-Extension/Code/` – MQTT-Topic-Schema + Node-RED-Bridge, mobile Anzeige/Steuerung per MQTT Dash/Explorer statt Eigenbau-App, siehe dortiges README
+- **Challenge III**: noch nicht begonnen
 
 ## Wichtige Dienste auf dem Pi
 
@@ -44,6 +51,9 @@ Weiteres Setup (NTP, SSH, Node.js/Node-RED-Installation) siehe Moodle-Kurs "Einf
 - [x] LED-Flow in Node-RED gebaut (softwareseitig)
 - [x] Hardware-Aufbau: LED + Vorwiderstand auf Breadboard verkabelt (Issue #1)
 - [x] Node-RED mit MQTT verknüpft (Issue #2)
+- [x] Challenge I: Arduino-Sketch (Sensoren + Aktoren auf einem Board) + Pi-Backend mit SQLite-Logging/Regellogik geschrieben, DHT11/DHT22-Bug gefixt (Issue #191, noch ungetestet)
+- [ ] Challenge I: I2C-Verkabelung Arduino ↔ Pi (SDA/SCL aktuell noch unbeschaltet), danach Regellogik + Aktor-Ansteuerung über den Pi laufen lassen (Issue #180)
+- [ ] Challenge II: MQTT-Topic-Schema + Node-RED-Bridge entworfen, noch nicht gegen echten Broker getestet
 - [ ] Fernzugriff (DynDNS / Dashboard) für Challenge II
 
 ## Team
