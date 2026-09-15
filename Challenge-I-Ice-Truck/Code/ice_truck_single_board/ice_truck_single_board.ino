@@ -14,10 +14,10 @@
   Verkabelung (siehe Team-Vorgabe, Issue #176):
     | Bauteil                          | Rolle              | Pin(s)            |
     |-----------------------------------|--------------------|--------------------|
-    | DHT11 (Temp/Feuchte)              | Sensor, Bus-Protokoll (1-Wire) | Signal -> D2 |
+    | DHT22 (Temp/Feuchte)              | Sensor, Bus-Protokoll (1-Wire) | Signal -> D2 |
     | Fotowiderstand (LDR)              | Sensor, analog     | ueber Spannungsteiler -> A0 |
     | Kippschalter/Taster               | Sensor, digital 1/0| -> D4              |
-    | LED fuer DHT11                    | Helligkeitsanzeige | -> D5 (PWM)        |
+    | LED fuer DHT22                    | Helligkeitsanzeige | -> D5 (PWM)        |
     | LED fuer Fotowiderstand           | Helligkeitsanzeige | -> D6 (PWM)        |
     | LED fuer Schalter/Taster          | Helligkeitsanzeige | -> D11 (PWM)       |
     | Luefter (DC-Motor) ueber Transistor| Aktor             | Basis ueber 1kOhm -> D3 (PWM) |
@@ -30,12 +30,24 @@
   den Pin direkt als Zustand zu lesen (siehe pollToggleButton()).
 
   Kuehlstufen-Logik (lokal, siehe computeCoolingStage()): baut auf der
-  DHT11-Temperatur auf (nicht auf dem LDR - der misst Licht, nicht
+  DHT22-Temperatur auf (nicht auf dem LDR - der misst Licht, nicht
   Temperatur, war im Zwei-Arduino-Entwurf nur ein analoger Platzhalter-
   Sensor ohne direkten Bezug zur Kuehlkette). Schwellwerte sind
   Platzhalter (siehe Konstanten unten), haengen an der noch offenen
   Moodle-Aufgabenstellung (Issue #167) - deshalb benannte Konstanten statt
   Magic Numbers, gleiches Prinzip wie in pi-backend/rules.py.
+
+  Sensor-Identitaet (Fix 15.09.2026, Issue #191): der Temp/Feuchte-Sensor ist
+  tatsaechlich ein DHT22 (weisses Gehaeuse), nicht der urspruenglich
+  angenommene DHT11 (blaues Gehaeuse) - der Code hatte DHTTYPE auf DHT11
+  stehen. Beide Sensortypen kodieren ihre Rohbytes unterschiedlich (DHT11:
+  ganze Gradzahl direkt, DHT22: 16-Bit-Wert / 10 fuer 0,1-Grad-Aufloesung);
+  DHT11-Parsing auf einem DHT22-Bytestream ergab die konstant ~20-22 Grad zu
+  niedrigen Werte aus Issue #191 - kein Verkabelungs-/Pull-up-Problem. Fix:
+  DHTTYPE auf DHT22 umgestellt, der bisherige +20C-Kalibrierungs-Offset ist
+  damit hinfaellig und entfernt. Noch nicht an echter Hardware verifiziert
+  (kein Hardware-Zugriff bei diesem Fix) - siehe Issue #191 fuer den
+  ausstehenden Bestaetigungstest.
 
   I2C (A4/A5): Pins bewusst frei/unbeschaltet gelassen, noch keine
   Pi-Anbindung. Wire.begin()/Wire.onRequest() sind trotzdem schon aktiv
@@ -70,13 +82,13 @@
 #include <Wire.h>
 
 #define DHTPIN 2
-#define DHTTYPE DHT11
+#define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
 const uint8_t PIN_LDR = A0;
 const uint8_t PIN_TOGGLE_BUTTON = 4;
 
-const uint8_t PIN_LED_DHT11 = 5;
+const uint8_t PIN_LED_DHT22 = 5;
 const uint8_t PIN_LED_LDR = 6;
 const uint8_t PIN_LED_BUTTON = 11;
 
@@ -85,7 +97,7 @@ const uint8_t PIN_VALVE_SERVO = 9;
 
 const uint8_t I2C_SLAVE_ADDRESS = 0x08;
 
-// DHT11 braucht laut Datenblatt mind. 1-2s Pause zwischen Messungen.
+// DHT22 braucht laut Datenblatt mind. 2s Pause zwischen Messungen.
 const unsigned long DHT_READ_INTERVAL_MS = 2000;
 // LDR/LED-Update, gleiches Intervall wie im sensor_arduino-Sketch.
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
@@ -95,18 +107,6 @@ const unsigned long DEBOUNCE_DELAY_MS = 50;
 const float FAN_ON_TEMP_C = 8.0;    // Stufe 1: Luefter an
 const float VALVE_ON_TEMP_C = 12.0; // Stufe 2: zusaetzlich Ventil (Servo) auf
 const float TEMP_SPAN_C = 6.0;      // fuer die Rampe von Stufe 1 bis "voll offen"
-
-// TEMPORAERER Kalibrierungs-Offset: dieser DHT11 liefert konstant ca. 20-22
-// Grad zu wenig (z.B. 1 C gemessen bei ~23 C tatsaechlicher Raumtemperatur,
-// siehe pi-backend/read_live.py-Test 14.09.). Das ist ein Hardware-Problem
-// (Pull-up/Verkabelung am Datenpin D2), kein Rundungsfehler - dieser Offset
-// ist nur ein Workaround, damit computeCoolingStage() in der Zwischenzeit
-// sinnvoll reagiert (u.a. damit Luefter/Servo ueberhaupt testbar sind).
-// Sobald die Verkabelung geprueft/repariert ist, auf 0.0 setzen oder neu
-// kalibrieren. Gleicher Wert wie DHT11_TEMPERATURE_OFFSET_C in
-// pi-backend/hardware.py - dort NICHT nochmal addieren, sonst zaehlt's
-// doppelt.
-const float DHT11_TEMPERATURE_OFFSET_C = 20.0;
 
 const uint8_t MAX_FAN_PWM = 255;
 const uint8_t MAX_VALVE_ANGLE = 180;
@@ -129,7 +129,7 @@ void setup() {
   dht.begin();
 
   pinMode(PIN_TOGGLE_BUTTON, INPUT_PULLUP);
-  pinMode(PIN_LED_DHT11, OUTPUT);
+  pinMode(PIN_LED_DHT22, OUTPUT);
   pinMode(PIN_LED_LDR, OUTPUT);
   pinMode(PIN_LED_BUTTON, OUTPUT);
   pinMode(PIN_FAN_PWM, OUTPUT);
@@ -156,7 +156,7 @@ void loop() {
     float t = dht.readTemperature();
     if (!isnan(h) && !isnan(t)) {
       latestHumidityPct = h;
-      latestTemperatureC = t + DHT11_TEMPERATURE_OFFSET_C;
+      latestTemperatureC = t;
     }
     // Bei NAN (Lesefehler): letzten gueltigen Wert behalten statt auf 0
     // zu springen - ein einzelner Ausreisser soll die Kuehlstufe nicht
@@ -197,11 +197,11 @@ void pollToggleButton() {
 }
 
 void updateIndicatorLeds() {
-  // DHT11: Temperatur 0-40 Grad C auf Helligkeit gemappt (Platzhalter-
+  // DHT22: Temperatur 0-40 Grad C auf Helligkeit gemappt (Platzhalter-
   // Bereich, siehe Kommentar oben zu den Schwellwerten).
   if (!isnan(latestTemperatureC)) {
     int brightness = constrain(map((long)(latestTemperatureC * 10), 0, 400, 0, 255), 0, 255);
-    analogWrite(PIN_LED_DHT11, brightness);
+    analogWrite(PIN_LED_DHT22, brightness);
   }
 
   analogWrite(PIN_LED_LDR, map(latestLdrRaw, 0, 1023, 0, 255));
@@ -243,7 +243,7 @@ void applyCoolingStage(uint8_t stage) {
 }
 
 // Gleiches Byte-Format wie ../sensor_arduino/sensor_arduino.ino, plus
-// Feuchte, damit der Pi (sobald angebunden) den vollen DHT11-Messwert
+// Feuchte, damit der Pi (sobald angebunden) den vollen DHT22-Messwert
 // mitbekommt statt nur die Temperatur.
 void sendSensorDataToPi() {
   int16_t tempTenths = isnan(latestTemperatureC) ? -1 : (int16_t)(latestTemperatureC * 10);

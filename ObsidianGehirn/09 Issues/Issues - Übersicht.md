@@ -26,7 +26,21 @@ Stand 14.09.2026 (per GitHub-API geprüft) – 8 offene Issues.
 - [#180](https://github.com/47Felix/RasberryPI-Team-13/issues/180) Track E – I2C: Raspberry Pi steuert den Aktor-Arduino
 - [#181](https://github.com/47Felix/RasberryPI-Team-13/issues/181) Track F – Pi-Backend: SQL-Logging + Regellogik (Gesamtintegration)
 
+> [!note] Challenge I: Scaffold + reale Hardware-Verkabelung (seit 14.09.2026, PRs #183/#185/#186/#189/#190)
+> Tracks A-F wurden als `Challenge-I-Ice-Truck/Code/` umgesetzt (Sensor-/Aktor-Arduino-Sketches, Pi-Backend `pi-backend/` mit `rules.py`/`db.py`/`hardware.py`/`app.py`, 9 grüne Tests). Reale Verkabelung ist **ein** Arduino Uno mit DHT11, Fotowiderstand, Taster, 3 LEDs, Lüfter-Transistor und Servo (`ice_truck_single_board/ice_truck_single_board.ino`), nicht die ursprünglich angenommenen zwei separaten Boards – Details siehe `Challenge-I-Ice-Truck/Code/README.md`. Zwei Punkte noch offen:
+
+- [#184](https://github.com/47Felix/RasberryPI-Team-13/issues/184) Challenge I: Monitoring-Dashboard für die Kühlkette (Design) – Web-Dashboard fürs Kühlketten-Backend, analog zum Tresor-Dashboard, noch nicht umgesetzt
+- [#191](https://github.com/47Felix/RasberryPI-Team-13/issues/191) Challenge I: DHT11 liefert konstant ~20°C zu wenig (Verkabelung/Pull-up prüfen) – Workaround per Offset aktiv, echte Kalibrierung/Reparatur noch offen
+
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
+
+> [!note] Challenge II: echte Aufgabenstellung erhalten (15.09.2026)
+> Für [[Challenge II - Ice Truck Extension]] ([Milestone #3](https://github.com/47Felix/RasberryPI-Team-13/milestone/3)) liegt der echte Aufgabentext vor: mobile Anzeige der Temperaturdaten + Fernsteuerung der Aktoren per MQTT, Node-RED als Integrations-Framework, MQTT Dash/Explorer statt Eigenbau-App. In 4 Tracks heruntergebrochen: #193-#196.
+
+- [#193](https://github.com/47Felix/RasberryPI-Team-13/issues/193) Track A – MQTT-Broker: Verbindung zum ITECH-Broker oder lokalem Mosquitto sicherstellen
+- [#194](https://github.com/47Felix/RasberryPI-Team-13/issues/194) Track B – MQTT-Topic-Schema für Sensordaten + Aktor-Befehle definieren
+- [#195](https://github.com/47Felix/RasberryPI-Team-13/issues/195) Track C – Node-RED-Flow: Pi-Backend (I2C/SQL aus Challenge I) mit MQTT verbinden
+- [#196](https://github.com/47Felix/RasberryPI-Team-13/issues/196) Track D – Mobile Anbindung: MQTT Dash / MQTT Explorer konfigurieren + Doku
 
 ## ✅ Geschlossen (was wurde gemacht)
 

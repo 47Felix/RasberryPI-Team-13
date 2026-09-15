@@ -27,11 +27,13 @@ SENSOR_ARDUINO_ADDRESS = 0x08
 I2C_READ_RETRIES = 3
 I2C_RETRY_DELAY_SECONDS = 0.05
 
-# Kalibrierungs-Offset fuer den DHT11 (konstant ca. 20-22 Grad zu niedrig,
-# siehe README/ice_truck_single_board.ino) wird direkt in der Firmware
-# angewendet (DHT11_TEMPERATURE_OFFSET_C im Sketch), nicht mehr hier - sonst
-# wuerde er doppelt zaehlen. Die 7 Bytes von sendSensorDataToPi() enthalten
-# bereits die kalibrierte Temperatur.
+# Der Temp/Feuchte-Sensor ist ein DHT22 (weisses Gehaeuse), nicht der
+# urspruenglich angenommene DHT11 - der Sketch hatte DHTTYPE faelschlich auf
+# DHT11 stehen, was wegen des abweichenden Rohbyte-Formats zu konstant ca.
+# 20-22 Grad zu niedrigen Werten fuehrte (Issue #191). Seit 15.09.2026 ist
+# DHTTYPE im Sketch auf DHT22 korrigiert, der bisherige Firmware-seitige
+# Offset-Workaround ist damit hinfaellig und entfernt - noch nicht an echter
+# Hardware verifiziert.
 
 
 class I2CBus:
