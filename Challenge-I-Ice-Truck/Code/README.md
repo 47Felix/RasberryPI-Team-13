@@ -42,10 +42,10 @@ Tatsaechlich verkabelt ist bisher ein einzelner Arduino Uno mit allen drei Senso
 
 | Bauteil | Rolle | Pin(s) |
 |---|---|---|
-| DHT11 (Temp/Feuchte) | Sensor, digital/Bus-Protokoll | Signal → D2 |
+| DHT22 (Temp/Feuchte) | Sensor, digital/Bus-Protokoll | Signal → D2 |
 | Fotowiderstand (LDR) | Sensor, analog | über Spannungsteiler → A0 |
 | Kippschalter/Taster | Sensor, digital 1/0 | → D4 |
-| LED für DHT11 | Helligkeitsanzeige | → D5 (PWM) |
+| LED für DHT22 | Helligkeitsanzeige | → D5 (PWM) |
 | LED für Fotowiderstand | Helligkeitsanzeige | → D6 (PWM) |
 | LED für Schalter | Helligkeitsanzeige | → D11 (PWM) |
 | Lüfter (DC-Motor) über Transistor | Aktor | Basis über 1kΩ → D3 (PWM) |
@@ -54,12 +54,17 @@ Tatsaechlich verkabelt ist bisher ein einzelner Arduino Uno mit allen drei Senso
 
 Wichtig: der Taster an D4 ist ein **Taster**, kein Kippschalter - haelt seinen Zustand nicht selbst. Im Sketch deshalb als entprellter Software-Toggle umgesetzt (jeder Tastendruck kehrt den gespeicherten Zustand um), nicht als direkter Pin-Read wie beim urspruenglichen `sensor_arduino.ino`-Entwurf.
 
-Kuehlstufen-Logik laeuft in dieser Version lokal auf dem Arduino (`computeCoolingStage()`/`applyCoolingStage()` im neuen Sketch), basierend auf der DHT11-Temperatur - nicht auf dem LDR (der misst Licht, nicht Temperatur). I2C zum Pi ist vorbereitet (Slave-Adresse 0x08, liefert Temp/Feuchte/LDR/Taster auf Anfrage) aber SDA/SCL bewusst noch unverkabelt ("reserviert für später") - sobald das steht, kann die Kuehlstufen-Entscheidung nach `pi-backend/rules.py` wandern (Issue #180), analog zum urspruenglichen Zwei-Board-Entwurf.
+Kuehlstufen-Logik laeuft in dieser Version lokal auf dem Arduino (`computeCoolingStage()`/`applyCoolingStage()` im neuen Sketch), basierend auf der DHT22-Temperatur - nicht auf dem LDR (der misst Licht, nicht Temperatur). I2C zum Pi ist vorbereitet (Slave-Adresse 0x08, liefert Temp/Feuchte/LDR/Taster auf Anfrage) aber SDA/SCL bewusst noch unverkabelt ("reserviert für später") - sobald das steht, kann die Kuehlstufen-Entscheidung nach `pi-backend/rules.py` wandern (Issue #180), analog zum urspruenglichen Zwei-Board-Entwurf.
 
 `sensor_arduino/` und `actor_arduino/` bleiben als Referenz fuer den Zwei-Board-Entwurf stehen (z.B. falls ein zweites Board dazukommt), sind aber **nicht** die aktuell verkabelte Hardware.
 
+## Hardware-Update 3 (15.09.2026, Issue #191): Sensor ist ein DHT22, nicht DHT11
+
+Der Temp/Feuchte-Sensor hat ein weisses Gehaeuse (DHT22), nicht das blaue DHT11-Gehaeuse, das urspruenglich angenommen wurde. Der Sketch hatte `DHTTYPE` faelschlich auf `DHT11` stehen - DHT11 und DHT22 kodieren ihre Rohbytes unterschiedlich, DHT11-Parsing auf einem DHT22-Bytestream ergab die konstant ~20-22 Grad zu niedrigen Werte aus Issue #191, kein Verkabelungs-/Pull-up-Problem. Fix: `DHTTYPE` auf `DHT22` umgestellt (`ice_truck_single_board.ino`), der bisherige `+20°C`-Kalibrierungs-Offset ist damit hinfaellig und entfernt. **Noch nicht an echter Hardware verifiziert** - naechster Schritt bei Hardware-Zugriff: neu flashen, echte Werte gegen ein zweites Thermometer pruefen, Issue #191 danach schliessen.
+
 ## Was noch fehlt (braucht physischen Hardware-Zugriff)
 
+- [ ] **Sketch neu flashen + DHT22-Fix verifizieren** (Issue #191, siehe Hardware-Update 3 oben) - echte Temperatur/Feuchte gegen ein zweites Messgeraet gegenpruefen
 - [ ] **Beide Arduino-Sketches kompilieren + flashen** und auf echten Boards testen (Track A/B/D) - Verkabelung von Thermistor/Fotowiderstand, Tuerkontakt, zwei LEDs, Servo fuer das Ventil (Luefter/Transistor siehe Hardware-Update oben)
 - [ ] **I2C-Verkabelung** SDA/SCL beider Arduinos mit dem Pi verbinden, gemeinsame GND, Pull-up-Widerstaende pruefen falls noetig (Track C/E)
 - [ ] **`RealI2CBus` gegen echten Bus testen** (`smbus2`, `/dev/i2c-1` auf dem Pi - Issue [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) muss zuerst erledigt sein)
