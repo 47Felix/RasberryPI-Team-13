@@ -1,6 +1,6 @@
-"""Manuelles Live-Auslesen des Sensor-Arduino ueber I2C, ohne DB/Regellogik.
+"""Manuelles Live-Auslesen beider Arduinos ueber I2C, ohne DB/Regellogik.
 
-Nuetzlich zum Pruefen der Verkabelung (z.B. DHT11-Werte gegen ein
+Nuetzlich zum Pruefen der Verkabelung (z.B. DHT22-Werte gegen ein
 Referenz-Thermometer), unabhaengig von app.py/rules.py/db.py.
 
 Aufruf auf dem Pi:
@@ -22,17 +22,18 @@ POLL_INTERVAL_SECONDS = 2
 
 def main() -> None:
     bus = RealI2CBus()
-    print("Lese Sensor-Arduino (I2C 0x08), Strg+C zum Beenden...\n")
+    print("Lese Sensor-Arduino (0x08) + Aktor-Arduino (0x09), Strg+C zum Beenden...\n")
     while True:
         try:
-            temperature_c, humidity_pct, ldr_raw, button = bus.read_sensor_arduino()
+            analog_raw, door_open = bus.read_sensor_board()
+            temperature_c, humidity_pct = bus.read_actor_board_climate()
         except OSError as exc:
             print(f"I2C-Lesefehler, versuche es weiter: {exc}")
             time.sleep(POLL_INTERVAL_SECONDS)
             continue
         print(
             f"Temp: {temperature_c:5.1f} C  |  Feuchte: {humidity_pct:5.1f} %  |  "
-            f"LDR: {ldr_raw:4d}  |  Taster: {button}"
+            f"KY-028: {analog_raw:4d}  |  Tuer: {door_open}"
         )
         time.sleep(POLL_INTERVAL_SECONDS)
 

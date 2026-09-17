@@ -9,9 +9,10 @@
     ohne einen zusaetzlichen dritten Arduino nur als I2C-Slave-Platzhalter zu
     brauchen (siehe README.md fuer die Begruendung dieser Entscheidung)
 
-  Sensoren (Platzhalter aus dem Elegoo-Kit, siehe README "Was noch fehlt"):
-    - Thermistor/Fotowiderstand an A0 (Platzhalter fuer den Kuehlraum-
-      Temperatursensor - DHT11 laeuft separat weiter, siehe Issue #171-Historie)
+  Sensoren (siehe README "Hardware-Update 4"):
+    - KY-028-Modul (Analogausgang AO) an A0 - unkalibrierter Rohwert, kein
+      eigener Temperatursensor fuer die Kuehlstufen-Entscheidung (die laeuft
+      ueber den DHT22 am actor_arduino, siehe pi-backend/rules.py)
     - Tuerkontakt-Kippschalter an D2 (digital, Platzhalter fuer "Kuehlraumtuer
       offen/zu" - passt inhaltlich besser zum Kuehlketten-Szenario als ein
       beliebiger Taster)

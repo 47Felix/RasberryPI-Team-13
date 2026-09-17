@@ -6,17 +6,18 @@ Scaffolding fuer die Tracks A-F (siehe Issues [#176](https://github.com/47Felix/
 
 ```
 Sensor-Arduino (I2C-Slave 0x08)      Aktor-Arduino (I2C-Slave 0x09)
-  Thermistor/Fotowiderstand (A0)       Luefter (PWM, D9)
-  Tuerkontakt-Schalter (D2)            Ventil-Servo (D6)
-  LED je Sensor (D9, D10)
-        │                                     ▲
-        │ I2C read                            │ I2C write
-        ▼                                     │
+  KY-028 Analogwert (A0)               DHT22 Temp/Feuchte (D2) + LED (D5)
+  Tuerkontakt-Schalter (D2)            Luefter (PWM, D9)
+  LED je Sensor (D9, D10)              Ventil-Servo (D6)
+        │                                  │           ▲
+        │ I2C read                         │ I2C read  │ I2C write
+        ▼                                  ▼           │
                  pi-backend/app.py (Track F)
-                   - liest Sensor-Arduino
-                   - rules.py: 2-Stufen-Regellogik
+                   - liest Sensor- und Aktor-Arduino (Klimadaten haengen
+                     am Aktor-Board, siehe Hardware-Update 4)
+                   - rules.py: 2-Stufen-Regellogik aus der DHT22-Temperatur
                    - schreibt Aktor-Sollwerte
-                   - loggt jede Messung in SQLite
+                   - loggt jede Messung in SQLite (beide Sensorwerte)
 ```
 
 ## Design-Entscheidung: Sensor-Arduino ist sein eigener I2C-Slave
@@ -56,7 +57,25 @@ Wichtig: der Taster an D4 ist ein **Taster**, kein Kippschalter - haelt seinen Z
 
 Kuehlstufen-Logik laeuft in dieser Version lokal auf dem Arduino (`computeCoolingStage()`/`applyCoolingStage()` im neuen Sketch), basierend auf der DHT22-Temperatur - nicht auf dem LDR (der misst Licht, nicht Temperatur). I2C zum Pi ist vorbereitet (Slave-Adresse 0x08, liefert Temp/Feuchte/LDR/Taster auf Anfrage) aber SDA/SCL bewusst noch unverkabelt ("reserviert für später") - sobald das steht, kann die Kuehlstufen-Entscheidung nach `pi-backend/rules.py` wandern (Issue #180), analog zum urspruenglichen Zwei-Board-Entwurf.
 
-`sensor_arduino/` und `actor_arduino/` bleiben als Referenz fuer den Zwei-Board-Entwurf stehen (z.B. falls ein zweites Board dazukommt), sind aber **nicht** die aktuell verkabelte Hardware.
+`sensor_arduino/` und `actor_arduino/` waren zwischenzeitlich (14.-17.09.) nur die Referenz fuer den Zwei-Board-Entwurf, waehrend real ein einzelnes Board (`ice_truck_single_board.ino`) verkabelt war - siehe Hardware-Update 4, das ist inzwischen wieder ueberholt.
+
+## Hardware-Update 4 (Felix, 17.09.): zurueck auf zwei Boards, jetzt mit den echten Sensoren
+
+Team hat jetzt zwei physische Arduino Unos zur Verfuegung und ist zurueck zum Zwei-Board-Entwurf gewechselt - `ice_truck_single_board.ino` ist damit wieder **nicht** die aktuell verkabelte Hardware (bleibt als Referenz stehen). Unterschied zum urspruenglichen Zwei-Board-Entwurf: die tatsaechlich verbauten Sensoren sind DHT22 (nicht DHT11) und ein KY-028-Modul (nicht Thermistor/LDR-Platzhalter), und der DHT22 haengt physisch am **Aktor**-Board, nicht am Sensor-Board:
+
+| Board | Bauteil | Rolle | Pin(s) |
+|---|---|---|---|
+| Board 2, `sensor_arduino.ino` (I2C 0x08) | KY-028 (Analogausgang) | Sensor, analog, unkalibriert | AO → A0 |
+| Board 2 | Tuerkontakt/Kippschalter | Sensor, digital 1/0 | → D2 |
+| Board 2 | LED fuer KY-028 | Helligkeitsanzeige | → D9 (PWM) |
+| Board 1, `actor_arduino.ino` (I2C 0x09) | DHT22 (Temp/Feuchte) | Sensor, digital/Bus-Protokoll | Signal → D2 |
+| Board 1 | LED fuer DHT22 | Helligkeitsanzeige | → D5 (PWM) |
+| Board 1 | Luefter (DC-Motor) ueber Transistor | Aktor | Basis ueber 1kΩ → D9 (PWM) |
+| Board 1 | Servo (Ventil) | Aktor | Signal → D6 |
+
+I2C zum Pi (ohne Levelshifter, beide Boards am selben Bus): A4 (SDA) und A5 (SCL) beider Arduinos parallel an Pi GPIO2/GPIO3, gemeinsames GND. Pull-ups (4,7kΩ) von SDA/SCL auf **3,3V** (nicht 5V!), zusaetzlich auf beiden Arduinos nach `Wire.begin(...)` die internen 5V-Pull-ups per `digitalWrite(SDA, LOW); digitalWrite(SCL, LOW);` abschalten - sonst zieht der Bus Richtung 5V und gefaehrdet die Pi-GPIOs.
+
+`pi-backend` liest den DHT22-Wert vom **Aktor**-Board (0x09) fuer die Kuehlstufen-Entscheidung (`rules.py`); der KY-028-Rohwert vom Sensor-Board (0x08) ist unkalibriert (kein bekannter Thermistor-Beta-Wert) und fliesst aktuell nur ins Logging (`db.py`), nicht in die Regellogik.
 
 ## Hardware-Update 3 (15.09.2026, Issue #191): Sensor ist ein DHT22, nicht DHT11
 
@@ -64,16 +83,16 @@ Der Temp/Feuchte-Sensor hat ein weisses Gehaeuse (DHT22), nicht das blaue DHT11-
 
 ## Was noch fehlt (braucht physischen Hardware-Zugriff)
 
-- [ ] **Sketch neu flashen + DHT22-Fix verifizieren** (Issue #191, siehe Hardware-Update 3 oben) - echte Temperatur/Feuchte gegen ein zweites Messgeraet gegenpruefen
-- [ ] **Beide Arduino-Sketches kompilieren + flashen** und auf echten Boards testen (Track A/B/D) - Verkabelung von Thermistor/Fotowiderstand, Tuerkontakt, zwei LEDs, Servo fuer das Ventil (Luefter/Transistor siehe Hardware-Update oben)
-- [ ] **I2C-Verkabelung** SDA/SCL beider Arduinos mit dem Pi verbinden, gemeinsame GND, Pull-up-Widerstaende pruefen falls noetig (Track C/E)
-- [ ] **`RealI2CBus` gegen echten Bus testen** (`smbus2`, `/dev/i2c-1` auf dem Pi - Issue [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) muss zuerst erledigt sein)
-- [ ] **Schwellwerte in `rules.py` kalibrieren** (`FAN_ON_THRESHOLD`, `VALVE_ON_THRESHOLD` sind Platzhalter) - haengt an der eigentlichen Aufgabenstellung aus dem Moodle-Kurs (Issue [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167), noch nicht freigeschaltet) und an der realen Sensor-Kalibrierung
+- [ ] **Beide Arduino-Sketches (mit DHT22/KY-028) kompilieren + flashen** und auf den echten Boards testen
+- [ ] **I2C-Verkabelung** wie oben (Hardware-Update 4) tatsaechlich herstellen und mit `i2cdetect -y 1` auf `0x08` und `0x09` verifizieren
+- [ ] **`RealI2CBus` gegen echten Bus testen** (`smbus2`, `/dev/i2c-1` auf dem Pi)
+- [ ] **KY-028 kalibrieren** (Thermistor-Beta-Wert unbekannt) oder bewusst nur als Roh-Logging-Wert behandeln
+- [ ] **Schwellwerte in `rules.py` kalibrieren** (`FAN_ON_TEMP_C`, `VALVE_ON_TEMP_C` sind Platzhalter) - haengt an der eigentlichen Aufgabenstellung aus dem Moodle-Kurs (Issue [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167)) und an der realen Sensor-Kalibrierung
 - [ ] **`app.py` als systemd-Service** auf dem Pi einrichten (gleiches Muster wie `tresor-dashboard.service`), sobald obiges steht
 
 ## Wo was liegt
 
-- `ice_truck_single_board/ice_truck_single_board.ino` - **aktuell verkabelte Hardware** (ein Board, alle Sensoren+Aktoren, siehe Hardware-Update 2 oben), Tracks A/B/D lokal, C vorbereitet
-- `sensor_arduino/sensor_arduino.ino` - Track A, B, C (Zwei-Board-Entwurf, Referenz)
-- `actor_arduino/actor_arduino.ino` - Track D, E (Zwei-Board-Entwurf, Referenz)
-- `pi-backend/` - Track C, E, F (Pi-Seite): `hardware.py` (I2C real+mock), `rules.py` (Regellogik), `db.py` (SQLite), `app.py` (Hauptschleife), `tests/`
+- `sensor_arduino/sensor_arduino.ino` - **aktuell verkabelt** (Board 2, I2C 0x08): KY-028 + Tuerkontakt, Tracks A/B/C
+- `actor_arduino/actor_arduino.ino` - **aktuell verkabelt** (Board 1, I2C 0x09): DHT22 + Luefter/Servo, Tracks D/E + Klimadaten
+- `ice_truck_single_board/ice_truck_single_board.ino` - fruehere Ein-Board-Verkabelung (14.-17.09., siehe Hardware-Update 2), aktuell **nicht** verkabelt, bleibt als Referenz
+- `pi-backend/` - Track C, E, F (Pi-Seite): `hardware.py` (I2C real+mock, zwei Adressen), `rules.py` (Regellogik), `db.py` (SQLite), `app.py` (Hauptschleife), `read_live.py` (manuelles Live-Auslesen beider Boards), `tests/`

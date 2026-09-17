@@ -1,8 +1,11 @@
 """Challenge I Track F: Gesamtintegration.
 
-Liest periodisch den Sensor-Arduino per I2C (Track C), berechnet Fan-/
-Ventil-Sollwerte (rules.py), schickt sie an den Aktor-Arduino (Track E)
-und loggt jede Messung in SQLite (db.py).
+Liest periodisch den Sensor-Arduino (KY-028 + Tuerkontakt, Track C) und den
+Aktor-Arduino (DHT22 Temp/Feuchte) per I2C, berechnet Fan-/Ventil-Sollwerte
+aus der DHT22-Temperatur (rules.py), schickt sie an den Aktor-Arduino
+(Track E) und loggt jede Messung in SQLite (db.py). Der KY-028-Rohwert ist
+unkalibriert und fliesst aktuell nur ins Logging, nicht in die
+Kuehlstufen-Entscheidung.
 
 Ohne echte Hardware NICHT lauffaehig (RealI2CBus braucht smbus2 + einen
 tatsaechlichen I2C-Bus) - fuer den echten Betrieb auf dem Pi siehe
@@ -23,13 +26,11 @@ DB_PATH = "challenge_i.db"
 
 
 def run_once(bus: I2CBus, conn) -> tuple[int, int]:
-    temperature_c, humidity_pct, ldr_raw, button = bus.read_sensor_arduino()
+    analog_raw, door_open = bus.read_sensor_board()
+    temperature_c, humidity_pct = bus.read_actor_board_climate()
     fan_pwm, valve_angle = rules.compute_setpoints(temperature_c)
-    # Kein bus.write_actor_setpoints(...) hier: die Kuehlstufe wird aktuell
-    # noch lokal auf dem Arduino angewendet (siehe hardware.py), das ist
-    # erst Issue #180. Wir lesen/loggen bereits mit, damit die Historie
-    # steht, sobald die Aktorik umzieht.
-    db.log_reading(conn, temperature_c, humidity_pct, ldr_raw, button, fan_pwm, valve_angle)
+    bus.write_actor_setpoints(fan_pwm, valve_angle)
+    db.log_reading(conn, temperature_c, humidity_pct, analog_raw, door_open, fan_pwm, valve_angle)
     return fan_pwm, valve_angle
 
 
