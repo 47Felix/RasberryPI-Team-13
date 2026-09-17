@@ -7,8 +7,8 @@ Scaffolding fuer die Tracks A-F (siehe Issues [#176](https://github.com/47Felix/
 ```
 Sensor-Arduino (I2C-Slave 0x08)      Aktor-Arduino (I2C-Slave 0x09)
   KY-028 Analogwert (A0)               DHT22 Temp/Feuchte (D2) + LED (D5)
-  Tuerkontakt-Schalter (D2)            Luefter (PWM, D9)
-  LED je Sensor (D9, D10)              Ventil-Servo (D6)
+  LED fuer KY-028 (D9)                 Luefter (PWM, D9)
+                                       Ventil-Servo (D6)
         │                                  │           ▲
         │ I2C read                         │ I2C read  │ I2C write
         ▼                                  ▼           │
@@ -61,16 +61,15 @@ Kuehlstufen-Logik laeuft in dieser Version lokal auf dem Arduino (`computeCoolin
 
 ## Hardware-Update 4 (Felix, 17.09.): zurueck auf zwei Boards, jetzt mit den echten Sensoren
 
-Team hat jetzt zwei physische Arduino Unos zur Verfuegung und ist zurueck zum Zwei-Board-Entwurf gewechselt - `ice_truck_single_board.ino` ist damit wieder **nicht** die aktuell verkabelte Hardware (bleibt als Referenz stehen). Unterschied zum urspruenglichen Zwei-Board-Entwurf: die tatsaechlich verbauten Sensoren sind DHT22 (nicht DHT11) und ein KY-028-Modul (nicht Thermistor/LDR-Platzhalter), und der DHT22 haengt physisch am **Aktor**-Board, nicht am Sensor-Board:
+Team hat jetzt zwei physische Arduino Unos zur Verfuegung und ist zurueck zum Zwei-Board-Entwurf gewechselt - `ice_truck_single_board.ino` ist damit wieder **nicht** die aktuell verkabelte Hardware (bleibt als Referenz stehen). Unterschied zum urspruenglichen Zwei-Board-Entwurf: die tatsaechlich verbauten Sensoren sind DHT22 (nicht DHT11) und ein KY-028-Modul (nicht Thermistor/LDR-Platzhalter), der DHT22 haengt physisch am **Aktor**-Board (nicht am Sensor-Board), und der Tuerkontakt/Taster aus dem urspruenglichen Entwurf ist komplett entfallen (kein entsprechendes Bauteil verkabelt):
 
 | Board | Bauteil | Rolle | Pin(s) |
 |---|---|---|---|
 | Board 2, `sensor_arduino.ino` (I2C 0x08) | KY-028 (Analogausgang) | Sensor, analog, unkalibriert | AO → A0 |
-| Board 2 | Tuerkontakt/Kippschalter | Sensor, digital 1/0 | → D2 |
 | Board 2 | LED fuer KY-028 | Helligkeitsanzeige | → D9 (PWM) |
 | Board 1, `actor_arduino.ino` (I2C 0x09) | DHT22 (Temp/Feuchte) | Sensor, digital/Bus-Protokoll | Signal → D2 |
 | Board 1 | LED fuer DHT22 | Helligkeitsanzeige | → D5 (PWM) |
-| Board 1 | Luefter (DC-Motor) ueber Transistor | Aktor | Basis ueber 1kΩ → D9 (PWM) |
+| Board 1 | Luefter (DC-Motor/H-Bruecke) | Aktor | PWM → D9 |
 | Board 1 | Servo (Ventil) | Aktor | Signal → D6 |
 
 I2C zum Pi (ohne Levelshifter, beide Boards am selben Bus): A4 (SDA) und A5 (SCL) beider Arduinos parallel an Pi GPIO2/GPIO3, gemeinsames GND. Pull-ups (4,7kΩ) von SDA/SCL auf **3,3V** (nicht 5V!), zusaetzlich auf beiden Arduinos nach `Wire.begin(...)` die internen 5V-Pull-ups per `digitalWrite(SDA, LOW); digitalWrite(SCL, LOW);` abschalten - sonst zieht der Bus Richtung 5V und gefaehrdet die Pi-GPIOs.
@@ -92,7 +91,7 @@ Der Temp/Feuchte-Sensor hat ein weisses Gehaeuse (DHT22), nicht das blaue DHT11-
 
 ## Wo was liegt
 
-- `sensor_arduino/sensor_arduino.ino` - **aktuell verkabelt** (Board 2, I2C 0x08): KY-028 + Tuerkontakt, Tracks A/B/C
+- `sensor_arduino/sensor_arduino.ino` - **aktuell verkabelt** (Board 2, I2C 0x08): KY-028, Tracks A/B/C
 - `actor_arduino/actor_arduino.ino` - **aktuell verkabelt** (Board 1, I2C 0x09): DHT22 + Luefter/Servo, Tracks D/E + Klimadaten
 - `ice_truck_single_board/ice_truck_single_board.ino` - fruehere Ein-Board-Verkabelung (14.-17.09., siehe Hardware-Update 2), aktuell **nicht** verkabelt, bleibt als Referenz
 - `pi-backend/` - Track C, E, F (Pi-Seite): `hardware.py` (I2C real+mock, zwei Adressen), `rules.py` (Regellogik), `db.py` (SQLite), `app.py` (Hauptschleife), `read_live.py` (manuelles Live-Auslesen beider Boards), `tests/`

@@ -25,7 +25,7 @@ def main() -> None:
     print("Lese Sensor-Arduino (0x08) + Aktor-Arduino (0x09), Strg+C zum Beenden...\n")
     while True:
         try:
-            analog_raw, door_open = bus.read_sensor_board()
+            analog_raw = bus.read_sensor_board()
             temperature_c, humidity_pct = bus.read_actor_board_climate()
         except OSError as exc:
             print(f"I2C-Lesefehler, versuche es weiter: {exc}")
@@ -33,7 +33,7 @@ def main() -> None:
             continue
         print(
             f"Temp: {temperature_c:5.1f} C  |  Feuchte: {humidity_pct:5.1f} %  |  "
-            f"KY-028: {analog_raw:4d}  |  Tuer: {door_open}"
+            f"KY-028: {analog_raw:4d}"
         )
         time.sleep(POLL_INTERVAL_SECONDS)
 

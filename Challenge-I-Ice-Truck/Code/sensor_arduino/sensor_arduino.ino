@@ -1,75 +1,73 @@
 /*
   sensor_arduino.ino
 
-  Challenge I Track A + B + C (Sensor-Seite):
-  - Track A: liest zwei Sensor-Formate aus (analog + digital)
-  - Track B: je Sensor eine PWM-LED, Helligkeit proportional zum Messwert
-  - Track C: dient selbst als I2C-Slave, damit der Pi die Werte abholen kann -
-    deckt damit auch das geforderte "Bus-Protokoll"-Format aus Track A ab,
-    ohne einen zusaetzlichen dritten Arduino nur als I2C-Slave-Platzhalter zu
-    brauchen (siehe README.md fuer die Begruendung dieser Entscheidung)
+  Hardware-Update 4 (17.09.2026): reale Verkabelung ist wieder ZWEI
+  Arduinos. Dieses Board (0x08) traegt nur noch das KY-028-Temperatur-
+  modul - kein DHT11/DHT22, kein Fotowiderstand, kein Tuerkontakt mehr
+  hier (die DHT22-Seite ist jetzt auf ../actor_arduino/actor_arduino.ino,
+  zusammen mit den Aktoren).
 
-  Sensoren (siehe README "Hardware-Update 4"):
-    - KY-028-Modul (Analogausgang AO) an A0 - unkalibrierter Rohwert, kein
-      eigener Temperatursensor fuer die Kuehlstufen-Entscheidung (die laeuft
-      ueber den DHT22 am actor_arduino, siehe pi-backend/rules.py)
-    - Tuerkontakt-Kippschalter an D2 (digital, Platzhalter fuer "Kuehlraumtuer
-      offen/zu" - passt inhaltlich besser zum Kuehlketten-Szenario als ein
-      beliebiger Taster)
+  KY-028: NTC-Thermistor-Modul mit LM393-Komparator. Hat einen Analog-
+  ausgang (AO, Spannungsteiler ueber den Thermistor - je waermer, desto
+  hoeher/niedriger die Spannung je nach Verschaltung) und einen Digital-
+  ausgang (DO, Schwellwert per Onboard-Poti, hier nicht verwendet). Fuer
+  "LED-Helligkeit proportional zur Temperatur" brauchen wir den
+  kontinuierlichen Analogwert, nicht den Schwellwert-Digitalausgang.
 
-  LEDs (PWM-faehige Pins):
-    - D9: Helligkeit proportional zum Analogwert (0-1023 -> 0-255)
-    - D10: volle Helligkeit wenn Tuer offen, sonst aus (digitaler Sensor hat
-      keine "Hoehe", nur an/aus)
+  Pins:
+    - A0: KY-028 AO (Analogausgang)
+    - D9 (PWM): LED, Helligkeit proportional zum KY-028-Analogwert
+    - A4 (SDA) / A5 (SCL): I2C zum Pi
 
-  I2C: Slave-Adresse 0x08, sendet auf Anfrage 3 Bytes:
-    [0] Analogwert high byte
-    [1] Analogwert low byte
-    [2] Digitalwert (0 oder 1)
+  I2C: Slave-Adresse 0x08, sendet auf Anfrage 2 Bytes:
+    [0] KY-028-Analogwert high byte
+    [1] KY-028-Analogwert low byte
 
-  UNGETESTET auf echter Hardware (siehe README) - kompiliert nur lokal
-  gegen die Wire-Library-Signaturen ueberprueft, keine reale Verkabelung/
-  kein reales Board in dieser Sandbox verfuegbar.
+  UNGETESTET auf echter Hardware - Pin-Zuordnung (A0 fuer AO, D9 fuer die
+  LED) uebernimmt die Werte aus der vorherigen Version dieses Sketches,
+  bei Abweichung von der tatsaechlichen Verkabelung bitte Konstanten unten
+  anpassen. Ob der KY-028-Analogwert bei euch mit steigender Temperatur
+  steigt oder faellt, haengt von der Verschaltung des Spannungsteilers ab -
+  vor dem Kalibrieren mit einem zweiten Thermometer gegenpruefen, ggf.
+  map() unten umdrehen.
 */
 
 #include <Wire.h>
 
 const uint8_t I2C_SLAVE_ADDRESS = 0x08;
 
-const uint8_t PIN_ANALOG_SENSOR = A0;
-const uint8_t PIN_DOOR_SWITCH = 2;
-const uint8_t PIN_LED_ANALOG = 9;
-const uint8_t PIN_LED_DOOR = 10;
+const uint8_t PIN_KY028_ANALOG = A0;
+const uint8_t PIN_LED_KY028 = 9;
 
-volatile int16_t latestAnalogValue = 0;
-volatile uint8_t latestDoorState = 0;
+const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
+
+volatile int16_t latestKy028Raw = 0;
+unsigned long lastSensorUpdate = 0;
 
 void setup() {
-  pinMode(PIN_DOOR_SWITCH, INPUT_PULLUP);
-  pinMode(PIN_LED_ANALOG, OUTPUT);
-  pinMode(PIN_LED_DOOR, OUTPUT);
+  pinMode(PIN_LED_KY028, OUTPUT);
 
   Wire.begin(I2C_SLAVE_ADDRESS);
   Wire.onRequest(sendSensorDataToPi);
 
   Serial.begin(9600);
-  Serial.println("sensor_arduino ready, I2C slave 0x08");
+  Serial.println("sensor_arduino ready, I2C slave 0x08 (KY-028)");
 }
 
 void loop() {
-  latestAnalogValue = analogRead(PIN_ANALOG_SENSOR);
-  // INPUT_PULLUP: Schalter geschlossen (Tuer zu) zieht den Pin auf LOW
-  latestDoorState = (digitalRead(PIN_DOOR_SWITCH) == LOW) ? 0 : 1;
+  unsigned long now = millis();
+  if (now - lastSensorUpdate < SENSOR_UPDATE_INTERVAL_MS) {
+    return;
+  }
+  lastSensorUpdate = now;
 
-  uint8_t analogBrightness = map(latestAnalogValue, 0, 1023, 0, 255);
-  analogWrite(PIN_LED_ANALOG, analogBrightness);
-  analogWrite(PIN_LED_DOOR, latestDoorState ? 255 : 0);
+  latestKy028Raw = analogRead(PIN_KY028_ANALOG);
 
-  delay(200);
+  uint8_t brightness = map(latestKy028Raw, 0, 1023, 0, 255);
+  analogWrite(PIN_LED_KY028, brightness);
 }
 
 void sendSensorDataToPi() {
-  Wire.write(highByte(latestAnalogValue));
-  Wire.write(lowByte(latestAnalogValue));
-  Wire.write(latestDoorState);
+  Wire.write(highByte(latestKy028Raw));
+  Wire.write(lowByte(latestKy028Raw));
 }
