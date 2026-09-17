@@ -1,6 +1,6 @@
 """Challenge I Track F: Gesamtintegration.
 
-Liest periodisch den Sensor-Arduino (KY-028 + Tuerkontakt, Track C) und den
+Liest periodisch den Sensor-Arduino (KY-028, Track C) und den
 Aktor-Arduino (DHT22 Temp/Feuchte) per I2C, berechnet Fan-/Ventil-Sollwerte
 aus der DHT22-Temperatur (rules.py), schickt sie an den Aktor-Arduino
 (Track E) und loggt jede Messung in SQLite (db.py). Der KY-028-Rohwert ist
@@ -26,11 +26,11 @@ DB_PATH = "challenge_i.db"
 
 
 def run_once(bus: I2CBus, conn) -> tuple[int, int]:
-    analog_raw, door_open = bus.read_sensor_board()
+    analog_raw = bus.read_sensor_board()
     temperature_c, humidity_pct = bus.read_actor_board_climate()
     fan_pwm, valve_angle = rules.compute_setpoints(temperature_c)
     bus.write_actor_setpoints(fan_pwm, valve_angle)
-    db.log_reading(conn, temperature_c, humidity_pct, analog_raw, door_open, fan_pwm, valve_angle)
+    db.log_reading(conn, temperature_c, humidity_pct, analog_raw, fan_pwm, valve_angle)
     return fan_pwm, valve_angle
 
 

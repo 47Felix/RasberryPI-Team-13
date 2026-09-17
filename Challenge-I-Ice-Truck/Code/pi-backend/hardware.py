@@ -7,7 +7,8 @@ Tresor-Kurzprojekt/Code/pi-dashboard.
 
 Zwei-Board-Aufbau (siehe README "Hardware-Update 4"), zwei I2C-Adressen:
   - SENSOR_ARDUINO_ADDRESS (0x08, sensor_arduino.ino): KY-028-Rohwert
-    (analog, unkalibriert) + Tuerkontakt. Lese-Format 3 Bytes.
+    (analog, unkalibriert), kein Tuerkontakt mehr in diesem Aufbau.
+    Lese-Format 2 Bytes.
   - ACTOR_ARDUINO_ADDRESS (0x09, actor_arduino.ino): DHT22 Temperatur/
     Feuchte (dort haengt der Sensor physisch, nicht am Sensor-Board) und
     nimmt Luefter-/Ventil-Sollwerte entgegen. Lese-Format 4 Bytes
@@ -37,7 +38,7 @@ I2C_RETRY_DELAY_SECONDS = 0.05
 
 
 class I2CBus:
-    def read_sensor_board(self) -> tuple[int, int]:
+    def read_sensor_board(self) -> int:
         raise NotImplementedError
 
     def read_actor_board_climate(self) -> tuple[float, float]:
@@ -65,11 +66,9 @@ class RealI2CBus(I2CBus):
         assert last_error is not None
         raise last_error
 
-    def read_sensor_board(self) -> tuple[int, int]:
-        data = self._read_block_with_retry(SENSOR_ARDUINO_ADDRESS, 3)
-        analog_raw = (data[0] << 8) | data[1]
-        door_open = data[2]
-        return analog_raw, door_open
+    def read_sensor_board(self) -> int:
+        data = self._read_block_with_retry(SENSOR_ARDUINO_ADDRESS, 2)
+        return (data[0] << 8) | data[1]
 
     def read_actor_board_climate(self) -> tuple[float, float]:
         data = self._read_block_with_retry(ACTOR_ARDUINO_ADDRESS, 4)
@@ -95,16 +94,14 @@ class MockI2CBus(I2CBus):
         temperature_c: float = 20.0,
         humidity_pct: float = 50.0,
         analog_raw: int = 0,
-        door_open: int = 0,
     ) -> None:
         self.temperature_c = temperature_c
         self.humidity_pct = humidity_pct
         self.analog_raw = analog_raw
-        self.door_open = door_open
         self.last_actor_setpoints: tuple[int, int] | None = None
 
-    def read_sensor_board(self) -> tuple[int, int]:
-        return self.analog_raw, self.door_open
+    def read_sensor_board(self) -> int:
+        return self.analog_raw
 
     def read_actor_board_climate(self) -> tuple[float, float]:
         return self.temperature_c, self.humidity_pct

@@ -13,15 +13,14 @@ def test_log_reading_persists_row(tmp_path):
         temperature_c=15.5,
         humidity_pct=42.0,
         analog_raw=512,
-        door_open=1,
         fan_pwm=180,
         valve_angle=90,
     )
 
     row = conn.execute(
-        "SELECT temperature_c, humidity_pct, analog_raw, door_open, fan_pwm, valve_angle FROM readings"
+        "SELECT temperature_c, humidity_pct, analog_raw, fan_pwm, valve_angle FROM readings"
     ).fetchone()
-    assert row == (15.5, 42.0, 512, 1, 180, 90)
+    assert row == (15.5, 42.0, 512, 180, 90)
 
 
 def test_connect_is_idempotent(tmp_path):
@@ -33,7 +32,6 @@ def test_connect_is_idempotent(tmp_path):
         temperature_c=0.0,
         humidity_pct=0.0,
         analog_raw=0,
-        door_open=0,
         fan_pwm=0,
         valve_angle=0,
     )

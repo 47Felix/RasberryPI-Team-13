@@ -13,7 +13,6 @@ CREATE TABLE IF NOT EXISTS readings (
     temperature_c REAL NOT NULL,
     humidity_pct REAL NOT NULL,
     analog_raw INTEGER NOT NULL,
-    door_open INTEGER NOT NULL,
     fan_pwm INTEGER NOT NULL,
     valve_angle INTEGER NOT NULL
 );
@@ -32,19 +31,17 @@ def log_reading(
     temperature_c: float,
     humidity_pct: float,
     analog_raw: int,
-    door_open: int,
     fan_pwm: int,
     valve_angle: int,
 ) -> None:
     conn.execute(
-        "INSERT INTO readings (timestamp_utc, temperature_c, humidity_pct, analog_raw, door_open, fan_pwm, valve_angle) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO readings (timestamp_utc, temperature_c, humidity_pct, analog_raw, fan_pwm, valve_angle) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
         (
             datetime.now(timezone.utc).isoformat(),
             temperature_c,
             humidity_pct,
             analog_raw,
-            door_open,
             fan_pwm,
             valve_angle,
         ),

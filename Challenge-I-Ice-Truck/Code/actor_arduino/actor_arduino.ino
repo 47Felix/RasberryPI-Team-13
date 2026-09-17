@@ -1,34 +1,46 @@
 /*
   actor_arduino.ino
 
-  Challenge I Track D + E, plus Klima-Sensorik (2-Board-Aufbau, siehe
-  README "Hardware-Update 4"):
-  - Track D: Luefter (PWM ueber Transistor) fuer einfache Kuehlanforderungen,
-    Ventil (Servo) fuer hoehere Anforderungen (Durchfluss = Oeffnungswinkel)
-  - Track E: I2C-Slave, empfaengt Soll-Werte vom Pi statt lokal zu
-    entscheiden - die eigentliche Regellogik sitzt im Pi-Backend (Track F,
-    siehe Challenge-I-Ice-Truck/Code/pi-backend/rules.py), dieser Sketch
-    setzt nur um, was er per I2C bekommt
-  - Zusaetzlich: DHT22 (Temp/Feuchte) haengt physisch an diesem Board, nicht
-    am Sensor-Board - der Pi liest die Werte per I2C ab (Wire.onRequest),
-    damit sie in die SQLite-DB kommen und die Kuehlstufen-Entscheidung
-    speisen.
+  Hardware-Update 4 (17.09.2026): reale Verkabelung ist wieder ZWEI
+  Arduinos (nicht mehr das eine Board aus ice_truck_single_board.ino),
+  aber mit anderer Aufteilung als der urspruengliche Zwei-Board-Entwurf:
+  dieses Board (0x09) traegt beide Aktoren UND den DHT22 - das zweite
+  Board (siehe ../sensor_arduino/sensor_arduino.ino, 0x08) traegt nur noch
+  das KY-028-Modul. Kein Tuerkontakt/Taster mehr in diesem Aufbau.
+
+  Rolle dieses Boards:
+  - Aktoren: Luefter (DC-Motor ueber Transistor ODER H-Bruecke - fuer die
+    Firmware macht das keinen Unterschied, beides wird einfach per PWM auf
+    D9 angesteuert; welches Bauteil tatsaechlich bestueckt ist, aendert nur
+    die Verkabelung, nicht den Sketch) und Servo (Ventil, variabler Winkel)
+  - Sensor: DHT22 (Temp/Feuchte) mit eigener Helligkeits-LED - Helligkeit
+    proportional zur Temperatur, wie im vorherigen Einzelboard-Sketch
+    (siehe ice_truck_single_board.ino, updateIndicatorLeds())
+  - I2C-Slave-Adresse 0x09: liefert auf Anfrage die DHT22-Werte, nimmt per
+    Wire.onReceive() die Aktor-Sollwerte vom Pi entgegen (Kuehlstufen-Logik
+    sitzt im Pi-Backend, siehe pi-backend/rules.py)
 
   Pins:
-    - D2: DHT22-Signal (Temp/Feuchte)
-    - D5 (PWM): LED, Helligkeit proportional zur Temperatur (Track B)
-    - D9 (PWM): Transistor-Basis fuer den Luefter
+    - D2: DHT22-Signal (1-Wire/Bus-Protokoll)
+    - D5 (PWM): LED, Helligkeit proportional zur DHT22-Temperatur
+    - D9 (PWM): Transistor-/H-Bruecken-Eingang fuer den Luefter
     - D6: Servo-Signal fuer das Ventil (Winkel = Oeffnungsgrad, 0-180)
+    - A4 (SDA) / A5 (SCL): I2C zum Pi
 
-  I2C: Slave-Adresse 0x09, zwei Richtungen:
-    - Wire.onRequest(sendClimateDataToPi): 4 Bytes, Temperatur (int16,
-      Zehntelgrad) + Feuchte (int16, Zehntelprozent)
-    - Wire.onReceive(applySetpointsFromPi): erwartet genau 2 Bytes,
-      [0] Luefterstufe 0-255 (direkt als PWM-Duty-Cycle)
-      [1] Ventil-Winkel 0-180 (Grad)
+  I2C: Slave-Adresse 0x09
+    - Wire.onRequest(): sendet 4 Bytes [tempTenths hi, tempTenths lo,
+      humTenths hi, humTenths lo] - gleiches Format wie DHT22-Teil von
+      ice_truck_single_board.ino::sendSensorDataToPi()
+    - Wire.onReceive(): erwartet 2 Bytes [fan_pwm 0-255, valve_angle 0-180]
+      - unveraendert gegenueber der vorherigen Version dieses Sketches
 
-  UNGETESTET auf echter Hardware (siehe README) - Transistor/H-Bruecken-
-  Verkabelung und Servo-Anschluss sind nicht in dieser Sandbox pruefbar.
+  UNGETESTET auf echter Hardware - Pin-Zuordnung ist eine Annahme (Wiederve-
+  rwendung der vorherigen Fan/Servo-Pins D9/D6 aus diesem Sketch plus der
+  DHT22/LED-Pins D2/D5 aus ice_truck_single_board.ino), bei Abweichung von
+  der tatsaechlichen Verkabelung bitte Konstanten unten anpassen.
+
+  Benoetigte Bibliotheken: "DHT sensor library" (Adafruit) + Abhaengigkeit
+  "Adafruit Unified Sensor", "Servo" ist vorinstalliert.
 */
 
 #include <DHT.h>
@@ -47,18 +59,12 @@ const uint8_t PIN_VALVE_SERVO = 6;
 
 // DHT22 braucht laut Datenblatt mind. 2s Pause zwischen Messungen.
 const unsigned long DHT_READ_INTERVAL_MS = 2000;
-unsigned long lastDhtRead = 0;
 
-// LED-Helligkeit skaliert auf diesen Temperaturbereich (Platzhalter, siehe
-// rules.py FAN_ON_TEMP_C/VALVE_ON_TEMP_C fuer die tatsaechliche Regellogik -
-// die LED hier ist nur eine Anzeige, keine Steuerung).
-const float LED_TEMP_MIN_C = 0.0;
-const float LED_TEMP_MAX_C = 40.0;
+Servo valveServo;
 
 float latestTemperatureC = NAN;
 float latestHumidityPct = NAN;
-
-Servo valveServo;
+unsigned long lastDhtRead = 0;
 
 void setup() {
   dht.begin();
@@ -69,7 +75,7 @@ void setup() {
   valveServo.write(0);
 
   Wire.begin(I2C_SLAVE_ADDRESS);
-  Wire.onRequest(sendClimateDataToPi);
+  Wire.onRequest(sendDht22DataToPi);
   Wire.onReceive(applySetpointsFromPi);
 
   Serial.begin(9600);
@@ -77,8 +83,10 @@ void setup() {
 }
 
 void loop() {
-  if (millis() - lastDhtRead >= DHT_READ_INTERVAL_MS) {
-    lastDhtRead = millis();
+  unsigned long now = millis();
+
+  if (now - lastDhtRead >= DHT_READ_INTERVAL_MS) {
+    lastDhtRead = now;
     float h = dht.readHumidity();
     float t = dht.readTemperature();
     if (!isnan(h) && !isnan(t)) {
@@ -86,20 +94,30 @@ void loop() {
       latestTemperatureC = t;
     }
     // Bei NAN (Lesefehler): letzten gueltigen Wert behalten statt auf 0
-    // zu springen - ein einzelner Ausreisser soll die Anzeige/den Pi nicht
-    // mit einem falschen Wert fuettern.
+    // zu springen.
 
-    if (!isnan(latestTemperatureC)) {
-      float clamped = constrain(latestTemperatureC, LED_TEMP_MIN_C, LED_TEMP_MAX_C);
-      uint8_t brightness = map((long)(clamped * 10), (long)(LED_TEMP_MIN_C * 10),
-                                (long)(LED_TEMP_MAX_C * 10), 0, 255);
-      analogWrite(PIN_LED_DHT22, brightness);
-    }
+    updateIndicatorLed();
   }
+}
 
-  // Aktorik selbst haelt keinen Zustand ausser den zuletzt per I2C
-  // gesetzten Werten (applySetpointsFromPi), bleiben bestehen bis der Pi
-  // neue schickt.
+void updateIndicatorLed() {
+  if (isnan(latestTemperatureC)) {
+    return;
+  }
+  // Temperatur 0-40 Grad C auf Helligkeit gemappt (Platzhalter-Bereich,
+  // gleiche Skala wie im vorherigen Einzelboard-Sketch).
+  int brightness = constrain(map((long)(latestTemperatureC * 10), 0, 400, 0, 255), 0, 255);
+  analogWrite(PIN_LED_DHT22, brightness);
+}
+
+void sendDht22DataToPi() {
+  int16_t tempTenths = isnan(latestTemperatureC) ? -1 : (int16_t)(latestTemperatureC * 10);
+  int16_t humTenths = isnan(latestHumidityPct) ? -1 : (int16_t)(latestHumidityPct * 10);
+
+  Wire.write(highByte(tempTenths));
+  Wire.write(lowByte(tempTenths));
+  Wire.write(highByte(humTenths));
+  Wire.write(lowByte(humTenths));
 }
 
 void applySetpointsFromPi(int numBytes) {
@@ -116,14 +134,4 @@ void applySetpointsFromPi(int numBytes) {
 
   analogWrite(PIN_FAN_PWM, fanPwm);
   valveServo.write(valveAngle);
-}
-
-void sendClimateDataToPi() {
-  int16_t tempTenths = isnan(latestTemperatureC) ? -1 : (int16_t)(latestTemperatureC * 10);
-  int16_t humTenths = isnan(latestHumidityPct) ? -1 : (int16_t)(latestHumidityPct * 10);
-
-  Wire.write(highByte(tempTenths));
-  Wire.write(lowByte(tempTenths));
-  Wire.write(highByte(humTenths));
-  Wire.write(lowByte(humTenths));
 }
