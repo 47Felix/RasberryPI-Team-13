@@ -11,14 +11,11 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 14.09.2026 (per GitHub-API geprüft) – 8 offene Issues.
+Stand 17.09.2026 (per GitHub-API geprüft) – 12 offene Issues.
 
 > [!note] Challenge I: echte Aufgabenstellung erhalten (14.09.2026)
-> Die 11 bisherigen DTEW-Workshop-Issues (#92-#102) wurden geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Einzige Ausnahme: #92 (Sicherheitsvorfall) bleibt offen. Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
+> Alle 11 DTEW-Workshop-Issues (#92-#102) sind mittlerweile geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
 
-- [#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.) – weiterhin offen, braucht einen Menschen mit Supabase-Dashboard-Zugriff, keine automatisierte Session kann das lösen
-- [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167) Moodle-Zugang zu "Signale und Bussysteme" (Kurs-ID 1574) einholen – Aufgabentext liegt zwar schon vor, offen ob der volle Kurs (I2C/SPI-Grundlagen) noch gebraucht wird, siehe Kommentar dort
-- [#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) Git auf dem Pi einrichten und Repo klonen
 - [#176](https://github.com/47Felix/RasberryPI-Team-13/issues/176) Track A – Sensor-Arduino: Sensoren unterschiedlicher Formate auslesen (analog/digital/Bus)
 - [#177](https://github.com/47Felix/RasberryPI-Team-13/issues/177) Track B – Je Sensor eine LED mit Helligkeit proportional zum Messwert (PWM)
 - [#178](https://github.com/47Felix/RasberryPI-Team-13/issues/178) Track C – I2C-Bus: Sensor-Arduino(s) an den Raspberry Pi
@@ -26,11 +23,11 @@ Stand 14.09.2026 (per GitHub-API geprüft) – 8 offene Issues.
 - [#180](https://github.com/47Felix/RasberryPI-Team-13/issues/180) Track E – I2C: Raspberry Pi steuert den Aktor-Arduino
 - [#181](https://github.com/47Felix/RasberryPI-Team-13/issues/181) Track F – Pi-Backend: SQL-Logging + Regellogik (Gesamtintegration)
 
-> [!note] Challenge I: Scaffold + reale Hardware-Verkabelung (seit 14.09.2026, PRs #183/#185/#186/#189/#190)
-> Tracks A-F wurden als `Challenge-I-Ice-Truck/Code/` umgesetzt (Sensor-/Aktor-Arduino-Sketches, Pi-Backend `pi-backend/` mit `rules.py`/`db.py`/`hardware.py`/`app.py`, 9 grüne Tests). Reale Verkabelung ist **ein** Arduino Uno mit DHT11, Fotowiderstand, Taster, 3 LEDs, Lüfter-Transistor und Servo (`ice_truck_single_board/ice_truck_single_board.ino`), nicht die ursprünglich angenommenen zwei separaten Boards – Details siehe `Challenge-I-Ice-Truck/Code/README.md`. Zwei Punkte noch offen:
+> [!note] Challenge I: Scaffold + reale Hardware-Verkabelung (14.-17.09.2026, PRs #183/#185/#186/#189/#190/#197/#199/#200/#201)
+> Tracks A-F wurden als `Challenge-I-Ice-Truck/Code/` umgesetzt (Sensor-/Aktor-Arduino-Sketches, Pi-Backend `pi-backend/` mit `rules.py`/`db.py`/`hardware.py`/`app.py`). Die reale Verkabelung wechselte zweimal: erst ein einzelnes Arduino Uno mit DHT11/DHT22, Fotowiderstand, Taster, 3 LEDs, Lüfter-Transistor und Servo (`ice_truck_single_board.ino`), seit 17.09. zurück auf **zwei** Boards, jetzt mit den tatsächlich verbauten Sensoren: Sensor-Board (0x08) trägt nur noch das KY-028-Modul, Aktor-Board (0x09) trägt den DHT22 (nicht das Sensor-Board) plus Lüfter/Servo und meldet die Klimadaten mit. Der ursprünglich angenommene Türkontakt/Taster ist ganz entfallen, keine entsprechende Hardware verbaut. LED-Helligkeitsbereich für den DHT22 danach von 0-40°C auf 0-30°C korrigiert (Team-Spec). Details siehe `Challenge-I-Ice-Truck/Code/README.md`. Zwei Punkte noch offen:
 
 - [#184](https://github.com/47Felix/RasberryPI-Team-13/issues/184) Challenge I: Monitoring-Dashboard für die Kühlkette (Design) – Web-Dashboard fürs Kühlketten-Backend, analog zum Tresor-Dashboard, noch nicht umgesetzt
-- [#191](https://github.com/47Felix/RasberryPI-Team-13/issues/191) Challenge I: DHT11 liefert konstant ~20°C zu wenig (Verkabelung/Pull-up prüfen) – Workaround per Offset aktiv, echte Kalibrierung/Reparatur noch offen
+- [#191](https://github.com/47Felix/RasberryPI-Team-13/issues/191) Challenge I: DHT11 liefert konstant ~20°C zu wenig – Ursache gefunden (15.09.): Sensor ist tatsächlich ein DHT22, `DHTTYPE` war falsch gesetzt, Fix im Sketch gemerged, aber noch nicht an echter Hardware verifiziert (zweites Thermometer gegenprüfen), daher weiterhin offen
 
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
 
@@ -44,6 +41,9 @@ Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin ko
 
 ## ✅ Geschlossen (was wurde gemacht)
 
+- **[#92](https://github.com/47Felix/RasberryPI-Team-13/issues/92) Supabase-Token widerrufen (Sicherheitsvorfall 04.09.)** – am 14.09.2026 im Supabase-Dashboard vorsorglich widerrufen und geschlossen. Der Token war bereits vorher bei jedem Verwendungsversuch mit 401 Unauthorized abgelehnt worden, siehe [[DTEW 0409 - Social Business Model Canvas, Marketing und Onboarding]].
+- **[#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167) Moodle-Zugang zu "Signale und Bussysteme" (Kurs-ID 1574) einholen** – Einschreibekennwort besorgt, Felix hat sich eingeschrieben und erste Kursmaterialien hochgeladen (PR #187: I2C-1.pdf, SPI.pdf, Präsentation Einstieg Hardware.pdf, Vorwiderstand Diode.pdf, jetzt unter `ObsidianGehirn/03 Moodle Kurs/Signale und Bussysteme/`). Am 14.09.2026 geschlossen, der eigentliche Blocker (Aufgabentext) lag zu dem Zeitpunkt bereits anderweitig vor.
+- **[#168](https://github.com/47Felix/RasberryPI-Team-13/issues/168) Git auf dem Pi einrichten und Repo klonen** – Git war auf dem Pi schon installiert (2.47.3), das geklonte Repo aber uralt (Stand PR #45, Ende August) und per `git merge --ff-only origin/main` aktualisiert (PR #188). Ein versehentlich verschachtelter doppelter Klon wurde aufgeräumt, `bin/arduino-cli` blieb unangetastet.
 - **[#169](https://github.com/47Felix/RasberryPI-Team-13/issues/169) Challenge I: Aufgabenstellung aus Moodle-Kurs ableiten und Team-Tasks planen** – Aufgabentext erhalten (14.09.), in 6 Tracks heruntergebrochen (#176-#181), siehe [[Challenge I - Ice Truck Problem]].
 - **[#171](https://github.com/47Felix/RasberryPI-Team-13/issues/171) DHT11-Sensor fest verkabeln + Sketch auf strukturierte Ausgabe umstellen** – als überholt geschlossen (14.09.), Node-RED/MQTT-Ansatz passte nicht zur echten Aufgabenstellung (I2C-Bus, Aktorik, SQL). Ersetzt durch Track A/C (#176/#178).
 - **[#172](https://github.com/47Felix/RasberryPI-Team-13/issues/172) Sensordaten per Node-RED einlesen und über MQTT veröffentlichen** – als überholt geschlossen (14.09.), gleicher Grund wie #171. Ersetzt durch Track C (#178).
