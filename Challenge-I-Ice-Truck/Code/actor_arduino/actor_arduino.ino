@@ -104,9 +104,10 @@ void updateIndicatorLed() {
   if (isnan(latestTemperatureC)) {
     return;
   }
-  // Temperatur 0-40 Grad C auf Helligkeit gemappt (Platzhalter-Bereich,
-  // gleiche Skala wie im vorherigen Einzelboard-Sketch).
-  int brightness = constrain(map((long)(latestTemperatureC * 10), 0, 400, 0, 255), 0, 255);
+  // Temperatur 0-30 Grad C auf Helligkeit gemappt: 0 Grad = aus, 30 Grad =
+  // volle Helligkeit (Platzhalter-Bereich, an die reale Aufgabenstellung
+  // anpassen falls noetig).
+  int brightness = constrain(map((long)(latestTemperatureC * 10), 0, 300, 0, 255), 0, 255);
   analogWrite(PIN_LED_DHT22, brightness);
 }
 
