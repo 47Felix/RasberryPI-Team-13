@@ -1,16 +1,23 @@
-"""I2C-Zugriff fuer Challenge I Track C, real und gemockt.
+"""I2C-Zugriff fuer Challenge I Track C+E, real und gemockt.
 
 Der reale Bus (RealI2CBus) braucht smbus2 und ein tatsaechliches I2C-Geraet
 unter /dev/i2c-1. MockI2CBus liefert stattdessen fest einprogrammierte/
 aenderbare Werte, analog zum socat-Mock-Muster aus
 Tresor-Kurzprojekt/Code/pi-dashboard.
 
-Byte-Format (7 Bytes) entspricht sendSensorDataToPi() in
-ice_truck_single_board.ino: Temperatur (int16, Zehntelgrad), Feuchte
-(int16, Zehntelprozent), LDR-Rohwert (uint16), Taster-Zustand (uint8).
-Das aeltere 3-Byte-Format (analog_raw, door_open) passte zum urspruenglichen
-Zwei-Board-Entwurf (sensor_arduino.ino) und existiert auf der tatsaechlich
-verkabelten Hardware nicht mehr.
+Zwei-Board-Aufbau (siehe README "Hardware-Update 4"), zwei I2C-Adressen:
+  - SENSOR_ARDUINO_ADDRESS (0x08, sensor_arduino.ino): KY-028-Rohwert
+    (analog, unkalibriert) + Tuerkontakt. Lese-Format 3 Bytes.
+  - ACTOR_ARDUINO_ADDRESS (0x09, actor_arduino.ino): DHT22 Temperatur/
+    Feuchte (dort haengt der Sensor physisch, nicht am Sensor-Board) und
+    nimmt Luefter-/Ventil-Sollwerte entgegen. Lese-Format 4 Bytes
+    (Temperatur/Feuchte, je int16 Zehntel), Schreib-Format 3 Bytes.
+
+Schreib-Format (3 Bytes) entspricht receiveActorSetpoints() im
+actor_arduino.ino: ein ungenutztes Platzhalter-"Register"-Byte (Artefakt
+von smbus2.write_i2c_block_data(), das immer ein Register vor den Daten
+erwartet - der Arduino hat keine echten Register), dann fan_pwm (0-255)
+und valve_angle (0-180).
 """
 
 from __future__ import annotations
@@ -18,6 +25,7 @@ from __future__ import annotations
 import time
 
 SENSOR_ARDUINO_ADDRESS = 0x08
+ACTOR_ARDUINO_ADDRESS = 0x09
 
 # I2C-Lesefehler (OSError, z.B. Errno 121 "Remote I/O error") kommen bei
 # dieser Verkabelung gelegentlich vor - beobachtet z.B. sobald Luefter/Servo
@@ -27,17 +35,12 @@ SENSOR_ARDUINO_ADDRESS = 0x08
 I2C_READ_RETRIES = 3
 I2C_RETRY_DELAY_SECONDS = 0.05
 
-# Der Temp/Feuchte-Sensor ist ein DHT22 (weisses Gehaeuse), nicht der
-# urspruenglich angenommene DHT11 - der Sketch hatte DHTTYPE faelschlich auf
-# DHT11 stehen, was wegen des abweichenden Rohbyte-Formats zu konstant ca.
-# 20-22 Grad zu niedrigen Werten fuehrte (Issue #191). Seit 15.09.2026 ist
-# DHTTYPE im Sketch auf DHT22 korrigiert, der bisherige Firmware-seitige
-# Offset-Workaround ist damit hinfaellig und entfernt - noch nicht an echter
-# Hardware verifiziert.
-
 
 class I2CBus:
-    def read_sensor_arduino(self) -> tuple[float, float, int, int]:
+    def read_sensor_board(self) -> tuple[int, int]:
+        raise NotImplementedError
+
+    def read_actor_board_climate(self) -> tuple[float, float]:
         raise NotImplementedError
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
@@ -50,37 +53,35 @@ class RealI2CBus(I2CBus):
 
         self._bus = smbus2.SMBus(bus_number)
 
-    def read_sensor_arduino(self) -> tuple[float, float, int, int]:
+    def _read_block_with_retry(self, address: int, length: int) -> list[int]:
         last_error: OSError | None = None
         for attempt in range(1, I2C_READ_RETRIES + 1):
             try:
-                data = self._bus.read_i2c_block_data(SENSOR_ARDUINO_ADDRESS, 0, 7)
-                break
+                return self._bus.read_i2c_block_data(address, 0, length)
             except OSError as exc:
                 last_error = exc
                 if attempt < I2C_READ_RETRIES:
                     time.sleep(I2C_RETRY_DELAY_SECONDS)
-        else:
-            assert last_error is not None
-            raise last_error
+        assert last_error is not None
+        raise last_error
 
+    def read_sensor_board(self) -> tuple[int, int]:
+        data = self._read_block_with_retry(SENSOR_ARDUINO_ADDRESS, 3)
+        analog_raw = (data[0] << 8) | data[1]
+        door_open = data[2]
+        return analog_raw, door_open
+
+    def read_actor_board_climate(self) -> tuple[float, float]:
+        data = self._read_block_with_retry(ACTOR_ARDUINO_ADDRESS, 4)
         temperature_c = _signed16(data[0], data[1]) / 10.0
         humidity_pct = _signed16(data[2], data[3]) / 10.0
-        ldr_raw = (data[4] << 8) | data[5]
-        button = data[6]
-        return temperature_c, humidity_pct, ldr_raw, button
+        return temperature_c, humidity_pct
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
-        # Auf der tatsaechlich verkabelten Hardware (EIN Arduino, siehe
-        # ice_truck_single_board.ino) laeuft applyCoolingStage() lokal auf
-        # dem Arduino - es gibt keinen zweiten Arduino/keine eigene
-        # I2C-Adresse fuer Aktorik mehr, und der Sketch hat (noch) keinen
-        # Wire.onReceive()-Handler, der Setpoints vom Pi entgegennehmen
-        # wuerde. Bleibt Stub fuer Issue #180, bis das Firmware-seitig da ist.
-        raise NotImplementedError(
-            "Aktor-Setpoints per I2C schreiben ist noch nicht angebunden (Issue #180) - "
-            "die Kuehlstufe wird aktuell lokal auf dem Arduino berechnet und angewendet."
-        )
+        # receiveActorSetpoints() in actor_arduino.ino erwartet genau 3
+        # Bytes; das fuehrende 0 ist nur das von write_i2c_block_data()
+        # erzwungene Register-Byte, wird ignoriert.
+        self._bus.write_i2c_block_data(ACTOR_ARDUINO_ADDRESS, 0, [fan_pwm, valve_angle])
 
 
 def _signed16(high_byte: int, low_byte: int) -> int:
@@ -93,17 +94,20 @@ class MockI2CBus(I2CBus):
         self,
         temperature_c: float = 20.0,
         humidity_pct: float = 50.0,
-        ldr_raw: int = 0,
-        button: int = 0,
+        analog_raw: int = 0,
+        door_open: int = 0,
     ) -> None:
         self.temperature_c = temperature_c
         self.humidity_pct = humidity_pct
-        self.ldr_raw = ldr_raw
-        self.button = button
+        self.analog_raw = analog_raw
+        self.door_open = door_open
         self.last_actor_setpoints: tuple[int, int] | None = None
 
-    def read_sensor_arduino(self) -> tuple[float, float, int, int]:
-        return self.temperature_c, self.humidity_pct, self.ldr_raw, self.button
+    def read_sensor_board(self) -> tuple[int, int]:
+        return self.analog_raw, self.door_open
+
+    def read_actor_board_climate(self) -> tuple[float, float]:
+        return self.temperature_c, self.humidity_pct
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
         self.last_actor_setpoints = (fan_pwm, valve_angle)
