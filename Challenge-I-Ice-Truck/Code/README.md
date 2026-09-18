@@ -7,7 +7,7 @@ Scaffolding fuer die Tracks A-F (siehe Issues [#176](https://github.com/47Felix/
 ```
 Sensor-Arduino (I2C-Slave 0x08)      Aktor-Arduino (I2C-Slave 0x09)
   KY-028 Analogwert (A0)               KY-028 Analogwert (A0) + LED (D5)
-  LED fuer KY-028 (D9)                 Luefter (PWM, D9)
+  LED fuer KY-028 (D9)                 Luefter (PWM, D3)
                                        Ventil-Servo (D6)
         │                                  │           ▲
         │ I2C read                         │ I2C read  │ I2C write
@@ -88,7 +88,7 @@ Der DHT22 auf dem Aktor-Board hat **nie** eine gueltige Messung geliefert: `dht.
 | Board 2 | LED fuer KY-028 | Helligkeitsanzeige | → D9 (PWM) |
 | Board 1, `actor_arduino.ino` (I2C 0x09) | KY-028 (Analogausgang) | Sensor, analog, unkalibriert | AO → A0 |
 | Board 1 | LED fuer KY-028 | Helligkeitsanzeige | → D5 (PWM) |
-| Board 1 | Luefter (DC-Motor/H-Bruecke) | Aktor | PWM → D9 |
+| Board 1 | Luefter (DC-Motor/H-Bruecke) | Aktor | PWM → D3 *(war D9, siehe Hardware-Update 7)* |
 | Board 1 | Servo (Ventil) | Aktor | Signal → D6 |
 
 Beide Boards senden jetzt nur noch 2 Bytes (Rohwert) statt der bisherigen 4 (Temp/Feuchte) auf dem Aktor-Board. Die Umrechnung Rohwert → Grad Celsius passiert komplett im Pi-Backend (`pi-backend/calibration.py`, 2-Punkt-lineare Interpolation je Sensor) statt in der Firmware - **inzwischen kalibriert** (17./18.09., Felix, per Referenzthermometer: Sensor-Board 23.0C→raw 212 / 30.0C→raw 160, Aktor-Board 23.0C→raw 174 / 30.5C→raw 126; Details inkl. Drift-Hinweis zum Aktor-Board siehe Docstring in `calibration.py`). Die Kuehlstufen-Entscheidung (`rules.py`) nutzt den Mittelwert der beiden kalibrierten Temperaturen, mit Tischtest-Schwellwerten (noch nicht den echten Betriebswerten aus der Moodle-Aufgabenstellung).
@@ -101,6 +101,15 @@ Beim Live-Testen ergaben sich falsche Werte auf beiden Seiten des I2C-Verkehrs (
 - **Lesen** (`read_sensor_board`/`read_actor_board`): `read_i2c_block_data()` interpretierte das erste gelesene Byte als Laenge und verwarf es, die beiden zurueckgegebenen Bytes waren dadurch um eins verschoben. Fix: `smbus2.i2c_msg.read()` statt `read_i2c_block_data()` (Retry-Logik `I2C_READ_RETRIES`/`I2C_RETRY_DELAY_SECONDS` unveraendert).
 
 `i2c_msg.read()`/`i2c_msg.write()` (per `bus.i2c_rdwr(msg)`) senden/lesen exakt die angegebene Byte-Anzahl ohne Register-Praefix und ohne Laengen-Interpretation - das passt zum tatsaechlichen Firmware-Verhalten. Details siehe Docstring in `pi-backend/hardware.py`.
+
+## Hardware-Update 7 (18.09.2026): Luefter-PWM lief auf demselben Timer wie der Servo
+
+Auch nach dem I2C-Fix (Hardware-Update 6) drehte der Luefter nicht richtig: `analogWrite()` auf `PIN_FAN_PWM` (D9) blieb wirkungslos bzw. lieferte kein sauberes PWM-Signal. Ursache: Auf dem Arduino Uno belegt die `Servo`-Bibliothek fest **Timer1**, um ihre Pulse per Interrupt zu erzeugen, egal an welchem Pin der Servo haengt - das gilt auch hier, wo `valveServo` an D6 attached ist. Timer1 ist aber gleichzeitig der Hardware-Timer hinter `analogWrite()` auf den Pins **9 und 10**. Sobald `valveServo.attach()` (in `setup()`) laeuft, konfiguriert die Servo-Bibliothek Timer1 fuer ihre eigenen Zwecke um, wodurch `analogWrite(9, ...)` kein normales PWM mehr erzeugt - ein bekanntes Arduino-Uno-Verhalten, keine Verkabelungsfrage.
+
+Fix in `actor_arduino.ino`: `PIN_FAN_PWM` von D9 auf **D3** verschoben (Timer2, unabhaengig vom Servo/Timer1 und von der LED auf D5/Timer0). Das Luefter-PWM funktioniert damit unabhaengig davon, ob der Servo attached ist.
+
+> [!warning] Physische Verkabelung noetig
+> Das ist ein Pin-Wechsel auf real schon verkabelter Hardware - das Signalkabel vom Luefter-Transistor/H-Bruecken-Eingang muss am Aktor-Board von **D9 auf D3** umgesteckt werden, bevor der neue Sketch getestet werden kann. Ohne Umstecken bleibt der Luefter aus, weil D9 jetzt nichts mehr ausgibt.
 
 ## Hardware-Update 3 (15.09.2026, Issue #191): Sensor ist ein DHT22, nicht DHT11
 
