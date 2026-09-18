@@ -13,7 +13,7 @@ Um gleichbleibende Qualität/Haltbarkeit von Lebensmitteln zu sichern, muss die 
 
 ## Relevante Kursinhalte
 - [[Kurs - Elektrotechnik]] (Signale, Widerstände, Schaltungen)
-- "Signale und Bussysteme" (Kurs-ID 1574) – passt inhaltlich genau, **benötigt Einschreibekennwort**, siehe [[Offene Punkte]]
+- "Signale und Bussysteme" (Kurs-ID 1574) – passt inhaltlich genau, Einschreibekennwort seit 14.09.2026 besorgt (Issue #167), Kursmaterialien liegen unter `ObsidianGehirn/03 Moodle Kurs/Signale und Bussysteme/`
 
 ## Konkrete Aufgabenstellung (erhalten 14.09.2026)
 
@@ -35,6 +35,10 @@ Um gleichbleibende Qualität/Haltbarkeit von Lebensmitteln zu sichern, muss die 
 - Raspberry Pi: **SQL-Datenbank-Logging** der Messwerte + Auswertungslogik, die darüber den Lüfter/das Ventil über den Aktor-Arduino ansteuert (Regelkreis: Pi wertet aus → Pi entscheidet → Pi schickt Stellwert an Aktor-Arduino)
 
 Damit ist das vorherige technische Vorgehen (Node-RED/MQTT/Discord-Alarm, Issues #171-#174) **überholt** - die echte Aufgabe verlangt I2C-Bus + SQL + Aktorik, kein reines Monitoring-Dashboard. Siehe [[Issues - Übersicht]] für den aktuellen Issue-Stand.
+
+## Aktueller Hardware-Stand (17.09.2026)
+
+Real verkabelt sind zwei Arduino Unos: Sensor-Board (I2C 0x08) trägt nur ein KY-028-Modul, Aktor-Board (I2C 0x09) trägt den DHT22 (Temp/Feuchte) plus Lüfter und Servo und meldet die Klimadaten mit an den Pi. Ein zwischenzeitlicher Ein-Board-Aufbau (14.-17.09.) und ein ursprünglich angenommener Türkontakt/Taster sind wieder entfallen. Details, Pinbelegung und offene Punkte (I2C-Verkabelung zum Pi, KY-028-Kalibrierung, DHT22-Verifikation) siehe `Challenge-I-Ice-Truck/Code/README.md` und [[Issues - Übersicht]] (#180, #184, #191).
 
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
