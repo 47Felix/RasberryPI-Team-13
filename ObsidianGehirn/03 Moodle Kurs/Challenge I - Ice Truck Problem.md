@@ -40,6 +40,8 @@ Damit ist das vorherige technische Vorgehen (Node-RED/MQTT/Discord-Alarm, Issues
 
 Real verkabelt sind zwei Arduino Unos: Sensor-Board (I2C 0x08) trägt nur ein KY-028-Modul, Aktor-Board (I2C 0x09) trägt den DHT22 (Temp/Feuchte) plus Lüfter und Servo und meldet die Klimadaten mit an den Pi. Ein zwischenzeitlicher Ein-Board-Aufbau (14.-17.09.) und ein ursprünglich angenommener Türkontakt/Taster sind wieder entfallen. Details, Pinbelegung und offene Punkte (I2C-Verkabelung zum Pi, KY-028-Kalibrierung, DHT22-Verifikation) siehe `Challenge-I-Ice-Truck/Code/README.md` und [[Issues - Übersicht]] (#180, #184, #191).
 
+Der DHT22 wurde inzwischen ersetzt (beide Boards senden jetzt einen KY-028-Rohwert, siehe README "Hardware-Update 5"). Am 18.09.2026 kam beim Live-Testen ein I2C-Protokollbug ans Licht: `smbus2`s `write_i2c_block_data()`/`read_i2c_block_data()` schicken ein zusätzliches SMBus-Register-/Längen-Byte, das die Arduino-Firmware nicht erwartet (sie sendet/erwartet rohe Bytes ohne Register-Präfix) - dadurch kamen sowohl die Aktor-Sollwerte am Arduino als auch die Sensor-Rohwerte am Pi verschoben/falsch an. Fix in beiden Richtungen: `smbus2.i2c_msg.write()`/`i2c_msg.read()` statt der Block-Data-Funktionen. Details siehe README "Hardware-Update 6" und Docstring in `pi-backend/hardware.py`.
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 
