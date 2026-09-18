@@ -42,6 +42,8 @@ Real verkabelt sind zwei Arduino Unos: Sensor-Board (I2C 0x08) trägt nur ein KY
 
 Der DHT22 wurde inzwischen ersetzt (beide Boards senden jetzt einen KY-028-Rohwert, siehe README "Hardware-Update 5"). Am 18.09.2026 kam beim Live-Testen ein I2C-Protokollbug ans Licht: `smbus2`s `write_i2c_block_data()`/`read_i2c_block_data()` schicken ein zusätzliches SMBus-Register-/Längen-Byte, das die Arduino-Firmware nicht erwartet (sie sendet/erwartet rohe Bytes ohne Register-Präfix) - dadurch kamen sowohl die Aktor-Sollwerte am Arduino als auch die Sensor-Rohwerte am Pi verschoben/falsch an. Fix in beiden Richtungen: `smbus2.i2c_msg.write()`/`i2c_msg.read()` statt der Block-Data-Funktionen. Details siehe README "Hardware-Update 6" und Docstring in `pi-backend/hardware.py`.
 
+Danach lief der Luefter trotz korrekter I2C-Sollwerte immer noch nicht: Ursache war ein Pin-/Timer-Konflikt in `actor_arduino.ino`, nicht I2C. Die `Servo`-Bibliothek belegt auf dem Arduino Uno fest Timer1 fuer ihre Pulserzeugung (unabhaengig davon, an welchem Pin der Servo haengt), Timer1 ist aber auch der Hardware-Timer hinter `analogWrite()` auf D9/D10 - sobald `valveServo.attach()` lief, gab D9 (der bisherige Luefter-Pin) kein sauberes PWM mehr aus. Fix (18.09.2026): Luefter-PWM von D9 auf **D3** (Timer2) verschoben. **Erfordert physisches Umstecken** des Luefter-Signalkabels von D9 auf D3 am Aktor-Board, sonst bleibt der Luefter aus. Details siehe README "Hardware-Update 7".
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 
