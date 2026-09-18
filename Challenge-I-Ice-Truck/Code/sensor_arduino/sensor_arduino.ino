@@ -26,10 +26,15 @@
   UNGETESTET auf echter Hardware - Pin-Zuordnung (A0 fuer AO, D9 fuer die
   LED) uebernimmt die Werte aus der vorherigen Version dieses Sketches,
   bei Abweichung von der tatsaechlichen Verkabelung bitte Konstanten unten
-  anpassen. Ob der KY-028-Analogwert bei euch mit steigender Temperatur
-  steigt oder faellt, haengt von der Verschaltung des Spannungsteilers ab -
-  vor dem Kalibrieren mit einem zweiten Thermometer gegenpruefen, ggf.
-  map() unten umdrehen.
+  anpassen.
+
+  Kalibrierung (2026-09-17, per Referenzthermometer, siehe auch
+  pi-backend/calibration.py::SENSOR_BOARD_CALIBRATION): Rohwert faellt mit
+  steigender Temperatur (23.0C -> 212, 30.0C -> 160). LED soll bei 30C und
+  waermer voll hell sein, bei -10C und kaelter aus, dazwischen linear -
+  RAW_AT_LED_FULL/RAW_AT_LED_OFF unten sind die aus der Kalibriergeraden
+  hochgerechneten Rohwert-Grenzen dafuer (-10C ist ausserhalb der
+  gemessenen 23-30C, also extrapoliert, nicht gemessen).
 */
 
 #include <Wire.h>
@@ -38,6 +43,12 @@ const uint8_t I2C_SLAVE_ADDRESS = 0x08;
 
 const uint8_t PIN_KY028_ANALOG = A0;
 const uint8_t PIN_LED_KY028 = 9;
+
+// Rohwert bei 30C (LED voll hell) bzw. -10C (LED aus), siehe Kalibrierung
+// oben - Rohwert faellt mit steigender Temperatur, daher RAW_AT_LED_FULL <
+// RAW_AT_LED_OFF.
+const int RAW_AT_LED_FULL = 160;
+const int RAW_AT_LED_OFF = 457;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 
@@ -63,7 +74,7 @@ void loop() {
 
   latestKy028Raw = analogRead(PIN_KY028_ANALOG);
 
-  uint8_t brightness = map(latestKy028Raw, 0, 1023, 0, 255);
+  uint8_t brightness = constrain(map(latestKy028Raw, RAW_AT_LED_FULL, RAW_AT_LED_OFF, 255, 0), 0, 255);
   analogWrite(PIN_LED_KY028, brightness);
 }
 

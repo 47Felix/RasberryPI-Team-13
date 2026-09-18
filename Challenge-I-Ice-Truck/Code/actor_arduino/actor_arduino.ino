@@ -1,124 +1,101 @@
 /*
   actor_arduino.ino
 
-  Hardware-Update 4 (17.09.2026): reale Verkabelung ist wieder ZWEI
-  Arduinos (nicht mehr das eine Board aus ice_truck_single_board.ino),
-  aber mit anderer Aufteilung als der urspruengliche Zwei-Board-Entwurf:
-  dieses Board (0x09) traegt beide Aktoren UND den DHT22 - das zweite
-  Board (siehe ../sensor_arduino/sensor_arduino.ino, 0x08) traegt nur noch
-  das KY-028-Modul. Kein Tuerkontakt/Taster mehr in diesem Aufbau.
+  Hardware-Update 5 (17.09.2026): DHT22 auf diesem Board hat nie eine
+  gueltige Messung geliefert (dht.readHumidity()/readTemperature() gaben
+  ab dem ersten Aufruf durchgehend NaN zurueck, per Serial verifiziert -
+  Wiring wurde mehrfach gegengeprueft). Team hat den DHT22 durch ein
+  zweites KY-028-Modul ersetzt - dieses Board hat jetzt also GENAU DAS
+  GLEICHE Sensorprinzip wie ../sensor_arduino/sensor_arduino.ino (KY-028,
+  unkalibrierter Analogwert), zusaetzlich weiterhin die Aktoren.
 
   Rolle dieses Boards:
-  - Aktoren: Luefter (DC-Motor ueber Transistor ODER H-Bruecke - fuer die
-    Firmware macht das keinen Unterschied, beides wird einfach per PWM auf
-    D9 angesteuert; welches Bauteil tatsaechlich bestueckt ist, aendert nur
-    die Verkabelung, nicht den Sketch) und Servo (Ventil, variabler Winkel)
-  - Sensor: DHT22 (Temp/Feuchte) mit eigener Helligkeits-LED - Helligkeit
-    proportional zur Temperatur, wie im vorherigen Einzelboard-Sketch
-    (siehe ice_truck_single_board.ino, updateIndicatorLeds())
-  - I2C-Slave-Adresse 0x09: liefert auf Anfrage die DHT22-Werte, nimmt per
+  - Sensor: KY-028 (Analogausgang AO), gleiches Prinzip wie sensor_arduino
+  - Aktoren: Luefter (PWM auf D9) und Servo (Ventil, D6)
+  - I2C-Slave-Adresse 0x09: liefert auf Anfrage den KY-028-Rohwert (2
+    Bytes, gleiches Format wie sensor_arduino.ino), nimmt per
     Wire.onReceive() die Aktor-Sollwerte vom Pi entgegen (Kuehlstufen-Logik
-    sitzt im Pi-Backend, siehe pi-backend/rules.py)
+    sitzt im Pi-Backend, siehe pi-backend/rules.py + pi-backend/calibration.py)
+
+  Kalibrierung (2026-09-17, per Referenzthermometer, siehe auch
+  pi-backend/calibration.py::ACTOR_BOARD_CALIBRATION): Rohwert faellt mit
+  steigender Temperatur (23.0C -> 16.5, 30.0C -> 12.5, hier auf Ganzzahlen
+  gerundet). LED soll bei 30C und waermer voll hell sein, bei -10C und
+  kaelter aus, dazwischen linear - RAW_AT_LED_FULL/RAW_AT_LED_OFF unten
+  sind die aus der Kalibriergeraden hochgerechneten Rohwert-Grenzen dafuer
+  (-10C ist ausserhalb der gemessenen 23-30C, also extrapoliert, nicht
+  gemessen).
 
   Pins:
-    - D2: DHT22-Signal (1-Wire/Bus-Protokoll)
-    - D5 (PWM): LED, Helligkeit proportional zur DHT22-Temperatur
+    - A0: KY-028 AO (Analogausgang)
+    - D5 (PWM): LED, Helligkeit proportional zum KY-028-Rohwert
     - D9 (PWM): Transistor-/H-Bruecken-Eingang fuer den Luefter
     - D6: Servo-Signal fuer das Ventil (Winkel = Oeffnungsgrad, 0-180)
     - A4 (SDA) / A5 (SCL): I2C zum Pi
 
   I2C: Slave-Adresse 0x09
-    - Wire.onRequest(): sendet 4 Bytes [tempTenths hi, tempTenths lo,
-      humTenths hi, humTenths lo] - gleiches Format wie DHT22-Teil von
-      ice_truck_single_board.ino::sendSensorDataToPi()
+    - Wire.onRequest(): sendet 2 Bytes [KY-028-Rohwert hi, lo] - gleiches
+      Format wie sensor_arduino.ino::sendSensorDataToPi()
     - Wire.onReceive(): erwartet 2 Bytes [fan_pwm 0-255, valve_angle 0-180]
       - unveraendert gegenueber der vorherigen Version dieses Sketches
 
-  UNGETESTET auf echter Hardware - Pin-Zuordnung ist eine Annahme (Wiederve-
-  rwendung der vorherigen Fan/Servo-Pins D9/D6 aus diesem Sketch plus der
-  DHT22/LED-Pins D2/D5 aus ice_truck_single_board.ino), bei Abweichung von
-  der tatsaechlichen Verkabelung bitte Konstanten unten anpassen.
-
-  Benoetigte Bibliotheken: "DHT sensor library" (Adafruit) + Abhaengigkeit
-  "Adafruit Unified Sensor", "Servo" ist vorinstalliert.
+  Benoetigte Bibliotheken: "Servo" ist vorinstalliert, kein DHT/Adafruit-
+  Unified-Sensor mehr noetig (DHT22 raus).
 */
 
-#include <DHT.h>
 #include <Servo.h>
 #include <Wire.h>
 
 const uint8_t I2C_SLAVE_ADDRESS = 0x09;
 
-#define DHTPIN 2
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
-
-const uint8_t PIN_LED_DHT22 = 5;
+const uint8_t PIN_KY028_ANALOG = A0;
+const uint8_t PIN_LED_KY028 = 5;
 const uint8_t PIN_FAN_PWM = 9;
 const uint8_t PIN_VALVE_SERVO = 6;
 
-// DHT22 braucht laut Datenblatt mind. 2s Pause zwischen Messungen.
-const unsigned long DHT_READ_INTERVAL_MS = 2000;
+// Rohwert bei 30C (LED voll hell) bzw. -10C (LED aus), siehe Kalibrierung
+// oben - Rohwert faellt mit steigender Temperatur, daher RAW_AT_LED_FULL <
+// RAW_AT_LED_OFF.
+const int RAW_AT_LED_FULL = 13;
+const int RAW_AT_LED_OFF = 35;
+
+const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
+
+volatile int16_t latestKy028Raw = 0;
+unsigned long lastSensorUpdate = 0;
 
 Servo valveServo;
 
-float latestTemperatureC = NAN;
-float latestHumidityPct = NAN;
-unsigned long lastDhtRead = 0;
-
 void setup() {
-  dht.begin();
-
-  pinMode(PIN_LED_DHT22, OUTPUT);
+  pinMode(PIN_LED_KY028, OUTPUT);
   pinMode(PIN_FAN_PWM, OUTPUT);
   valveServo.attach(PIN_VALVE_SERVO);
   valveServo.write(0);
 
   Wire.begin(I2C_SLAVE_ADDRESS);
-  Wire.onRequest(sendDht22DataToPi);
+  Wire.onRequest(sendKy028DataToPi);
   Wire.onReceive(applySetpointsFromPi);
 
   Serial.begin(9600);
-  Serial.println("actor_arduino ready, I2C slave 0x09");
+  Serial.println("actor_arduino ready, I2C slave 0x09 (KY-028)");
 }
 
 void loop() {
   unsigned long now = millis();
-
-  if (now - lastDhtRead >= DHT_READ_INTERVAL_MS) {
-    lastDhtRead = now;
-    float h = dht.readHumidity();
-    float t = dht.readTemperature();
-    if (!isnan(h) && !isnan(t)) {
-      latestHumidityPct = h;
-      latestTemperatureC = t;
-    }
-    // Bei NAN (Lesefehler): letzten gueltigen Wert behalten statt auf 0
-    // zu springen.
-
-    updateIndicatorLed();
-  }
-}
-
-void updateIndicatorLed() {
-  if (isnan(latestTemperatureC)) {
+  if (now - lastSensorUpdate < SENSOR_UPDATE_INTERVAL_MS) {
     return;
   }
-  // Temperatur 0-30 Grad C auf Helligkeit gemappt: 0 Grad = aus, 30 Grad =
-  // volle Helligkeit (Platzhalter-Bereich, an die reale Aufgabenstellung
-  // anpassen falls noetig).
-  int brightness = constrain(map((long)(latestTemperatureC * 10), 0, 300, 0, 255), 0, 255);
-  analogWrite(PIN_LED_DHT22, brightness);
+  lastSensorUpdate = now;
+
+  latestKy028Raw = analogRead(PIN_KY028_ANALOG);
+
+  uint8_t brightness = constrain(map(latestKy028Raw, RAW_AT_LED_FULL, RAW_AT_LED_OFF, 255, 0), 0, 255);
+  analogWrite(PIN_LED_KY028, brightness);
 }
 
-void sendDht22DataToPi() {
-  int16_t tempTenths = isnan(latestTemperatureC) ? -1 : (int16_t)(latestTemperatureC * 10);
-  int16_t humTenths = isnan(latestHumidityPct) ? -1 : (int16_t)(latestHumidityPct * 10);
-
-  Wire.write(highByte(tempTenths));
-  Wire.write(lowByte(tempTenths));
-  Wire.write(highByte(humTenths));
-  Wire.write(lowByte(humTenths));
+void sendKy028DataToPi() {
+  Wire.write(highByte(latestKy028Raw));
+  Wire.write(lowByte(latestKy028Raw));
 }
 
 void applySetpointsFromPi(int numBytes) {

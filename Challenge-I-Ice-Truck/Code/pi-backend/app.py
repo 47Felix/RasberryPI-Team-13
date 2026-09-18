@@ -1,11 +1,13 @@
 """Challenge I Track F: Gesamtintegration.
 
-Liest periodisch den Sensor-Arduino (KY-028, Track C) und den
-Aktor-Arduino (DHT22 Temp/Feuchte) per I2C, berechnet Fan-/Ventil-Sollwerte
-aus der DHT22-Temperatur (rules.py), schickt sie an den Aktor-Arduino
-(Track E) und loggt jede Messung in SQLite (db.py). Der KY-028-Rohwert ist
-unkalibriert und fliesst aktuell nur ins Logging, nicht in die
-Kuehlstufen-Entscheidung.
+Liest periodisch den Sensor-Arduino und den Aktor-Arduino per I2C - beide
+haben jetzt ein KY-028-Modul (der DHT22 auf dem Aktor-Board hat nie
+funktioniert und wurde ersetzt, siehe README "Hardware-Update 5").
+Rechnet beide Rohwerte per calibration.py in Grad Celsius um, berechnet
+Fan-/Ventil-Sollwerte (rules.py) aus dem Mittelwert beider kalibrierter
+Temperaturen, schickt die Sollwerte an den Aktor-Arduino (Track E) und
+loggt jede Messung (beide Rohwerte + beide kalibrierte Temperaturen) in
+SQLite (db.py).
 
 Ohne echte Hardware NICHT lauffaehig (RealI2CBus braucht smbus2 + einen
 tatsaechlichen I2C-Bus) - fuer den echten Betrieb auf dem Pi siehe
@@ -17,6 +19,7 @@ from __future__ import annotations
 
 import time
 
+import calibration
 import db
 import rules
 from hardware import I2CBus, RealI2CBus
@@ -26,11 +29,24 @@ DB_PATH = "challenge_i.db"
 
 
 def run_once(bus: I2CBus, conn) -> tuple[int, int]:
-    analog_raw = bus.read_sensor_board()
-    temperature_c, humidity_pct = bus.read_actor_board_climate()
-    fan_pwm, valve_angle = rules.compute_setpoints(temperature_c)
+    sensor_board_raw = bus.read_sensor_board()
+    actor_board_raw = bus.read_actor_board()
+    sensor_board_temp_c = calibration.sensor_board_celsius(sensor_board_raw)
+    actor_board_temp_c = calibration.actor_board_celsius(actor_board_raw)
+
+    average_temp_c = (sensor_board_temp_c + actor_board_temp_c) / 2
+    fan_pwm, valve_angle = rules.compute_setpoints(average_temp_c)
     bus.write_actor_setpoints(fan_pwm, valve_angle)
-    db.log_reading(conn, temperature_c, humidity_pct, analog_raw, fan_pwm, valve_angle)
+
+    db.log_reading(
+        conn,
+        sensor_board_raw,
+        sensor_board_temp_c,
+        actor_board_raw,
+        actor_board_temp_c,
+        fan_pwm,
+        valve_angle,
+    )
     return fan_pwm, valve_angle
 
 
