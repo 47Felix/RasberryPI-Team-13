@@ -104,7 +104,7 @@ Der Temp/Feuchte-Sensor hat ein weisses Gehaeuse (DHT22), nicht das blaue DHT11-
 - [x] **`RealI2CBus` gegen echten Bus testen** (`smbus2`, `/dev/i2c-1` auf dem Pi)
 - [x] **Beide KY-028 kalibrieren** (`pi-backend/calibration.py`, `SENSOR_BOARD_CALIBRATION`/`ACTOR_BOARD_CALIBRATION`) - je Sensor zwei Referenzpunkte per Referenzthermometer gemessen (17./18.09., Felix); Aktor-Board-Ruhewert driftet spuerbar (Eigenerwaermung), ggf. per Sensor-Board-Proxy neu abgleichen (siehe Docstring)
 - [ ] **Schwellwerte in `rules.py` kalibrieren** (`FAN_ON_TEMP_C`, `VALVE_ON_TEMP_C` sind Platzhalter) - haengt an der eigentlichen Aufgabenstellung aus dem Moodle-Kurs (Issue [#167](https://github.com/47Felix/RasberryPI-Team-13/issues/167)) und an der realen Sensor-Kalibrierung
-- [ ] **`app.py` als systemd-Service** auf dem Pi einrichten (gleiches Muster wie `tresor-dashboard.service`), sobald obiges steht
+- [ ] **`app.py` als systemd-Service** auf dem Pi einrichten (gleiches Muster wie `tresor-dashboard.service`) - Unit-Datei liegt fertig unter `pi-backend/challenge-i-backend.service`, Installation braucht Root auf dem Pi (`sudo cp ... /etc/systemd/system/ && sudo systemctl enable --now challenge-i-backend`), noch nicht ausgefuehrt
 
 ## Wo was liegt
 

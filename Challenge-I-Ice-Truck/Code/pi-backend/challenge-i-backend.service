@@ -1,0 +1,14 @@
+[Unit]
+Description=Challenge I Ice-Truck Pi-Backend (I2C-Regelkreis, SQLite-Logging)
+After=network.target
+
+[Service]
+Type=simple
+User=team13
+WorkingDirectory=/home/team13/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend
+ExecStart=/home/team13/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/venv/bin/python /home/team13/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
