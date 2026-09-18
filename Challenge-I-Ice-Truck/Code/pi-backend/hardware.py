@@ -18,11 +18,19 @@ wurde durch ein zweites KY-028 ersetzt, siehe README):
 Die Umrechnung von Rohwert in Grad Celsius passiert in calibration.py,
 nicht hier - hardware.py liefert nur die unkalibrierten Integer-Rohwerte.
 
-Schreib-Format (3 Bytes) entspricht receiveActorSetpoints() im
-actor_arduino.ino: ein ungenutztes Platzhalter-"Register"-Byte (Artefakt
-von smbus2.write_i2c_block_data(), das immer ein Register vor den Daten
-erwartet - der Arduino hat keine echten Register), dann fan_pwm (0-255)
-und valve_angle (0-180).
+Schreib-Format (2 Bytes) entspricht applySetpointsFromPi() im
+actor_arduino.ino: fan_pwm (0-255), dann valve_angle (0-180) - keine
+Registeradresse davor, der Arduino hat keine echten Register.
+
+Bug gefunden 2026-09-18 (Felix, beim Live-Testen): write_i2c_block_data()
+schickt IMMER ein fuehrendes Register-Byte vor den Daten (SMBus-
+Konvention), also frueher tatsaechlich 3 Bytes [0, fan_pwm, valve_angle]
+statt der von der Firmware erwarteten 2 - dadurch las der Arduino das
+Register-Byte (0) als fanPwm (Luefter bekam immer 0) und den echten
+fan_pwm-Wert als valveAngle (Servo bekam den falschen Wert, das echte
+valve_angle wurde nie gelesen). Fix: i2c_msg.write() statt
+write_i2c_block_data() - schickt exakt die uebergebenen Bytes ohne
+Register-Praefix.
 """
 
 from __future__ import annotations
@@ -79,10 +87,13 @@ class RealI2CBus(I2CBus):
         return (data[0] << 8) | data[1]
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
-        # receiveActorSetpoints() in actor_arduino.ino erwartet genau 3
-        # Bytes; das fuehrende 0 ist nur das von write_i2c_block_data()
-        # erzwungene Register-Byte, wird ignoriert.
-        self._bus.write_i2c_block_data(ACTOR_ARDUINO_ADDRESS, 0, [fan_pwm, valve_angle])
+        # applySetpointsFromPi() in actor_arduino.ino erwartet exakt 2
+        # Bytes ohne Register-Praefix - i2c_msg.write() statt
+        # write_i2c_block_data(), das immer ein zusaetzliches Register-Byte
+        # voranstellt (siehe Modul-Docstring, Bug vom 2026-09-18).
+        import smbus2
+
+        self._bus.i2c_rdwr(smbus2.i2c_msg.write(ACTOR_ARDUINO_ADDRESS, [fan_pwm, valve_angle]))
 
 
 class MockI2CBus(I2CBus):
