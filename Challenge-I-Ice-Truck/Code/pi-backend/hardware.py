@@ -31,6 +31,17 @@ fan_pwm-Wert als valveAngle (Servo bekam den falschen Wert, das echte
 valve_angle wurde nie gelesen). Fix: i2c_msg.write() statt
 write_i2c_block_data() - schickt exakt die uebergebenen Bytes ohne
 Register-Praefix.
+
+Gleicher Bug auch beim Lesen (gefunden 2026-09-18): read_i2c_block_data()
+schickt vorab ein Register-Byte und erwartet als ERSTES gelesenes Byte
+eine Laengenangabe (SMBus-Block-Read-Konvention), gefolgt von genau so
+vielen Datenbytes. Unsere Arduinos senden aber einfach zwei rohe Bytes
+(Wire.write(highByte); Wire.write(lowByte);) ohne dieses Protokoll -
+das echte highByte wurde also als "Laenge" interpretiert und verworfen,
+und data[0]/data[1] enthielten in Wahrheit das echte lowByte plus ein
+Byte aus der naechsten Wire-Uebertragung. Fix: i2c_msg.read() statt
+read_i2c_block_data() - liest exakt N rohe Bytes ohne Register-Praefix
+und ohne Laengen-Interpretation, analog zum Schreib-Fix oben.
 """
 
 from __future__ import annotations
@@ -67,10 +78,21 @@ class RealI2CBus(I2CBus):
         self._bus = smbus2.SMBus(bus_number)
 
     def _read_block_with_retry(self, address: int, length: int) -> list[int]:
+        # Analog zum Schreib-Fix in write_actor_setpoints(): i2c_msg.read()
+        # statt read_i2c_block_data(), das ein fuehrendes Register-Byte
+        # schickt und das erste gelesene Byte als Laengenangabe interpretiert
+        # (SMBus-Block-Read-Konvention). Unsere Arduinos senden zwei rohe
+        # Bytes ohne dieses Protokoll (siehe Modul-Docstring, Bug vom
+        # 2026-09-18) - i2c_msg.read() liest exakt `length` Bytes ohne
+        # Register-Praefix und ohne Laengen-Interpretation.
+        import smbus2
+
         last_error: OSError | None = None
         for attempt in range(1, I2C_READ_RETRIES + 1):
             try:
-                return self._bus.read_i2c_block_data(address, 0, length)
+                msg = smbus2.i2c_msg.read(address, length)
+                self._bus.i2c_rdwr(msg)
+                return list(msg)
             except OSError as exc:
                 last_error = exc
                 if attempt < I2C_READ_RETRIES:
