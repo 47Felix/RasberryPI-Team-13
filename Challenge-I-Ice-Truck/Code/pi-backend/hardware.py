@@ -5,14 +5,18 @@ unter /dev/i2c-1. MockI2CBus liefert stattdessen fest einprogrammierte/
 aenderbare Werte, analog zum socat-Mock-Muster aus
 Tresor-Kurzprojekt/Code/pi-dashboard.
 
-Zwei-Board-Aufbau (siehe README "Hardware-Update 4"), zwei I2C-Adressen:
-  - SENSOR_ARDUINO_ADDRESS (0x08, sensor_arduino.ino): KY-028-Rohwert
-    (analog, unkalibriert), kein Tuerkontakt mehr in diesem Aufbau.
+Zwei-Board-Aufbau (siehe README "Hardware-Update 5"), zwei I2C-Adressen,
+beide jetzt mit demselben Sensorprinzip (KY-028, unkalibrierter Analog-
+wert - der DHT22 auf dem Aktor-Board gab nie eine gueltige Messung und
+wurde durch ein zweites KY-028 ersetzt, siehe README):
+  - SENSOR_ARDUINO_ADDRESS (0x08, sensor_arduino.ino): KY-028-Rohwert.
     Lese-Format 2 Bytes.
-  - ACTOR_ARDUINO_ADDRESS (0x09, actor_arduino.ino): DHT22 Temperatur/
-    Feuchte (dort haengt der Sensor physisch, nicht am Sensor-Board) und
-    nimmt Luefter-/Ventil-Sollwerte entgegen. Lese-Format 4 Bytes
-    (Temperatur/Feuchte, je int16 Zehntel), Schreib-Format 3 Bytes.
+  - ACTOR_ARDUINO_ADDRESS (0x09, actor_arduino.ino): KY-028-Rohwert (2.
+    Sensor) und nimmt Luefter-/Ventil-Sollwerte entgegen. Lese-Format 2
+    Bytes, Schreib-Format 3 Bytes.
+
+Die Umrechnung von Rohwert in Grad Celsius passiert in calibration.py,
+nicht hier - hardware.py liefert nur die unkalibrierten Integer-Rohwerte.
 
 Schreib-Format (3 Bytes) entspricht receiveActorSetpoints() im
 actor_arduino.ino: ein ungenutztes Platzhalter-"Register"-Byte (Artefakt
@@ -41,7 +45,7 @@ class I2CBus:
     def read_sensor_board(self) -> int:
         raise NotImplementedError
 
-    def read_actor_board_climate(self) -> tuple[float, float]:
+    def read_actor_board(self) -> int:
         raise NotImplementedError
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
@@ -70,11 +74,9 @@ class RealI2CBus(I2CBus):
         data = self._read_block_with_retry(SENSOR_ARDUINO_ADDRESS, 2)
         return (data[0] << 8) | data[1]
 
-    def read_actor_board_climate(self) -> tuple[float, float]:
-        data = self._read_block_with_retry(ACTOR_ARDUINO_ADDRESS, 4)
-        temperature_c = _signed16(data[0], data[1]) / 10.0
-        humidity_pct = _signed16(data[2], data[3]) / 10.0
-        return temperature_c, humidity_pct
+    def read_actor_board(self) -> int:
+        data = self._read_block_with_retry(ACTOR_ARDUINO_ADDRESS, 2)
+        return (data[0] << 8) | data[1]
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
         # receiveActorSetpoints() in actor_arduino.ino erwartet genau 3
@@ -83,28 +85,21 @@ class RealI2CBus(I2CBus):
         self._bus.write_i2c_block_data(ACTOR_ARDUINO_ADDRESS, 0, [fan_pwm, valve_angle])
 
 
-def _signed16(high_byte: int, low_byte: int) -> int:
-    value = (high_byte << 8) | low_byte
-    return value - 0x10000 if value >= 0x8000 else value
-
-
 class MockI2CBus(I2CBus):
     def __init__(
         self,
-        temperature_c: float = 20.0,
-        humidity_pct: float = 50.0,
-        analog_raw: int = 0,
+        sensor_board_raw: int = 300,
+        actor_board_raw: int = 300,
     ) -> None:
-        self.temperature_c = temperature_c
-        self.humidity_pct = humidity_pct
-        self.analog_raw = analog_raw
+        self.sensor_board_raw = sensor_board_raw
+        self.actor_board_raw = actor_board_raw
         self.last_actor_setpoints: tuple[int, int] | None = None
 
     def read_sensor_board(self) -> int:
-        return self.analog_raw
+        return self.sensor_board_raw
 
-    def read_actor_board_climate(self) -> tuple[float, float]:
-        return self.temperature_c, self.humidity_pct
+    def read_actor_board(self) -> int:
+        return self.actor_board_raw
 
     def write_actor_setpoints(self, fan_pwm: int, valve_angle: int) -> None:
         self.last_actor_setpoints = (fan_pwm, valve_angle)
