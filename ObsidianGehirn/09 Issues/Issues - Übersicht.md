@@ -11,7 +11,7 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 17.09.2026 (per GitHub-API geprüft) – 12 offene Issues.
+Stand 18.09.2026 (per GitHub-API geprüft) – 12 offene Issues.
 
 > [!note] Challenge I: echte Aufgabenstellung erhalten (14.09.2026)
 > Alle 11 DTEW-Workshop-Issues (#92-#102) sind mittlerweile geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
@@ -24,10 +24,15 @@ Stand 17.09.2026 (per GitHub-API geprüft) – 12 offene Issues.
 - [#181](https://github.com/47Felix/RasberryPI-Team-13/issues/181) Track F – Pi-Backend: SQL-Logging + Regellogik (Gesamtintegration)
 
 > [!note] Challenge I: Scaffold + reale Hardware-Verkabelung (14.-17.09.2026, PRs #183/#185/#186/#189/#190/#197/#199/#200/#201)
-> Tracks A-F wurden als `Challenge-I-Ice-Truck/Code/` umgesetzt (Sensor-/Aktor-Arduino-Sketches, Pi-Backend `pi-backend/` mit `rules.py`/`db.py`/`hardware.py`/`app.py`). Die reale Verkabelung wechselte zweimal: erst ein einzelnes Arduino Uno mit DHT11/DHT22, Fotowiderstand, Taster, 3 LEDs, Lüfter-Transistor und Servo (`ice_truck_single_board.ino`), seit 17.09. zurück auf **zwei** Boards, jetzt mit den tatsächlich verbauten Sensoren: Sensor-Board (0x08) trägt nur noch das KY-028-Modul, Aktor-Board (0x09) trägt den DHT22 (nicht das Sensor-Board) plus Lüfter/Servo und meldet die Klimadaten mit. Der ursprünglich angenommene Türkontakt/Taster ist ganz entfallen, keine entsprechende Hardware verbaut. LED-Helligkeitsbereich für den DHT22 danach von 0-40°C auf 0-30°C korrigiert (Team-Spec). Details siehe `Challenge-I-Ice-Truck/Code/README.md`. Zwei Punkte noch offen:
+> Tracks A-F wurden als `Challenge-I-Ice-Truck/Code/` umgesetzt (Sensor-/Aktor-Arduino-Sketches, Pi-Backend `pi-backend/` mit `rules.py`/`db.py`/`hardware.py`/`app.py`). Die reale Verkabelung wechselte zweimal: erst ein einzelnes Arduino Uno mit DHT11/DHT22, Fotowiderstand, Taster, 3 LEDs, Lüfter-Transistor und Servo (`ice_truck_single_board.ino`), seit 17.09. zurück auf **zwei** Boards. Der ursprünglich angenommene Türkontakt/Taster ist ganz entfallen, keine entsprechende Hardware verbaut. Details siehe `Challenge-I-Ice-Truck/Code/README.md`.
+
+> [!note] Challenge I: DHT22 raus (beide Boards KY-028), I2C-Bugs + Lüfter-Timer-Konflikt gefixt, Backend läuft als Service (17.-18.09.2026, PRs #203-#208)
+> Der DHT22 am Aktor-Board lieferte nie einen gültigen Wert (NaN ab dem ersten Aufruf nach jedem Reset, per Serial verifiziert) und wurde durch ein zweites KY-028 ersetzt, beide Boards senden jetzt denselben Sensortyp. Damit ist die ursprüngliche DHT11/DHT22-Baustelle aus [#191](https://github.com/47Felix/RasberryPI-Team-13/issues/191) inhaltlich überholt (die betroffene Hardware existiert nicht mehr), das Issue steht auf GitHub aber noch offen/unter altem Titel. Beide KY-028 wurden per Referenzthermometer kalibriert (`pi-backend/calibration.py`, 2-Punkt-linear je Board). Beim Live-Test kamen danach zwei I2C-Bugs zum Vorschein: `smbus2`s Block-Data-Funktionen schicken ein SMBus-Register-/Längen-Byte, das die Arduino-Firmware nicht erwartet, Fix auf `i2c_msg.write()`/`i2c_msg.read()` in beide Richtungen (Aktor-Sollwerte, Sensor-Rohwerte). Danach drehte der Lüfter trotzdem nicht: die `Servo`-Bibliothek belegt auf dem Uno fest Timer1, was `analogWrite()` auf D9 (bisheriger Lüfter-Pin, ebenfalls Timer1) lahmlegte, sobald der Servo attached war, Lüfter-PWM auf D3 (Timer2) verschoben (Signalkabel am Aktor-Board musste umgesteckt werden). `pi-backend/app.py` läuft jetzt zusätzlich als systemd-Service (`challenge-i-backend.service`, `enable --now`) auf dem Pi und loggt live in `challenge_i.db`. Details siehe README "Hardware-Update 5-7".
+
+Weiterhin offen:
 
 - [#184](https://github.com/47Felix/RasberryPI-Team-13/issues/184) Challenge I: Monitoring-Dashboard für die Kühlkette (Design) – Web-Dashboard fürs Kühlketten-Backend, analog zum Tresor-Dashboard, noch nicht umgesetzt
-- [#191](https://github.com/47Felix/RasberryPI-Team-13/issues/191) Challenge I: DHT11 liefert konstant ~20°C zu wenig – Ursache gefunden (15.09.): Sensor ist tatsächlich ein DHT22, `DHTTYPE` war falsch gesetzt, Fix im Sketch gemerged, aber noch nicht an echter Hardware verifiziert (zweites Thermometer gegenprüfen), daher weiterhin offen
+- Schwellwerte in `pi-backend/rules.py` (`FAN_ON_TEMP_C`, `VALVE_ON_TEMP_C`) sind noch Tischtest-Platzhalter, nicht die echten Betriebswerte aus der Moodle-Aufgabenstellung
 
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
 

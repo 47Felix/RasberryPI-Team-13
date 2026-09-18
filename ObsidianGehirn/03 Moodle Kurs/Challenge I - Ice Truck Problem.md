@@ -44,6 +44,8 @@ Der DHT22 wurde inzwischen ersetzt (beide Boards senden jetzt einen KY-028-Rohwe
 
 Danach lief der Luefter trotz korrekter I2C-Sollwerte immer noch nicht: Ursache war ein Pin-/Timer-Konflikt in `actor_arduino.ino`, nicht I2C. Die `Servo`-Bibliothek belegt auf dem Arduino Uno fest Timer1 fuer ihre Pulserzeugung (unabhaengig davon, an welchem Pin der Servo haengt), Timer1 ist aber auch der Hardware-Timer hinter `analogWrite()` auf D9/D10 - sobald `valveServo.attach()` lief, gab D9 (der bisherige Luefter-Pin) kein sauberes PWM mehr aus. Fix (18.09.2026): Luefter-PWM von D9 auf **D3** (Timer2) verschoben. **Erfordert physisches Umstecken** des Luefter-Signalkabels von D9 auf D3 am Aktor-Board, sonst bleibt der Luefter aus. Details siehe README "Hardware-Update 7".
 
+Seit 18.09.2026 laeuft `pi-backend/app.py` zusaetzlich als systemd-Service (`challenge-i-backend.service`, `enable --now`) auf dem Pi (`team13-1-pi`) und loggt live in `challenge_i.db`.
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 
