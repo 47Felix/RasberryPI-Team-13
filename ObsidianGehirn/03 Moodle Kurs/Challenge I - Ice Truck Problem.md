@@ -46,6 +46,10 @@ Danach lief der Luefter trotz korrekter I2C-Sollwerte immer noch nicht: Ursache 
 
 Seit 18.09.2026 laeuft `pi-backend/app.py` zusaetzlich als systemd-Service (`challenge-i-backend.service`, `enable --now`) auf dem Pi (`team13-1-pi`) und loggt live in `challenge_i.db`.
 
+Der Umzug auf D3 (Timer2) half trotzdem nicht: Live-Tests am 21.09.2026 mit einem minimalen Sketch (nur `analogWrite()`, kein Servo/I2C) zeigten, dass weder D3 noch D11 (die beiden Timer2-Pins) auf diesem konkreten Aktor-Board ueberhaupt PWM ausgeben, der Servo/Timer1-Konflikt aus dem vorigen Fix war also gar nicht die eigentliche Ursache. Moeglicher Grund: `avrdude` meldete beim Flashen eine mehrdeutige Chip-Signatur, die auch zu einem LGT8F328P-Klon statt einem echten ATmega328P passt (solche Klone weichen bei Timer-Interna teils ab). Fix: Luefter-PWM komplett auf Software-PWM umgestellt (`updateFanSoftwarePwm()`, manuelles `digitalWrite()` mit 20ms-Periode, unabhaengig von jeglicher Timer-Hardware), Pin auf **D4** verschoben (**erfordert erneutes Umstecken** des Signalkabels). Details siehe README "Hardware-Update 8".
+
+Direkt danach ein zweiter Bug: der Luefter drehte mit der neuen Software-PWM zwar, aber verkehrt herum, langsamer statt schneller bei Waerme. Per Live-Erwaermungstest und SQLite-Log (`challenge_i.db`) verifiziert, dass `rules.py`/`calibration.py` den `fan_pwm`-Sollwert korrekt mit der Temperatur hochrechnen (22,2°C→29,6°C, `fan_pwm` 0→40) - der Fehler lag also rein in der Pin-Ansteuerung: das Board schaltet active-low (HIGH = Luefter aus), die Software ging von active-high aus. Fix (21.09.2026): `HIGH`/`LOW` in `updateFanSoftwarePwm()` getauscht, kein Pin-Wechsel noetig. Noch nicht erneut auf echter Hardware nach dem Flashen verifiziert. Details siehe README "Hardware-Update 9".
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 
