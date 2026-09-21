@@ -7,7 +7,7 @@ Scaffolding fuer die Tracks A-F (siehe Issues [#176](https://github.com/47Felix/
 ```
 Sensor-Arduino (I2C-Slave 0x08)      Aktor-Arduino (I2C-Slave 0x09)
   KY-028 Analogwert (A0)               KY-028 Analogwert (A0) + LED (D5)
-  LED fuer KY-028 (D9)                 Luefter (PWM, D3)
+  LED fuer KY-028 (D9)                 Luefter (Software-PWM, D4)
                                        Ventil-Servo (D6)
         │                                  │           ▲
         │ I2C read                         │ I2C read  │ I2C write
@@ -88,7 +88,7 @@ Der DHT22 auf dem Aktor-Board hat **nie** eine gueltige Messung geliefert: `dht.
 | Board 2 | LED fuer KY-028 | Helligkeitsanzeige | → D9 (PWM) |
 | Board 1, `actor_arduino.ino` (I2C 0x09) | KY-028 (Analogausgang) | Sensor, analog, unkalibriert | AO → A0 |
 | Board 1 | LED fuer KY-028 | Helligkeitsanzeige | → D5 (PWM) |
-| Board 1 | Luefter (DC-Motor/H-Bruecke) | Aktor | PWM → D3 *(war D9, siehe Hardware-Update 7)* |
+| Board 1 | Luefter (DC-Motor/H-Bruecke) | Aktor | Software-PWM → D4 *(war D9, dann D3, siehe Hardware-Update 7+8)* |
 | Board 1 | Servo (Ventil) | Aktor | Signal → D6 |
 
 Beide Boards senden jetzt nur noch 2 Bytes (Rohwert) statt der bisherigen 4 (Temp/Feuchte) auf dem Aktor-Board. Die Umrechnung Rohwert → Grad Celsius passiert komplett im Pi-Backend (`pi-backend/calibration.py`, 2-Punkt-lineare Interpolation je Sensor) statt in der Firmware - **inzwischen kalibriert** (17./18.09., Felix, per Referenzthermometer: Sensor-Board 23.0C→raw 212 / 30.0C→raw 160, Aktor-Board 23.0C→raw 174 / 30.5C→raw 126; Details inkl. Drift-Hinweis zum Aktor-Board siehe Docstring in `calibration.py`). Die Kuehlstufen-Entscheidung (`rules.py`) nutzt den Mittelwert der beiden kalibrierten Temperaturen, mit Tischtest-Schwellwerten (noch nicht den echten Betriebswerten aus der Moodle-Aufgabenstellung).
@@ -110,6 +110,17 @@ Fix in `actor_arduino.ino`: `PIN_FAN_PWM` von D9 auf **D3** verschoben (Timer2, 
 
 > [!warning] Physische Verkabelung noetig
 > Das ist ein Pin-Wechsel auf real schon verkabelter Hardware - das Signalkabel vom Luefter-Transistor/H-Bruecken-Eingang muss am Aktor-Board von **D9 auf D3** umgesteckt werden, bevor der neue Sketch getestet werden kann. Ohne Umstecken bleibt der Luefter aus, weil D9 jetzt nichts mehr ausgibt.
+
+## Hardware-Update 8 (21.09.2026): Timer2 (D3/D11) liefert auf diesem Board generell kein PWM - Umstieg auf Software-PWM
+
+Nach dem Umstecken auf D3 (Hardware-Update 7) drehte der Luefter immer noch nicht. Live getestet mit einem minimalen Sketch, der **nur** `analogWrite()` auf D3 macht - kein Servo, kein I2C, nichts sonst: lief trotzdem nicht. Zur Kontrolle D11 probiert (der zweite Pin an Timer2) - lief ebenfalls nicht, wieder mit einem minimalen Sketch ohne Servo/I2C. Das schliesst den Servo/Timer1-Konflikt aus Hardware-Update 7 als Ursache aus (der betraf nur D9/D10) und zeigt: **Timer2-PWM funktioniert auf diesem konkreten Aktor-Board generell nicht.**
+
+Moeglicher Grund: beim Flashen meldete `avrdude` (`Device signature = 1E 95 0F`) eine Signatur, die neben echtem ATmega328P auch zu einem **LGT8F328P**-Klon passt - einem guenstigen "Arduino Uno"-kompatiblen Chip, der intern teils anders funktioniert als ein echter ATmega328P, gerade bei Timer-Interna. Nicht 100% verifiziert, aber die beobachteten Symptome (Timer1 funktioniert wie erwartet, Timer2 gar nicht) passen dazu.
+
+Fix in `actor_arduino.ino`: kein Hardware-Timer mehr fuer den Luefter. Stattdessen **Software-PWM** - `updateFanSoftwarePwm()` toggelt `PIN_FAN_PWM` per `digitalWrite()` mit einem aus `millis()` berechneten Tastverhaeltnis (Periode 20ms = 50Hz), unabhaengig von jeglicher Timer-Hardware. `PIN_FAN_PWM` auf **D4** verschoben (kein Hardware-PWM-Pin, also auch keine Timer-Ueberraschungen mehr moeglich). `applySetpointsFromPi()` schreibt den empfangenen Sollwert nur noch in `currentFanPwm`, die eigentliche Pin-Ansteuerung passiert in `loop()`.
+
+> [!warning] Physische Verkabelung noetig
+> Wieder ein Pin-Wechsel auf real verkabelter Hardware - das Luefter-Signalkabel muss von D3 auf **D4** umgesteckt werden. Verifiziert per Live-Test auf dem Pi (2026-09-21): mit einem minimalen Testsketch liefen weder D3 noch D11 (Timer2), die eigentliche Ursache war also nicht der Servo/Timer1-Konflikt.
 
 ## Hardware-Update 3 (15.09.2026, Issue #191): Sensor ist ein DHT22, nicht DHT11
 
