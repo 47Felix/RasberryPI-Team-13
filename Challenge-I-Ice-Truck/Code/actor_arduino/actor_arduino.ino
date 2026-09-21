@@ -125,9 +125,18 @@ void loop() {
 }
 
 void updateFanSoftwarePwm() {
+  // Hardware-Update 9 (21.09.2026): Board schaltet invertiert (active-low
+  // Transistor-/H-Bruecken-Eingang) - HIGH ist "Luefter aus", LOW ist
+  // "Luefter an". Live per DB-Log verifiziert: pi-backend berechnete
+  // fan_pwm stieg korrekt mit der Temperatur (0 -> 40), der Luefter wurde
+  // physisch aber langsamer statt schneller - reine Software-Regellogik
+  // (rules.py/calibration.py) war also bereits korrekt, nur diese
+  // Pin-Polaritaet war falsch. Fix: HIGH/LOW getauscht, damit mehr
+  // "Ein-Zeit" (hoeherer currentFanPwm) auch mehr tatsaechliche Laufzeit
+  // ergibt.
   unsigned long cyclePosMs = millis() % FAN_SOFT_PWM_PERIOD_MS;
   unsigned long onTimeMs = (unsigned long)currentFanPwm * FAN_SOFT_PWM_PERIOD_MS / 255;
-  digitalWrite(PIN_FAN_PWM, cyclePosMs < onTimeMs ? HIGH : LOW);
+  digitalWrite(PIN_FAN_PWM, cyclePosMs < onTimeMs ? LOW : HIGH);
 }
 
 void sendKy028DataToPi() {

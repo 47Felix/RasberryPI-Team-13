@@ -122,6 +122,15 @@ Fix in `actor_arduino.ino`: kein Hardware-Timer mehr fuer den Luefter. Stattdess
 > [!warning] Physische Verkabelung noetig
 > Wieder ein Pin-Wechsel auf real verkabelter Hardware - das Luefter-Signalkabel muss von D3 auf **D4** umgesteckt werden. Verifiziert per Live-Test auf dem Pi (2026-09-21): mit einem minimalen Testsketch liefen weder D3 noch D11 (Timer2), die eigentliche Ursache war also nicht der Servo/Timer1-Konflikt.
 
+## Hardware-Update 9 (21.09.2026): Luefter-PWM invertiert - schneller statt langsamer bei Waerme
+
+Nach Hardware-Update 8 lief die Software-PWM technisch, aber der Luefter reagierte **falsch herum**: er wurde beim Erwaermen langsamer statt schneller (sollte natuerlich umgekehrt sein - mehr Kuehlung bei mehr Waerme). Live per `read_live.py` + SQLite-Log (`challenge_i.db`, Tabelle `readings`) verifiziert waehrend eines Erwaermungstests: `sensor_board_temp_c` stieg korrekt (22,2°C -> 29,6°C), und `fan_pwm` in der DB stieg ebenfalls korrekt mit (0 -> 40) - `rules.py`/`calibration.py` rechneten also die ganze Zeit richtig. Der Fehler lag ausschliesslich in `updateFanSoftwarePwm()` (`actor_arduino.ino`, siehe Hardware-Update 8): das Board schaltet offenbar **active-low** (HIGH am Transistor-/H-Bruecken-Eingang = Luefter AUS statt AN), die Software ging aber von active-high aus.
+
+Fix: `digitalWrite(PIN_FAN_PWM, ...)` in `updateFanSoftwarePwm()` invertiert (`LOW` waehrend der "Ein"-Zeit, `HIGH` sonst). Kein Pin-Wechsel noetig, reine Software-Aenderung.
+
+> [!warning] Noch nicht auf echter Hardware bestaetigt
+> Fix beruht auf der DB-Auswertung (korrekter `fan_pwm`-Sollwert, falsches physisches Verhalten) und ist logisch die einzige verbleibende Erklaerung, aber noch nicht durch einen erneuten Live-Test nach dem Flashen verifiziert. Naechster Schritt: neu flashen, wieder erwaermen, pruefen ob der Luefter jetzt bei steigender Temperatur schneller wird.
+
 ## Hardware-Update 3 (15.09.2026, Issue #191): Sensor ist ein DHT22, nicht DHT11
 
 Der Temp/Feuchte-Sensor hat ein weisses Gehaeuse (DHT22), nicht das blaue DHT11-Gehaeuse, das urspruenglich angenommen wurde. Der Sketch hatte `DHTTYPE` faelschlich auf `DHT11` stehen - DHT11 und DHT22 kodieren ihre Rohbytes unterschiedlich, DHT11-Parsing auf einem DHT22-Bytestream ergab die konstant ~20-22 Grad zu niedrigen Werte aus Issue #191, kein Verkabelungs-/Pull-up-Problem. Fix: `DHTTYPE` auf `DHT22` umgestellt (`ice_truck_single_board.ino`), der bisherige `+20°C`-Kalibrierungs-Offset ist damit hinfaellig und entfernt. **Noch nicht an echter Hardware verifiziert** - naechster Schritt bei Hardware-Zugriff: neu flashen, echte Werte gegen ein zweites Thermometer pruefen, Issue #191 danach schliessen.
