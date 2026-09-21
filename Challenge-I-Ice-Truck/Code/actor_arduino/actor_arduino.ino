@@ -11,7 +11,7 @@
 
   Rolle dieses Boards:
   - Sensor: KY-028 (Analogausgang AO), gleiches Prinzip wie sensor_arduino
-  - Aktoren: Luefter (PWM auf D3) und Servo (Ventil, D6)
+  - Aktoren: Luefter (Software-PWM auf D4) und Servo (Ventil, D6)
   - I2C-Slave-Adresse 0x09: liefert auf Anfrage den KY-028-Rohwert (2
     Bytes, gleiches Format wie sensor_arduino.ino), nimmt per
     Wire.onReceive() die Aktor-Sollwerte vom Pi entgegen (Kuehlstufen-Logik
@@ -29,8 +29,9 @@
   Pins:
     - A0: KY-028 AO (Analogausgang)
     - D5 (PWM): LED, Helligkeit proportional zum KY-028-Rohwert
-    - D3 (PWM): Transistor-/H-Bruecken-Eingang fuer den Luefter (war D9,
-      siehe Hardware-Update 7 in README.md)
+    - D4 (Software-PWM, kein Hardware-Timer): Transistor-/H-Bruecken-
+      Eingang fuer den Luefter (war D9, dann D3, siehe Hardware-Update
+      7+8 in README.md)
     - D6: Servo-Signal fuer das Ventil (Winkel = Oeffnungsgrad, 0-180)
     - A4 (SDA) / A5 (SCL): I2C zum Pi
 
@@ -40,8 +41,20 @@
   Timer1 fuer ihre Pulserzeugung (Servo::attach() reicht, unabhaengig vom
   gewaehlten Pin) - Timer1 ist aber auch der Hardware-Timer hinter
   analogWrite() auf D9/D10, wodurch dort nach dem Servo-Attach kein
-  sauberes PWM mehr rauskam. Fix: Luefter auf D3 (Timer2) verschoben,
-  unabhaengig von Servo (Timer1) und LED auf D5 (Timer0).
+  sauberes PWM mehr rauskam. Fix versucht: Luefter auf D3 (Timer2)
+  verschoben.
+
+  Bug gefunden 2026-09-21 (Hardware-Update 8 in README.md): D3 lief immer
+  noch nicht, auch nicht mit einem minimalen Testsketch ganz ohne
+  Servo/I2C. D11 (der zweite Timer2-Pin) probeweise auch getestet, lief
+  ebenfalls nicht. Timer2-PWM scheint auf diesem konkreten Board generell
+  nicht zu funktionieren (avrdude meldete beim Flashen eine mehrdeutige
+  Chip-Signatur, die auch zu einem LGT8F328P-Klon statt einem echten
+  ATmega328P passt - solche Klone weichen bei Timer-Interna teils ab).
+  Fix: kein Hardware-Timer mehr fuer den Luefter. Stattdessen Software-PWM
+  (manuelles digitalWrite() mit per millis() berechnetem Tastverhaeltnis)
+  auf D4 - D4 hat keine Timer-Funktion und ist damit unabhaengig sowohl
+  vom Servo (Timer1) als auch von den offenbar defekten Timer2-Pins.
 
   I2C: Slave-Adresse 0x09
     - Wire.onRequest(): sendet 2 Bytes [KY-028-Rohwert hi, lo] - gleiches
@@ -60,7 +73,7 @@ const uint8_t I2C_SLAVE_ADDRESS = 0x09;
 
 const uint8_t PIN_KY028_ANALOG = A0;
 const uint8_t PIN_LED_KY028 = 5;
-const uint8_t PIN_FAN_PWM = 3;
+const uint8_t PIN_FAN_PWM = 4;
 const uint8_t PIN_VALVE_SERVO = 6;
 
 // Rohwert bei 30C (LED voll hell) bzw. -10C (LED aus), siehe Kalibrierung
@@ -71,7 +84,13 @@ const int RAW_AT_LED_OFF = 35;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 
+// Software-PWM fuer den Luefter (siehe Hardware-Update 8): Periodendauer
+// 20ms (=50Hz), digitalWrite() HIGH fuer den zum aktuellen Tastverhaeltnis
+// passenden Anteil der Periode, sonst LOW. Braucht keinen Hardware-Timer.
+const unsigned long FAN_SOFT_PWM_PERIOD_MS = 20;
+
 volatile int16_t latestKy028Raw = 0;
+volatile uint8_t currentFanPwm = 0;
 unsigned long lastSensorUpdate = 0;
 
 Servo valveServo;
@@ -91,6 +110,8 @@ void setup() {
 }
 
 void loop() {
+  updateFanSoftwarePwm();
+
   unsigned long now = millis();
   if (now - lastSensorUpdate < SENSOR_UPDATE_INTERVAL_MS) {
     return;
@@ -101,6 +122,12 @@ void loop() {
 
   uint8_t brightness = constrain(map(latestKy028Raw, RAW_AT_LED_FULL, RAW_AT_LED_OFF, 255, 0), 0, 255);
   analogWrite(PIN_LED_KY028, brightness);
+}
+
+void updateFanSoftwarePwm() {
+  unsigned long cyclePosMs = millis() % FAN_SOFT_PWM_PERIOD_MS;
+  unsigned long onTimeMs = (unsigned long)currentFanPwm * FAN_SOFT_PWM_PERIOD_MS / 255;
+  digitalWrite(PIN_FAN_PWM, cyclePosMs < onTimeMs ? HIGH : LOW);
 }
 
 void sendKy028DataToPi() {
@@ -120,6 +147,6 @@ void applySetpointsFromPi(int numBytes) {
   uint8_t fanPwm = Wire.read();
   uint8_t valveAngle = constrain(Wire.read(), 0, 180);
 
-  analogWrite(PIN_FAN_PWM, fanPwm);
+  currentFanPwm = fanPwm;
   valveServo.write(valveAngle);
 }
