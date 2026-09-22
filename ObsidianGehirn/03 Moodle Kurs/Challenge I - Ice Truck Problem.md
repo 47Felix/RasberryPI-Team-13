@@ -50,6 +50,10 @@ Der Umzug auf D3 (Timer2) half trotzdem nicht: Live-Tests am 21.09.2026 mit eine
 
 Direkt danach ein zweiter Bug: der Luefter drehte mit der neuen Software-PWM zwar, aber verkehrt herum, langsamer statt schneller bei Waerme. Per Live-Erwaermungstest und SQLite-Log (`challenge_i.db`) verifiziert, dass `rules.py`/`calibration.py` den `fan_pwm`-Sollwert korrekt mit der Temperatur hochrechnen (22,2°C→29,6°C, `fan_pwm` 0→40) - der Fehler lag also rein in der Pin-Ansteuerung: das Board schaltet active-low (HIGH = Luefter aus), die Software ging von active-high aus. Fix (21.09.2026): `HIGH`/`LOW` in `updateFanSoftwarePwm()` getauscht, kein Pin-Wechsel noetig. Noch nicht erneut auf echter Hardware nach dem Flashen verifiziert. Details siehe README "Hardware-Update 9".
 
+Ausserdem war die Aktor-Board-LED (D5) nie hell: `RAW_AT_LED_FULL`/`RAW_AT_LED_OFF` standen noch auf `13`/`35`, Werte aus einer frueheren Hardware-Iteration, die nie an die aktuelle Kalibrierung (23.0C → Rohwert 174, 30.5C → Rohwert 126) angepasst wurden. Der reale Rohwert liegt immer bei ~120-220, weit ausserhalb von `[13, 35]`, wodurch `map()`+`constrain()` die Helligkeit dauerhaft auf 0 klemmten. Fix (22.09.2026): Grenzen aus der echten Kalibriergeraden neu hochgerechnet auf `129`/`385`. Zusaetzlich beobachtet, aber noch offen: der Aktor-Board-Rohwert schwankt live sichtbar mit dem Luefterzustand (~208 bei `fan_pwm=0`, ~166 bei `fan_pwm>0`), vermutlich eine elektrische Stoerung durch den Luefterstrom auf derselben Platine, noch nicht behoben (braucht wohl einen Entkopplungskondensator, physischer Hardware-Zugriff noetig). Details siehe README "Hardware-Update 10".
+
+**Code-Aufraeumung (22.09.2026, PR #215, noch nicht gemerged):** Die `Hardware-Update`-Changelog-Kommentarbloecke am Kopf von `actor_arduino.ino`/`sensor_arduino.ino` wurden entfernt, da sie dieselbe Historie wie oben und in README "Hardware-Update 1-10" nur dupliziert haben und schnell veralten. Die Historie lebt jetzt ausschliesslich hier im Vault und im README, nicht mehr im Code selbst.
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 
