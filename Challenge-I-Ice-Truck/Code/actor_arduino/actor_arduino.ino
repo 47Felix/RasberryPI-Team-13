@@ -1,79 +1,3 @@
-/*
-  actor_arduino.ino
-
-  Hardware-Update 5 (17.09.2026): DHT22 auf diesem Board hat nie eine
-  gueltige Messung geliefert (dht.readHumidity()/readTemperature() gaben
-  ab dem ersten Aufruf durchgehend NaN zurueck, per Serial verifiziert -
-  Wiring wurde mehrfach gegengeprueft). Team hat den DHT22 durch ein
-  zweites KY-028-Modul ersetzt - dieses Board hat jetzt also GENAU DAS
-  GLEICHE Sensorprinzip wie ../sensor_arduino/sensor_arduino.ino (KY-028,
-  unkalibrierter Analogwert), zusaetzlich weiterhin die Aktoren.
-
-  Rolle dieses Boards:
-  - Sensor: KY-028 (Analogausgang AO), gleiches Prinzip wie sensor_arduino
-  - Aktoren: Luefter (Software-PWM auf D4) und Servo (Ventil, D6)
-  - I2C-Slave-Adresse 0x09: liefert auf Anfrage den KY-028-Rohwert (2
-    Bytes, gleiches Format wie sensor_arduino.ino), nimmt per
-    Wire.onReceive() die Aktor-Sollwerte vom Pi entgegen (Kuehlstufen-Logik
-    sitzt im Pi-Backend, siehe pi-backend/rules.py + pi-backend/calibration.py)
-
-  Kalibrierung (2026-09-18, per Referenzthermometer/Sensor-Board-Proxy,
-  siehe auch pi-backend/calibration.py::ACTOR_BOARD_CALIBRATION): Rohwert
-  faellt mit steigender Temperatur (23.0C -> 174, 30.5C -> 126). LED soll
-  bei 30C und waermer voll hell sein, bei -10C und kaelter aus, dazwischen
-  linear - RAW_AT_LED_FULL/RAW_AT_LED_OFF unten sind die aus der
-  Kalibriergeraden hochgerechneten Rohwert-Grenzen dafuer (-10C ist
-  ausserhalb der gemessenen 23-30.5C, also extrapoliert, nicht gemessen).
-
-  Bug gefunden 2026-09-22 (Hardware-Update 10 in README.md): RAW_AT_LED_FULL/
-  RAW_AT_LED_OFF standen noch auf 13/35 - Werte aus einer frueheren
-  Hardware-Iteration, die nie an die aktuelle Kalibrierung (23.0C -> 174,
-  30.5C -> 126) angepasst wurden. Der reale Rohwert liegt immer bei ~120-220,
-  weit ueber 35, also klemmte map()+constrain() die Helligkeit dauerhaft auf
-  0 - die LED konnte nie leuchten. Fix: Grenzen aus der echten
-  Kalibriergeraden neu hochgerechnet (gleiche Methode wie in
-  sensor_arduino.ino).
-
-  Pins:
-    - A0: KY-028 AO (Analogausgang)
-    - D5 (PWM): LED, Helligkeit proportional zum KY-028-Rohwert
-    - D4 (Software-PWM, kein Hardware-Timer): Transistor-/H-Bruecken-
-      Eingang fuer den Luefter (war D9, dann D3, siehe Hardware-Update
-      7+8 in README.md)
-    - D6: Servo-Signal fuer das Ventil (Winkel = Oeffnungsgrad, 0-180)
-    - A4 (SDA) / A5 (SCL): I2C zum Pi
-
-  Bug gefunden 2026-09-18 (Hardware-Update 7 in README.md): der Luefter
-  drehte trotz korrekter I2C-Sollwerte nicht richtig, weil PIN_FAN_PWM
-  vorher auf D9 lag. Auf dem Arduino Uno belegt die Servo-Bibliothek fest
-  Timer1 fuer ihre Pulserzeugung (Servo::attach() reicht, unabhaengig vom
-  gewaehlten Pin) - Timer1 ist aber auch der Hardware-Timer hinter
-  analogWrite() auf D9/D10, wodurch dort nach dem Servo-Attach kein
-  sauberes PWM mehr rauskam. Fix versucht: Luefter auf D3 (Timer2)
-  verschoben.
-
-  Bug gefunden 2026-09-21 (Hardware-Update 8 in README.md): D3 lief immer
-  noch nicht, auch nicht mit einem minimalen Testsketch ganz ohne
-  Servo/I2C. D11 (der zweite Timer2-Pin) probeweise auch getestet, lief
-  ebenfalls nicht. Timer2-PWM scheint auf diesem konkreten Board generell
-  nicht zu funktionieren (avrdude meldete beim Flashen eine mehrdeutige
-  Chip-Signatur, die auch zu einem LGT8F328P-Klon statt einem echten
-  ATmega328P passt - solche Klone weichen bei Timer-Interna teils ab).
-  Fix: kein Hardware-Timer mehr fuer den Luefter. Stattdessen Software-PWM
-  (manuelles digitalWrite() mit per millis() berechnetem Tastverhaeltnis)
-  auf D4 - D4 hat keine Timer-Funktion und ist damit unabhaengig sowohl
-  vom Servo (Timer1) als auch von den offenbar defekten Timer2-Pins.
-
-  I2C: Slave-Adresse 0x09
-    - Wire.onRequest(): sendet 2 Bytes [KY-028-Rohwert hi, lo] - gleiches
-      Format wie sensor_arduino.ino::sendSensorDataToPi()
-    - Wire.onReceive(): erwartet 2 Bytes [fan_pwm 0-255, valve_angle 0-180]
-      - unveraendert gegenueber der vorherigen Version dieses Sketches
-
-  Benoetigte Bibliotheken: "Servo" ist vorinstalliert, kein DHT/Adafruit-
-  Unified-Sensor mehr noetig (DHT22 raus).
-*/
-
 #include <Servo.h>
 #include <Wire.h>
 
@@ -84,17 +8,10 @@ const uint8_t PIN_LED_KY028 = 5;
 const uint8_t PIN_FAN_PWM = 4;
 const uint8_t PIN_VALVE_SERVO = 6;
 
-// Rohwert bei 30C (LED voll hell) bzw. -10C (LED aus), siehe Kalibrierung
-// oben - Rohwert faellt mit steigender Temperatur, daher RAW_AT_LED_FULL <
-// RAW_AT_LED_OFF.
 const int RAW_AT_LED_FULL = 129;
 const int RAW_AT_LED_OFF = 385;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
-
-// Software-PWM fuer den Luefter (siehe Hardware-Update 8): Periodendauer
-// 20ms (=50Hz), digitalWrite() HIGH fuer den zum aktuellen Tastverhaeltnis
-// passenden Anteil der Periode, sonst LOW. Braucht keinen Hardware-Timer.
 const unsigned long FAN_SOFT_PWM_PERIOD_MS = 20;
 
 volatile int16_t latestKy028Raw = 0;
@@ -133,15 +50,6 @@ void loop() {
 }
 
 void updateFanSoftwarePwm() {
-  // Hardware-Update 9 (21.09.2026): Board schaltet invertiert (active-low
-  // Transistor-/H-Bruecken-Eingang) - HIGH ist "Luefter aus", LOW ist
-  // "Luefter an". Live per DB-Log verifiziert: pi-backend berechnete
-  // fan_pwm stieg korrekt mit der Temperatur (0 -> 40), der Luefter wurde
-  // physisch aber langsamer statt schneller - reine Software-Regellogik
-  // (rules.py/calibration.py) war also bereits korrekt, nur diese
-  // Pin-Polaritaet war falsch. Fix: HIGH/LOW getauscht, damit mehr
-  // "Ein-Zeit" (hoeherer currentFanPwm) auch mehr tatsaechliche Laufzeit
-  // ergibt.
   unsigned long cyclePosMs = millis() % FAN_SOFT_PWM_PERIOD_MS;
   unsigned long onTimeMs = (unsigned long)currentFanPwm * FAN_SOFT_PWM_PERIOD_MS / 255;
   digitalWrite(PIN_FAN_PWM, cyclePosMs < onTimeMs ? LOW : HIGH);
@@ -154,7 +62,6 @@ void sendKy028DataToPi() {
 
 void applySetpointsFromPi(int numBytes) {
   if (numBytes < 2) {
-    // Unvollstaendiges Paket - ignorieren statt mit halben Daten zu regeln
     while (Wire.available()) {
       Wire.read();
     }
