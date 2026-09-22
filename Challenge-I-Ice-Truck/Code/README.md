@@ -131,6 +131,14 @@ Fix: `digitalWrite(PIN_FAN_PWM, ...)` in `updateFanSoftwarePwm()` invertiert (`L
 > [!warning] Noch nicht auf echter Hardware bestaetigt
 > Fix beruht auf der DB-Auswertung (korrekter `fan_pwm`-Sollwert, falsches physisches Verhalten) und ist logisch die einzige verbleibende Erklaerung, aber noch nicht durch einen erneuten Live-Test nach dem Flashen verifiziert. Naechster Schritt: neu flashen, wieder erwaermen, pruefen ob der Luefter jetzt bei steigender Temperatur schneller wird.
 
+## Hardware-Update 10 (22.09.2026): Aktor-Board-LED (D5) konnte nie leuchten - falsche Kalibrierungskonstanten
+
+`actor_arduino.ino` hatte `RAW_AT_LED_FULL = 13` / `RAW_AT_LED_OFF = 35` - Werte aus einer frueheren Hardware-Iteration, die nie an die aktuelle Kalibrierung (`pi-backend/calibration.py::ACTOR_BOARD_CALIBRATION`, 23.0C -> Rohwert 174, 30.5C -> Rohwert 126) angepasst wurden. Der reale Rohwert liegt immer bei ~120-220, weit ausserhalb von `[13, 35]` - `map()` extrapolierte damit staendig unter 0, `constrain()` klemmte die Helligkeit dauerhaft auf 0. Die Aktor-LED konnte also mit den alten Konstanten **nie** leuchten, unabhaengig von der echten Temperatur.
+
+Fix: `RAW_AT_LED_FULL`/`RAW_AT_LED_OFF` aus der echten Kalibriergeraden neu hochgerechnet (gleiche Methode wie in `sensor_arduino.ino`, LED voll hell ab 30C, aus ab -10C, linear dazwischen): `129`/`385`.
+
+Zusaetzlich beobachtet, aber noch offen: der Aktor-Board-Rohwert selbst schwankt live sichtbar mit dem Luefterzustand (z.B. ~208 bei `fan_pwm=0`, ~166 bei `fan_pwm>0`, Sprung innerhalb einer einzelnen Messung) - das ist zu schnell fuer echte Thermik und deutet auf eine elektrische Stoerung (Spannungseinbruch durch den Luefterstrom auf derselben Platine wie der KY-028-Analogausgang) hin, nicht auf eine falsche Kalibrierung. Braucht vermutlich einen Entkopplungskondensator nah am KY-028 auf dem Aktor-Board - noch nicht behoben, physischer Hardware-Zugriff noetig.
+
 ## Hardware-Update 3 (15.09.2026, Issue #191): Sensor ist ein DHT22, nicht DHT11
 
 Der Temp/Feuchte-Sensor hat ein weisses Gehaeuse (DHT22), nicht das blaue DHT11-Gehaeuse, das urspruenglich angenommen wurde. Der Sketch hatte `DHTTYPE` faelschlich auf `DHT11` stehen - DHT11 und DHT22 kodieren ihre Rohbytes unterschiedlich, DHT11-Parsing auf einem DHT22-Bytestream ergab die konstant ~20-22 Grad zu niedrigen Werte aus Issue #191, kein Verkabelungs-/Pull-up-Problem. Fix: `DHTTYPE` auf `DHT22` umgestellt (`ice_truck_single_board.ino`), der bisherige `+20°C`-Kalibrierungs-Offset ist damit hinfaellig und entfernt. **Noch nicht an echter Hardware verifiziert** - naechster Schritt bei Hardware-Zugriff: neu flashen, echte Werte gegen ein zweites Thermometer pruefen, Issue #191 danach schliessen.
