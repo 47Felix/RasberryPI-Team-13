@@ -17,14 +17,22 @@
     Wire.onReceive() die Aktor-Sollwerte vom Pi entgegen (Kuehlstufen-Logik
     sitzt im Pi-Backend, siehe pi-backend/rules.py + pi-backend/calibration.py)
 
-  Kalibrierung (2026-09-17, per Referenzthermometer, siehe auch
-  pi-backend/calibration.py::ACTOR_BOARD_CALIBRATION): Rohwert faellt mit
-  steigender Temperatur (23.0C -> 16.5, 30.0C -> 12.5, hier auf Ganzzahlen
-  gerundet). LED soll bei 30C und waermer voll hell sein, bei -10C und
-  kaelter aus, dazwischen linear - RAW_AT_LED_FULL/RAW_AT_LED_OFF unten
-  sind die aus der Kalibriergeraden hochgerechneten Rohwert-Grenzen dafuer
-  (-10C ist ausserhalb der gemessenen 23-30C, also extrapoliert, nicht
-  gemessen).
+  Kalibrierung (2026-09-18, per Referenzthermometer/Sensor-Board-Proxy,
+  siehe auch pi-backend/calibration.py::ACTOR_BOARD_CALIBRATION): Rohwert
+  faellt mit steigender Temperatur (23.0C -> 174, 30.5C -> 126). LED soll
+  bei 30C und waermer voll hell sein, bei -10C und kaelter aus, dazwischen
+  linear - RAW_AT_LED_FULL/RAW_AT_LED_OFF unten sind die aus der
+  Kalibriergeraden hochgerechneten Rohwert-Grenzen dafuer (-10C ist
+  ausserhalb der gemessenen 23-30.5C, also extrapoliert, nicht gemessen).
+
+  Bug gefunden 2026-09-22 (Hardware-Update 10 in README.md): RAW_AT_LED_FULL/
+  RAW_AT_LED_OFF standen noch auf 13/35 - Werte aus einer frueheren
+  Hardware-Iteration, die nie an die aktuelle Kalibrierung (23.0C -> 174,
+  30.5C -> 126) angepasst wurden. Der reale Rohwert liegt immer bei ~120-220,
+  weit ueber 35, also klemmte map()+constrain() die Helligkeit dauerhaft auf
+  0 - die LED konnte nie leuchten. Fix: Grenzen aus der echten
+  Kalibriergeraden neu hochgerechnet (gleiche Methode wie in
+  sensor_arduino.ino).
 
   Pins:
     - A0: KY-028 AO (Analogausgang)
@@ -79,8 +87,8 @@ const uint8_t PIN_VALVE_SERVO = 6;
 // Rohwert bei 30C (LED voll hell) bzw. -10C (LED aus), siehe Kalibrierung
 // oben - Rohwert faellt mit steigender Temperatur, daher RAW_AT_LED_FULL <
 // RAW_AT_LED_OFF.
-const int RAW_AT_LED_FULL = 13;
-const int RAW_AT_LED_OFF = 35;
+const int RAW_AT_LED_FULL = 129;
+const int RAW_AT_LED_OFF = 385;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 
