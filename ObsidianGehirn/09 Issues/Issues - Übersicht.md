@@ -11,7 +11,7 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 21.09.2026 (per GitHub-API geprüft) – weiterhin 12 offene Issues, unverändert seit 18.09.2026.
+Stand 22.09.2026 (per GitHub-API geprüft) – weiterhin 12 offene Issues, unverändert seit 18.09.2026.
 
 > [!note] Challenge I: echte Aufgabenstellung erhalten (14.09.2026)
 > Alle 11 DTEW-Workshop-Issues (#92-#102) sind mittlerweile geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
@@ -32,10 +32,15 @@ Stand 21.09.2026 (per GitHub-API geprüft) – weiterhin 12 offene Issues, unver
 > [!note] Challenge I: Timer2-PWM auf diesem Board generell tot, Umstieg auf Software-PWM + Polaritaetsfix (21.09.2026, PRs #210/#211)
 > Der Lüfter-Umzug von D9 auf D3 (Timer2, siehe oben) half nicht: Live-Tests mit einem minimalen Sketch ohne Servo/I2C zeigten, dass weder D3 noch D11 (beide Timer2-Pins) auf diesem konkreten Aktor-Board PWM ausgeben, moeglicherweise weil `avrdude` beim Flashen eine mehrdeutige Signatur meldete, die auch zu einem LGT8F328P-Klon statt einem echten ATmega328P passt. Fix: Software-PWM (`updateFanSoftwarePwm()`, manuelles `digitalWrite()`, 20ms-Periode) auf **D4**, unabhaengig von jeglicher Timer-Hardware (PR #210, erfordert erneutes Umstecken des Signalkabels). Direkt danach zeigte ein Live-Erwaermungstest, dass der Lüfter verkehrt herum reagierte (langsamer statt schneller bei Waerme), obwohl `rules.py`/`calibration.py` den Sollwert laut DB-Log korrekt berechneten: das Board schaltet active-low, die Software ging von active-high aus. Fix (PR #211): `HIGH`/`LOW` in `updateFanSoftwarePwm()` getauscht, noch nicht erneut auf echter Hardware verifiziert. Details siehe `Challenge-I-Ice-Truck/Code/README.md` Hardware-Update 8+9.
 
+> [!note] Challenge I: Aktor-LED-Kalibrierung gefixt, beide Boards neu kalibriert, Arduino-Kommentare aufgeräumt (22.09.2026, PRs #213/#214/#215)
+> Die Aktor-Board-LED (D5) konnte nie leuchten, weil `RAW_AT_LED_FULL`/`RAW_AT_LED_OFF` noch auf Werten (`13`/`35`) aus einer früheren Hardware-Iteration standen und der reale Rohwertbereich (~120-220) dadurch immer auf 0 Helligkeit geklemmt wurde; auf `129`/`385` aus der echten Kalibriergeraden neu hochgerechnet (PR #213). Danach fiel auf, dass die Ruhewerte **beider** Boards deutlich gedriftet waren (Sensor-Board ~29C statt ~22C, Aktor-Board ~17C statt ~22C), nicht nur beim Aktor-Board wie zuvor angenommen; der Offset in `pi-backend/calibration.py` wurde je Board neu auf eine geschätzte Raumtemperatur von 22.0C verschoben (keine Thermometer-Messung, nur Schätzung, PR #214). Zusätzlich neu entdeckt, aber noch offen: der Aktor-Board-Rohwert schwankt sichtbar mit dem Lüfterzustand, vermutlich eine elektrische Störung durch den Lüfterstrom auf derselben Platine. Außerdem wurden die zu einem Changelog angewachsenen Kommentarblöcke am Kopf von `actor_arduino.ino`/`sensor_arduino.ino` entfernt, die Historie dupliziert hatten (PR #215). Details siehe [[Challenge I - Ice Truck Problem]] und `Challenge-I-Ice-Truck/Code/README.md` Hardware-Update 10.
+
 Weiterhin offen:
 
 - [#184](https://github.com/47Felix/RasberryPI-Team-13/issues/184) Challenge I: Monitoring-Dashboard für die Kühlkette (Design) – Web-Dashboard fürs Kühlketten-Backend, analog zum Tresor-Dashboard, noch nicht umgesetzt
 - Schwellwerte in `pi-backend/rules.py` (`FAN_ON_TEMP_C`, `VALVE_ON_TEMP_C`) sind noch Tischtest-Platzhalter, nicht die echten Betriebswerte aus der Moodle-Aufgabenstellung
+- Aktor-Board-Rohwert schwankt live mit dem Lüfterzustand (vermutlich elektrische Störung), noch nicht behoben, braucht physischen Hardware-Zugriff (siehe Note oben)
+- Kalibrierung beider KY-028 basiert seit 22.09.2026 auf einer geschätzten Raumtemperatur (22.0C), nicht auf einer Referenzthermometer-Messung – bei nächstem Hardware-Zugriff mit echtem Thermometer neu kalibrieren
 
 Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin komplett abgeschlossen.
 
