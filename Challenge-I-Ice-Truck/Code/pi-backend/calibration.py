@@ -51,19 +51,33 @@ Sobald wieder ein echtes Referenzthermometer verfuegbar ist, sollte das
 hier durch eine frische 2-Punkt-Messung ersetzt werden statt sich auf
 diese Schaetzung zu verlassen.
 
-Polaritaets-Fix Aktor-Board 2026-09-23 (Felix): beim Live-Test (Fingerkuppe
-auf beide KY-028 gleichzeitig, ueber read_live.py beobachtet) faellt der
-Rohwert des Aktor-Boards nicht mehr mit steigender Temperatur wie oben
-beschrieben, sondern steigt jetzt damit - waehrend das Sensor-Board
-weiterhin dem alten (korrekten) Verhalten folgt. Vermutlich hat sich beim
-juengsten Umbau (LED-Fix, Hardware-Update 10) die Orientierung des
-Spannungsteilers am Aktor-Board-KY-028 gedreht. Fix: ACTOR_BOARD_CALIBRATION
-mit umgekehrtem Vorzeichen (raw_high > raw_low statt umgekehrt), Steigung
-(52.0 Rohwert-Counts) vom letzten Kalibrierdatensatz uebernommen, Ankerpunkt
-auf den waehrend des Tests beobachteten Ruhewert (raw 160 bei ca. 23C)
-gesetzt - wieder nur eine Schaetzung, KEINE Referenzthermometer-Messung.
-Sensor-Board-Kalibrierung unveraendert, deren Richtung hat sich im Test
-bestaetigt (Rohwert sinkt sauber mit Erwaermung).
+Polaritaets-Fix Aktor-Board 2026-09-23 (Felix) - ZURUECKGENOMMEN, siehe
+unten: erster Live-Test (kurze, unklare Beruehrung) sah nach umgekehrter
+Richtung aus, deshalb wurde ACTOR_BOARD_CALIBRATION testweise mit
+raw_high > raw_low (statt umgekehrt) versucht.
+
+Korrektur 2026-09-23, zweiter Test (Felix): laengerer, eindeutiger
+Live-Test (read_live.py) zeigt Aktor-Board-Rohwert klar FALLEND von ~214
+(Ruhe, unberuehrt) auf ~177 (Fingerkuppe) - also doch dieselbe Richtung
+wie urspruenglich 2026-09-18 gemessen und wie beim Sensor-Board. Der erste
+Fix-Versuch oben war falsch (zu kurzer/uneindeutiger Testlauf). Zurueck zu
+raw faellt mit steigender Temperatur, jetzt mit frischen Ankerpunkten aus
+diesem Testlauf: Ruhewert ~214 -> 23.0C (Schaetzung, kein Thermometer),
+Fingerkuppe ~177 -> 30.5C (etablierter Kontaktwert-Referenzpunkt).
+
+Gleichzeitig faellt auf: beide Ruhewerte sind wieder von den 2026-09-22-
+Ankerpunkten weggedriftet (Sensor-Board zeigte dort unberuehrt ~17.7C,
+sollte ~23C sein; Aktor-Board zeigte ~30-31C in Ruhe, ebenfalls zu hoch).
+Also wieder reiner Offset-Drift, keine Richtungsaenderung - Steigung wird
+jeweils beibehalten, nur der Ruhe-Ankerpunkt auf den aktuell beobachteten
+Rohwert verschoben:
+  - Sensor-Board (0x08): 23.0C -> raw 199 (verschoben), 30.0C -> raw 147
+    (hochgerechnet, gleiche Steigung wie zuvor)
+  - Aktor-Board  (0x09): 23.0C -> raw 214 (frisch gemessen), 30.5C -> raw 177
+    (frisch gemessen)
+
+Weiterhin nur Schaetzungen ohne Referenzthermometer. Sobald eins verfuegbar
+ist: frische 2-Punkt-Messung statt weiter nachzujustieren.
 """
 
 from __future__ import annotations
@@ -71,16 +85,16 @@ from __future__ import annotations
 # (Rohwert, Temperatur in Grad C) je Referenzpunkt, niedriger und hoeherer
 # Punkt.
 SENSOR_BOARD_CALIBRATION = {
-    "raw_low": 159.6,
+    "raw_low": 199.0,
     "temp_low_c": 23.0,
-    "raw_high": 107.6,
+    "raw_high": 147.0,
     "temp_high_c": 30.0,
 }
 
 ACTOR_BOARD_CALIBRATION = {
-    "raw_low": 160.0,
+    "raw_low": 214.0,
     "temp_low_c": 23.0,
-    "raw_high": 212.0,
+    "raw_high": 177.0,
     "temp_high_c": 30.5,
 }
 
