@@ -8,8 +8,11 @@ const uint8_t PIN_LED_KY028 = 5;
 const uint8_t PIN_FAN_PWM = 4;
 const uint8_t PIN_VALVE_SERVO = 6;
 
-const int RAW_AT_LED_FULL = 129;
-const int RAW_AT_LED_OFF = 385;
+// Muss zu calibration.py ACTOR_BOARD_CALIBRATION passen (raw_high = warm/an,
+// raw_low = Ruhewert/aus) - sonst leuchtet die LED entweder durchgehend oder
+// gar nicht, weil der reale Rohwertbereich nie in Naehe der Grenzen kommt.
+const int RAW_AT_LED_FULL = 177;
+const int RAW_AT_LED_OFF = 214;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 const unsigned long FAN_SOFT_PWM_PERIOD_MS = 20;
