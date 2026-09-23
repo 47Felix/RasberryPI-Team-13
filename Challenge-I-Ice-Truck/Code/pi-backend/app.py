@@ -29,7 +29,7 @@ DB_PATH = "challenge_i.db"
 
 
 def run_once(bus: I2CBus, conn) -> tuple[int, int]:
-    sensor_board_raw = bus.read_sensor_board()
+    sensor_board_raw, sensor_board_digital = bus.read_sensor_board()
     actor_board_raw = bus.read_actor_board()
     sensor_board_temp_c = calibration.sensor_board_celsius(sensor_board_raw)
     actor_board_temp_c = calibration.actor_board_celsius(actor_board_raw)
@@ -40,6 +40,7 @@ def run_once(bus: I2CBus, conn) -> tuple[int, int]:
 
     print(
         f"DEBUG pi: sensor_raw={sensor_board_raw} ({sensor_board_temp_c:.1f}C) "
+        f"sensor_digital={sensor_board_digital} "
         f"actor_raw={actor_board_raw} ({actor_board_temp_c:.1f}C) "
         f"avg={average_temp_c:.1f}C fan_on_at={rules.FAN_ON_TEMP_C}C "
         f"-> fan_pwm={fan_pwm} (should_run={'yes' if fan_pwm > 0 else 'no'}) "
@@ -51,6 +52,7 @@ def run_once(bus: I2CBus, conn) -> tuple[int, int]:
         conn,
         sensor_board_raw,
         sensor_board_temp_c,
+        sensor_board_digital,
         actor_board_raw,
         actor_board_temp_c,
         fan_pwm,

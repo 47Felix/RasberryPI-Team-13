@@ -27,7 +27,7 @@ def main() -> None:
     print("Lese Sensor-Arduino (0x08) + Aktor-Arduino (0x09), Strg+C zum Beenden...\n")
     while True:
         try:
-            sensor_board_raw = bus.read_sensor_board()
+            sensor_board_raw, sensor_board_digital = bus.read_sensor_board()
             actor_board_raw = bus.read_actor_board()
         except OSError as exc:
             print(f"I2C-Lesefehler, versuche es weiter: {exc}")
@@ -36,7 +36,8 @@ def main() -> None:
         sensor_board_temp_c = calibration.sensor_board_celsius(sensor_board_raw)
         actor_board_temp_c = calibration.actor_board_celsius(actor_board_raw)
         print(
-            f"Sensor-Board: raw={sensor_board_raw:4d}  temp={sensor_board_temp_c:6.1f} C  |  "
+            f"Sensor-Board: raw={sensor_board_raw:4d}  temp={sensor_board_temp_c:6.1f} C  "
+            f"digital={sensor_board_digital}  |  "
             f"Aktor-Board: raw={actor_board_raw:4d}  temp={actor_board_temp_c:6.1f} C"
         )
         time.sleep(POLL_INTERVAL_SECONDS)

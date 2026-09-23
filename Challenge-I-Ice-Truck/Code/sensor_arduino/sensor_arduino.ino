@@ -56,4 +56,5 @@ void loop() {
 void sendSensorDataToPi() {
   Wire.write(highByte(latestKy028Raw));
   Wire.write(lowByte(latestKy028Raw));
+  Wire.write(latestKy028Digital);
 }
