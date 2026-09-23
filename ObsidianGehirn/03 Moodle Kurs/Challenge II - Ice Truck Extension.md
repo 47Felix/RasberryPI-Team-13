@@ -49,6 +49,8 @@ In 4 Tracks heruntergebrochen (#193-#196), siehe [[Issues - Übersicht]].
 
 **Track B (#194) erledigt (23.09.2026):** Topic-Schema (`mqtt-topics.md`) war seit dem 15.09. auf ein altes Sensor-Modell (Feuchtigkeit, Lichtsensor, Taster) ausgelegt – das gibt es seit den Challenge-I-Hardware-Updates (zwei KY-028-Boards statt DHT22, siehe [[Challenge I - Ice Truck Problem]]) nicht mehr. Jetzt an das echte `readings`-Schema aus `Challenge-I-Ice-Truck/Code/pi-backend/db.py` angepasst: zwei kalibrierte Temperaturen (`sensor_board_temp_c`, `actor_board_temp_c`) + Rohwerte, `fan_pwm`, `valve_angle`. Nebenbei den Status-Hinweis zu Issue #180 korrigiert (I2C-Write an den Aktor-Arduino ist seit dem Bugfix vom 18.09. erledigt, offen ist nur noch, dass der Node-RED-Flow ihn tatsächlich aufruft). Voraussetzung für Track C, das jetzt dran ist: `node-red/flows.json` (`fn_format`) publiziert noch die alten Feldnamen und muss auf das neue Schema umgestellt werden, bevor der Flow auf dem Pi importiert und gegen die echte `challenge_i.db` getestet wird.
 
+**Track C (#195) teilweise erledigt (23.09.2026):** `fn_format` in `node-red/flows.json` publiziert jetzt die neuen Feldnamen aus Track B statt der alten (`temperature_c`/`humidity_pct`/`ldr_raw`/`button`). Das ist reine Code-Anpassung im Repo - der eigentliche Import in die Node-RED-Instanz auf dem Pi (Palette installieren, `sqlitedb`-Pfad + `mqtt-broker`-Credentials im laufenden Node-RED eintragen, siehe README) sowie der End-to-End-Test gegen die echte `challenge_i.db` und den jetzt laufenden Broker stehen noch aus - das braucht jemanden mit physischem/Tailscale-Zugriff auf den Pi.
+
 ## Prüfungsbezug
 Nach dieser Challenge: Kurztest (20%), siehe [[Leistungsnachweise]]
 

@@ -4,7 +4,7 @@
     "type": "tab",
     "label": "Ice Truck - MQTT Bridge",
     "disabled": false,
-    "info": "Track C (#195): verbindet das Challenge-I-Pi-Backend (challenge_i.db) mit MQTT nach dem Topic-Schema aus Track B (#194, siehe ../mqtt-topics.md). Braucht die Node-RED-Palette \"node-red-node-sqlite\" (npm install node-red-node-sqlite im Node-RED-Userdir). Noch nicht gegen echten Broker/echte DB getestet - siehe README.md."
+    "info": "Track C (#195): verbindet das Challenge-I-Pi-Backend (challenge_i.db) mit MQTT nach dem aktualisierten Topic-Schema aus Track B (#194, siehe ../mqtt-topics.md - zwei kalibrierte Temperaturen, fan_pwm, valve_angle). Braucht die Node-RED-Palette \"node-red-node-sqlite\" (npm install node-red-node-sqlite im Node-RED-Userdir). Noch nicht auf dem Pi importiert bzw. gegen echten Broker/echte DB getestet - siehe README.md."
   },
   {
     "id": "broker1",
@@ -58,7 +58,7 @@
     "type": "function",
     "z": "tab1",
     "name": "Zeile -> MQTT-Topics (Track B)",
-    "func": "var row = msg.payload && msg.payload[0];\nif (!row) {\n    return null;\n}\nvar base = \"team13-1/icetruck/\";\nvar msgs = [\n    { topic: base + \"sensors/temperature_c\", payload: row.temperature_c, retain: true },\n    { topic: base + \"sensors/humidity_pct\", payload: row.humidity_pct, retain: true },\n    { topic: base + \"sensors/ldr_raw\", payload: row.ldr_raw, retain: true },\n    { topic: base + \"sensors/button\", payload: row.button, retain: true },\n    { topic: base + \"actuators/fan_pwm\", payload: row.fan_pwm, retain: true },\n    { topic: base + \"actuators/valve_angle\", payload: row.valve_angle, retain: true },\n    { topic: base + \"status\", payload: JSON.stringify(row), retain: true }\n];\nreturn [msgs];",
+    "func": "var row = msg.payload && msg.payload[0];\nif (!row) {\n    return null;\n}\nvar base = \"team13-1/icetruck/\";\nvar msgs = [\n    { topic: base + \"sensors/sensor_board_raw\", payload: row.sensor_board_raw, retain: true },\n    { topic: base + \"sensors/sensor_board_temp_c\", payload: row.sensor_board_temp_c, retain: true },\n    { topic: base + \"sensors/actor_board_raw\", payload: row.actor_board_raw, retain: true },\n    { topic: base + \"sensors/actor_board_temp_c\", payload: row.actor_board_temp_c, retain: true },\n    { topic: base + \"actuators/fan_pwm\", payload: row.fan_pwm, retain: true },\n    { topic: base + \"actuators/valve_angle\", payload: row.valve_angle, retain: true },\n    { topic: base + \"status\", payload: JSON.stringify(row), retain: true }\n];\nreturn [msgs];",
     "outputs": 1,
     "x": 590,
     "y": 100,
@@ -94,8 +94,8 @@
     "id": "fn_validate",
     "type": "function",
     "z": "tab1",
-    "name": "Validieren + loggen (bis #180 steht)",
-    "func": "var parts = msg.topic.split(\"/\");\nvar field = parts[3]; // \"mode\" | \"fan_pwm\" | \"valve_angle\"\nvar value = msg.payload;\n\nif (field === \"mode\") {\n    if (value !== \"auto\" && value !== \"manual\") {\n        node.warn(\"Ungueltiger mode: \" + value);\n        return null;\n    }\n} else if (field === \"fan_pwm\") {\n    value = Math.max(0, Math.min(255, parseInt(value, 10)));\n} else if (field === \"valve_angle\") {\n    value = Math.max(0, Math.min(180, parseInt(value, 10)));\n} else {\n    node.warn(\"Unbekanntes control-Topic: \" + msg.topic);\n    return null;\n}\n\n// TODO Issue #180: statt nur zu loggen, hier echten I2C-Write an den\n// Aktor-Arduino ausloesen, sobald hardware.py:write_actor_setpoints()\n// implementiert ist.\nvar record = { field: field, value: value, received_at: new Date().toISOString() };\nreturn [{ payload: record }, { payload: JSON.stringify(record) }];",
+    "name": "Validieren + loggen (I2C-Forwarding noch offen)",
+    "func": "var parts = msg.topic.split(\"/\");\nvar field = parts[3]; // \"mode\" | \"fan_pwm\" | \"valve_angle\"\nvar value = msg.payload;\n\nif (field === \"mode\") {\n    if (value !== \"auto\" && value !== \"manual\") {\n        node.warn(\"Ungueltiger mode: \" + value);\n        return null;\n    }\n} else if (field === \"fan_pwm\") {\n    value = Math.max(0, Math.min(255, parseInt(value, 10)));\n} else if (field === \"valve_angle\") {\n    value = Math.max(0, Math.min(180, parseInt(value, 10)));\n} else {\n    node.warn(\"Unbekanntes control-Topic: \" + msg.topic);\n    return null;\n}\n\n// TODO: Issue #180 ist erledigt, hardware.py:write_actor_setpoints() schreibt\n// bereits echt per I2C - hier fehlt nur noch der Schritt, der diese\n// validierten Befehle tatsaechlich an write_actor_setpoints() weiterreicht\n// (z.B. per Exec-Node/kleinem HTTP-Endpoint auf dem Pi-Backend).\nvar record = { field: field, value: value, received_at: new Date().toISOString() };\nreturn [{ payload: record }, { payload: JSON.stringify(record) }];",
     "outputs": 2,
     "x": 430,
     "y": 260,
