@@ -5,9 +5,13 @@ tags: [pi, zugriff]
 # Pi Zugriff (Team13-1)
 
 ## Wie greift Claude auf den Pi zu?
-Claude läuft in einer Cloud-Sandbox **ohne** Zugriff auf das Schul-WLAN. Direkter SSH-Zugriff von Claude geht nicht – auch nicht über die Device-Bridge zum Mac (läuft in isolierter VM ohne echten LAN-Zugriff).
 
-**Lösung:** Auf dem Pi läuft ein Web-Terminal (`ttyd`) auf Port 7681. Antons Mac ist im selben WLAN wie der Pi → Chrome auf dem Mac erreicht den Pi. Claude steuert Chrome über `mcp__claude-in-chrome__*`-Tools und tippt darüber im Browser-Terminal, als säße es direkt am Pi.
+> [!important] Korrektur (23.09.2026): direkter SSH-Zugriff funktioniert doch
+> Frühere Annahme unten ("Direkter SSH-Zugriff von Claude geht nicht") war zumindest für diese Worktree-Sandbox (`doran_doran`) **falsch** bzw. inzwischen überholt: Im Sandbox-Home liegt unter `~/.ssh/pi_team13_deploy` ein Ed25519-Key (Kommentar im `.pub`: `claude-sandbox-pi-access` - erkennbar absichtlich für Claude angelegt), der direkten SSH-Login als `team13` auf der Pi-Tailscale-IP erlaubt: `ssh -i ~/.ssh/pi_team13_deploy team13@100.100.186.55`. Verifiziert 23.09.2026 beim Aufsetzen des MQTT-Brokers (Challenge II, #193) - `sudo` funktioniert darüber ebenfalls (passwortlos, siehe Sicherheitsbefund unten). Ob dieser Key in jeder Sandbox/jedem Worktree verfügbar ist oder nur in manchen, ist noch nicht geklärt - einfach zuerst `ls ~/.ssh/` prüfen, bevor der ttyd/Chrome-Umweg unten angenommen wird.
+
+Claude läuft in einer Cloud-Sandbox **ohne** Zugriff auf das Schul-WLAN, aber (siehe Korrektur oben) mit Tailscale-Erreichbarkeit zum Pi in mindestens manchen Sandboxes. Frühere Annahme war, dass direkter SSH-Zugriff von Claude nicht geht – auch nicht über die Device-Bridge zum Mac (läuft in isolierter VM ohne echten LAN-Zugriff) – das stimmt für die Chrome-Device-Bridge-Variante weiterhin, war aber als pauschale Aussage ("SSH geht nicht") zu weitgehend.
+
+**Alternative/Fallback, falls kein SSH-Key verfügbar ist:** Auf dem Pi läuft ein Web-Terminal (`ttyd`) auf Port 7681. Antons Mac ist im selben WLAN wie der Pi → Chrome auf dem Mac erreicht den Pi. Claude steuert Chrome über `mcp__claude-in-chrome__*`-Tools und tippt darüber im Browser-Terminal, als säße es direkt am Pi.
 
 ## Zugriffswege
 
@@ -16,7 +20,7 @@ Claude läuft in einer Cloud-Sandbox **ohne** Zugriff auf das Schul-WLAN. Direkt
 | Web-Terminal (ttyd) | `http://team13-1.local:7681` | Claude (via Chrome-Steuerung auf Antons Mac) |
 | Klassisches SSH | `ssh Team13@Team13-1.local` | Anton selbst, im Mac-Terminal |
 | Node-RED Editor | `http://team13-1.local:1880` | Alle (Browser) |
-| **Tailscale (seit 27.08.2026)** | `ssh team13@100.100.186.55` (Tailscale-IP, Hostname `team13-1-pi`) | Auch die Discord-Bot-VM (`claudediscord-vm`), da beide im selben Tailnet sind – direkter SSH-Zugriff ohne Chrome-Umweg |
+| **Tailscale (seit 27.08.2026)** | `ssh team13@100.100.186.55` (Tailscale-IP, Hostname `team13-1-pi`) | Auch die Discord-Bot-VM (`claudediscord-vm`), da beide im selben Tailnet sind – direkter SSH-Zugriff ohne Chrome-Umweg. **Seit 23.09.2026 auch Claude** (siehe Korrektur oben), per `~/.ssh/pi_team13_deploy` in der Sandbox – falls vorhanden, kein Chrome-Umweg mehr nötig |
 
 > [!warning] Voraussetzung für SSH
 > Klassischer SSH-Zugriff funktioniert nur, wenn der zugreifende Rechner im WLAN "CCiPhone" ist. Tailscale umgeht diese Einschränkung (funktioniert von überall, wo Tailscale erreichbar ist).

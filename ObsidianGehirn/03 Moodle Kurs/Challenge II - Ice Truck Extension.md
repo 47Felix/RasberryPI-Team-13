@@ -45,6 +45,8 @@ Die Temperaturkontrolle soll während Fahrt- und Pausenzeiten nicht nur der Tech
 
 In 4 Tracks heruntergebrochen (#193-#196), siehe [[Issues - Übersicht]].
 
+**Track A (#193) erledigt (23.09.2026):** lokaler Mosquitto auf dem Pi war zwar schon installiert (siehe [[Installierte Services]]), aber nur von `localhost` erreichbar. Jetzt per zusätzlichem Listener (`0.0.0.0:1883`, Passwort-Auth, ACL auf `team13-1/#`) von jedem Gerät im Schul-WLAN/Tailscale erreichbar, end-to-end getestet. Details siehe `Challenge-II-Ice-Truck-Extension/Code/README.md`.
+
 ## Prüfungsbezug
 Nach dieser Challenge: Kurztest (20%), siehe [[Leistungsnachweise]]
 

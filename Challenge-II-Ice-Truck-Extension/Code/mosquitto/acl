@@ -1,0 +1,10 @@
+# Team13-1 Ice Truck (Challenge II, Track A #193): ACL fuer den team13-1-Nutzer.
+# Installiert nach /etc/mosquitto/acl auf dem Pi, siehe team13-icetruck.conf.
+#
+# Beschraenkt den einzigen MQTT-Nutzer auf das Team-Topic-Praefix, statt ihm
+# vollen Broker-Zugriff zu geben - deckt sowohl das existierende
+# team13-1/led/set (Node-RED-LED-Test) als auch das kommende
+# team13-1/icetruck/... Schema (mqtt-topics.md) ab.
+
+user team13-1
+topic readwrite team13-1/#
