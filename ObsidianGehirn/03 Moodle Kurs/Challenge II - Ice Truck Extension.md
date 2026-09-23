@@ -47,6 +47,8 @@ In 4 Tracks heruntergebrochen (#193-#196), siehe [[Issues - Übersicht]].
 
 **Track A (#193) erledigt (23.09.2026):** lokaler Mosquitto auf dem Pi war zwar schon installiert (siehe [[Installierte Services]]), aber nur von `localhost` erreichbar. Jetzt per zusätzlichem Listener (`0.0.0.0:1883`, Passwort-Auth, ACL auf `team13-1/#`) von jedem Gerät im Schul-WLAN/Tailscale erreichbar, end-to-end getestet. Details siehe `Challenge-II-Ice-Truck-Extension/Code/README.md`.
 
+**Track B (#194) erledigt (23.09.2026):** Topic-Schema (`mqtt-topics.md`) war seit dem 15.09. auf ein altes Sensor-Modell (Feuchtigkeit, Lichtsensor, Taster) ausgelegt – das gibt es seit den Challenge-I-Hardware-Updates (zwei KY-028-Boards statt DHT22, siehe [[Challenge I - Ice Truck Problem]]) nicht mehr. Jetzt an das echte `readings`-Schema aus `Challenge-I-Ice-Truck/Code/pi-backend/db.py` angepasst: zwei kalibrierte Temperaturen (`sensor_board_temp_c`, `actor_board_temp_c`) + Rohwerte, `fan_pwm`, `valve_angle`. Nebenbei den Status-Hinweis zu Issue #180 korrigiert (I2C-Write an den Aktor-Arduino ist seit dem Bugfix vom 18.09. erledigt, offen ist nur noch, dass der Node-RED-Flow ihn tatsächlich aufruft). Voraussetzung für Track C, das jetzt dran ist: `node-red/flows.json` (`fn_format`) publiziert noch die alten Feldnamen und muss auf das neue Schema umgestellt werden, bevor der Flow auf dem Pi importiert und gegen die echte `challenge_i.db` getestet wird.
+
 ## Prüfungsbezug
 Nach dieser Challenge: Kurztest (20%), siehe [[Leistungsnachweise]]
 
