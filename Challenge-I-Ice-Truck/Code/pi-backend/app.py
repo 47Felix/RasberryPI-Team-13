@@ -38,6 +38,15 @@ def run_once(bus: I2CBus, conn) -> tuple[int, int]:
     fan_pwm, valve_angle = rules.compute_setpoints(average_temp_c)
     bus.write_actor_setpoints(fan_pwm, valve_angle)
 
+    print(
+        f"DEBUG pi: sensor_raw={sensor_board_raw} ({sensor_board_temp_c:.1f}C) "
+        f"actor_raw={actor_board_raw} ({actor_board_temp_c:.1f}C) "
+        f"avg={average_temp_c:.1f}C fan_on_at={rules.FAN_ON_TEMP_C}C "
+        f"-> fan_pwm={fan_pwm} (should_run={'yes' if fan_pwm > 0 else 'no'}) "
+        f"valve_angle={valve_angle}",
+        flush=True,
+    )
+
     db.log_reading(
         conn,
         sensor_board_raw,

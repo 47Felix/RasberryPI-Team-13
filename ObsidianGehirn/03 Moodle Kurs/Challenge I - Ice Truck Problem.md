@@ -56,6 +56,8 @@ Ausserdem war die Aktor-Board-LED (D5) nie hell: `RAW_AT_LED_FULL`/`RAW_AT_LED_O
 
 **Code-Aufraeumung (22.09.2026, PR #215, gemergt):** Die `Hardware-Update`-Changelog-Kommentarbloecke am Kopf von `actor_arduino.ino`/`sensor_arduino.ino` wurden entfernt, da sie dieselbe Historie wie oben und in README "Hardware-Update 1-10" nur dupliziert haben und schnell veralten. Die Historie lebt jetzt ausschliesslich hier im Vault und im README, nicht mehr im Code selbst.
 
+**`pi-backend/rules.py` (Regellogik, ebenfalls im Zuge der Aufraeumung 22.09.2026 vom Docstring befreit):** `compute_setpoints()` ist ein Port von `computeCoolingStage()`/`applyCoolingStage()` aus `ice_truck_single_board.ino` (Issue #180), seit der I2C-Anbindung an den Pi verlagert vom Arduino auf den Pi. Die Standard-Schwellwerte (`FAN_ON_TEMP_C=25`, `VALVE_ON_TEMP_C=28`, `TEMP_SPAN_C=5`) sind fuer Tischtests bei Raumtemperatur (~23-24C, 2026-09-17) gewaehlt, damit man sie per Hand-Anwaermen der KY-028-Sensoren live durchfahren kann, **nicht** die eigentlichen Betriebs-Schwellwerte aus der Moodle-Aufgabenstellung (Issue #167) - die stehen noch aus. Ueber Umgebungsvariablen ohne Code-Aenderung anpassbar, z. B. `FAN_ON_TEMP_C=26 VALVE_ON_TEMP_C=29 ./venv/bin/python app.py`. Ein aelteres Zwei-Board-Modell mit LDR (Licht statt Temperatur) und Tuerkontakt ist raus, da es in der real verkabelten Hardware keine Entsprechung mehr hat (nur ein generischer Toggle-Taster ohne dokumentierten Kuehlungsbezug).
+
 ## Nächste Challenge
 → [[Challenge II - Ice Truck Extension]]
 

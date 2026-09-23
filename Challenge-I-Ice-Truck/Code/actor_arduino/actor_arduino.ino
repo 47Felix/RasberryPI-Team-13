@@ -13,10 +13,13 @@ const int RAW_AT_LED_OFF = 385;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 const unsigned long FAN_SOFT_PWM_PERIOD_MS = 20;
+const unsigned long DEBUG_PRINT_INTERVAL_MS = 1000;
 
 volatile int16_t latestKy028Raw = 0;
 volatile uint8_t currentFanPwm = 0;
+volatile uint8_t lastValveAngle = 0;
 unsigned long lastSensorUpdate = 0;
+unsigned long lastDebugPrint = 0;
 
 Servo valveServo;
 
@@ -47,6 +50,21 @@ void loop() {
 
   uint8_t brightness = constrain(map(latestKy028Raw, RAW_AT_LED_FULL, RAW_AT_LED_OFF, 255, 0), 0, 255);
   analogWrite(PIN_LED_KY028, brightness);
+
+  if (now - lastDebugPrint >= DEBUG_PRINT_INTERVAL_MS) {
+    lastDebugPrint = now;
+    bool fanPinIsOn = digitalRead(PIN_FAN_PWM) == LOW;
+    Serial.print("DEBUG actor: ky028_raw=");
+    Serial.print(latestKy028Raw);
+    Serial.print(" fan_pwm_setpoint=");
+    Serial.print(currentFanPwm);
+    Serial.print(" fan_should_run=");
+    Serial.print(currentFanPwm > 0 ? "yes" : "no");
+    Serial.print(" fan_pin_now=");
+    Serial.print(fanPinIsOn ? "ON(LOW)" : "OFF(HIGH)");
+    Serial.print(" valve_angle=");
+    Serial.println(lastValveAngle);
+  }
 }
 
 void updateFanSoftwarePwm() {
@@ -72,5 +90,6 @@ void applySetpointsFromPi(int numBytes) {
   uint8_t valveAngle = constrain(Wire.read(), 0, 180);
 
   currentFanPwm = fanPwm;
+  lastValveAngle = valveAngle;
   valveServo.write(valveAngle);
 }
