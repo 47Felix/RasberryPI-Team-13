@@ -8,8 +8,8 @@ const uint8_t PIN_LED_KY028 = 9;
 // Muss zu calibration.py SENSOR_BOARD_CALIBRATION passen (raw_high = warm/an,
 // raw_low = Ruhewert/aus) - sonst leuchtet die LED entweder durchgehend oder
 // gar nicht, weil der reale Rohwertbereich nie in Naehe der Grenzen kommt.
-const int RAW_AT_LED_FULL = 149;
-const int RAW_AT_LED_OFF = 182;
+const int RAW_AT_LED_FULL = 137;
+const int RAW_AT_LED_OFF = 170;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 

@@ -96,6 +96,23 @@ unruhig (149-226 im Zickzack statt einer glatten Rampe wie beim
 Aktor-Board) - moeglicherweise eine wackelige Verbindung. Kalibrierung
 alleine kann das nicht beheben; falls es sich wiederholt, Verkabelung
 pruefen statt nur nachzukalibrieren.
+
+Sensor-Board-Nachkalibrierung 2026-09-23, vierter Test (Felix): Ruhewert
+unberuehrt diesmal raw 170 -> 25.5C nach altem Ankerpunkt, waehrend das
+Aktor-Board zur gleichen Zeit unberuehrt 22.0C zeigte (Kreuzvergleich, da
+beide nebeneinander sitzen) - Sensor-Board also wieder zu warm kalibriert.
+Ruhepunkt erneut verschoben, Steigung unveraendert:
+  - Sensor-Board (0x08): 23.0C -> raw 170 (verschoben), 30.0C -> raw 137
+    (hochgerechnet, gleiche Steigung wie beim letzten Mal: 33 Counts/7C)
+
+Das ist jetzt die vierte Nachjustierung des Sensor-Board-Ruhewerts an einem
+Tag - koennte echte Raumtemperaturschwankung im Tagesverlauf sein (dann ist
+haeufiges Nachjustieren einfach normal und kein Fehler), koennte aber auch
+zur oben vermuteten wackeligen Verbindung passen (instabiler Kontakt macht
+den Ruhewert selbst instabil, nicht nur die Werte waehrend Beruehrung).
+Falls das Nachjustieren so haeufig weitergeht: Verkabelung/Steckverbindung
+am Sensor-Board-KY-028 physisch pruefen, nicht nur weiter Konstanten
+anpassen.
 """
 
 from __future__ import annotations
@@ -103,9 +120,9 @@ from __future__ import annotations
 # (Rohwert, Temperatur in Grad C) je Referenzpunkt, niedriger und hoeherer
 # Punkt.
 SENSOR_BOARD_CALIBRATION = {
-    "raw_low": 182.0,
+    "raw_low": 170.0,
     "temp_low_c": 23.0,
-    "raw_high": 149.0,
+    "raw_high": 137.0,
     "temp_high_c": 30.0,
 }
 
