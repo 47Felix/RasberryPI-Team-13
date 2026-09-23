@@ -41,11 +41,14 @@ bis zum nächsten Poll-Zyklus (5s, siehe `app.py: POLL_INTERVAL_SECONDS`) zu war
 **Status (23.09.2026):** Issue [#180](https://github.com/47Felix/RasberryPI-Team-13/issues/180)
 ist erledigt - `hardware.py: write_actor_setpoints()` schreibt die Sollwerte seit dem
 I2C-Bugfix vom 18.09. tatsächlich per I2C an den Aktor-Arduino (siehe
-`Challenge-I-Ice-Truck/Code/README.md`, Hardware-Update 6). Offen ist noch die
-Verdrahtung auf der MQTT-Seite: Der Node-RED-Flow (Track C, #195) nimmt die
-`control/*`-Befehle entgegen, validiert und loggt sie nach `control_log.ndjson`,
-ruft daraus aber noch nicht `write_actor_setpoints()` auf - das ist der nächste
-Schritt in Track C, nicht mehr durch #180 blockiert.
+`Challenge-I-Ice-Truck/Code/README.md`, Hardware-Update 6). Die MQTT-Verdrahtung ist
+jetzt fertig: Der Node-RED-Flow (Track C, #195) validiert `control/*`-Befehle, loggt
+sie weiterhin nach `control_log.ndjson` und ruft zusätzlich per Exec-Node
+`pi-backend/set_control.py` auf, das `pi-backend/control_state.json` schreibt.
+`app.py` (Challenge-I-Regelkreis) liest diesen Zustand jeden Poll-Zyklus (5s) und
+verwendet bei `mode == "manual"` die manuellen `fan_pwm`/`valve_angle`-Werte statt der
+`rules.py`-Sollwerte. Noch **nicht** auf dem Pi importiert/gegen echte Hardware
+getestet - siehe `Code/README.md`, Abschnitt "Was noch fehlt".
 
 ## Beispiel-Payload für `status`
 

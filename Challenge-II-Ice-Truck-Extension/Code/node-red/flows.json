@@ -4,7 +4,7 @@
     "type": "tab",
     "label": "Ice Truck - MQTT Bridge",
     "disabled": false,
-    "info": "Track C (#195): verbindet das Challenge-I-Pi-Backend (challenge_i.db) mit MQTT nach dem aktualisierten Topic-Schema aus Track B (#194, siehe ../mqtt-topics.md - zwei kalibrierte Temperaturen, fan_pwm, valve_angle). Braucht die Node-RED-Palette \"node-red-node-sqlite\" (npm install node-red-node-sqlite im Node-RED-Userdir). Noch nicht auf dem Pi importiert bzw. gegen echten Broker/echte DB getestet - siehe README.md."
+    "info": "Track C (#195): verbindet das Challenge-I-Pi-Backend (challenge_i.db) mit MQTT nach dem aktualisierten Topic-Schema aus Track B (#194, siehe ../mqtt-topics.md - zwei kalibrierte Temperaturen, fan_pwm, valve_angle). Braucht die Node-RED-Palette \"node-red-node-sqlite\" (npm install node-red-node-sqlite im Node-RED-Userdir). control/*-Befehle werden validiert, geloggt (control_log.ndjson) und per exec1 an set_control.py weitergereicht, das ../../Challenge-I-Ice-Truck/Code/pi-backend/control_state.json schreibt - app.py (Challenge-I-Regelkreis) liest das jeden Poll-Zyklus und wendet die manuellen Sollwerte bei mode == \"manual\" tatsaechlich per I2C an. Noch nicht auf dem Pi importiert bzw. gegen echten Broker/echte DB/echte Hardware getestet - siehe README.md."
   },
   {
     "id": "broker1",
@@ -22,7 +22,7 @@
     "id": "db1",
     "type": "sqlitedb",
     "name": "challenge_i.db",
-    "db": "/home/pi/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db",
+    "db": "/home/team13/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db",
     "mode": "RWC"
   },
   {
@@ -94,12 +94,12 @@
     "id": "fn_validate",
     "type": "function",
     "z": "tab1",
-    "name": "Validieren + loggen (I2C-Forwarding noch offen)",
-    "func": "var parts = msg.topic.split(\"/\");\nvar field = parts[3]; // \"mode\" | \"fan_pwm\" | \"valve_angle\"\nvar value = msg.payload;\n\nif (field === \"mode\") {\n    if (value !== \"auto\" && value !== \"manual\") {\n        node.warn(\"Ungueltiger mode: \" + value);\n        return null;\n    }\n} else if (field === \"fan_pwm\") {\n    value = Math.max(0, Math.min(255, parseInt(value, 10)));\n} else if (field === \"valve_angle\") {\n    value = Math.max(0, Math.min(180, parseInt(value, 10)));\n} else {\n    node.warn(\"Unbekanntes control-Topic: \" + msg.topic);\n    return null;\n}\n\n// TODO: Issue #180 ist erledigt, hardware.py:write_actor_setpoints() schreibt\n// bereits echt per I2C - hier fehlt nur noch der Schritt, der diese\n// validierten Befehle tatsaechlich an write_actor_setpoints() weiterreicht\n// (z.B. per Exec-Node/kleinem HTTP-Endpoint auf dem Pi-Backend).\nvar record = { field: field, value: value, received_at: new Date().toISOString() };\nreturn [{ payload: record }, { payload: JSON.stringify(record) }];",
-    "outputs": 2,
+    "name": "Validieren + loggen + I2C-Forwarding",
+    "func": "var parts = msg.topic.split(\"/\");\nvar field = parts[3]; // \"mode\" | \"fan_pwm\" | \"valve_angle\"\nvar value = msg.payload;\n\nif (field === \"mode\") {\n    if (value !== \"auto\" && value !== \"manual\") {\n        node.warn(\"Ungueltiger mode: \" + value);\n        return null;\n    }\n} else if (field === \"fan_pwm\") {\n    value = Math.max(0, Math.min(255, parseInt(value, 10)));\n} else if (field === \"valve_angle\") {\n    value = Math.max(0, Math.min(180, parseInt(value, 10)));\n} else {\n    node.warn(\"Unbekanntes control-Topic: \" + msg.topic);\n    return null;\n}\n\n// Dritter Output: uebergibt field/value als Array an den exec1-Node, der\n// set_control.py (pi-backend/control_state.py) aufruft - dieser schreibt\n// control_state.json, das app.py (Challenge-I-Regelkreis) jeden Poll-\n// Zyklus liest und bei mode == \"manual\" statt der rules.py-Sollwerte\n// tatsaechlich per I2C an write_actor_setpoints() weiterreicht.\nvar record = { field: field, value: value, received_at: new Date().toISOString() };\nreturn [\n    { payload: record },\n    { payload: JSON.stringify(record) },\n    { payload: [field, String(value)] }\n];",
+    "outputs": 3,
     "x": 430,
     "y": 260,
-    "wires": [["debug1"], ["file1"]]
+    "wires": [["debug1"], ["file1"], ["exec1"]]
   },
   {
     "id": "debug1",
@@ -127,5 +127,34 @@
     "x": 690,
     "y": 300,
     "wires": [[]]
+  },
+  {
+    "id": "exec1",
+    "type": "exec",
+    "z": "tab1",
+    "command": "python3 /home/team13/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/set_control.py",
+    "addpay": true,
+    "append": "",
+    "useSpawn": "true",
+    "timer": "",
+    "winHide": false,
+    "oldrc": false,
+    "name": "set_control.py (I2C-Forwarding)",
+    "x": 700,
+    "y": 380,
+    "wires": [[], ["debug_exec_err1"], []]
+  },
+  {
+    "id": "debug_exec_err1",
+    "type": "debug",
+    "z": "tab1",
+    "name": "set_control.py Fehler",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "complete": "payload",
+    "x": 970,
+    "y": 380,
+    "wires": []
   }
 ]
