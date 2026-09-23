@@ -53,7 +53,7 @@ void loop() {
 
   if (now - lastDebugPrint >= DEBUG_PRINT_INTERVAL_MS) {
     lastDebugPrint = now;
-    bool fanPinIsOn = digitalRead(PIN_FAN_PWM) == LOW;
+    bool fanPinIsOn = digitalRead(PIN_FAN_PWM) == HIGH;
     Serial.print("DEBUG actor: ky028_raw=");
     Serial.print(latestKy028Raw);
     Serial.print(" fan_pwm_setpoint=");
@@ -61,7 +61,7 @@ void loop() {
     Serial.print(" fan_should_run=");
     Serial.print(currentFanPwm > 0 ? "yes" : "no");
     Serial.print(" fan_pin_now=");
-    Serial.print(fanPinIsOn ? "ON(LOW)" : "OFF(HIGH)");
+    Serial.print(fanPinIsOn ? "ON(HIGH)" : "OFF(LOW)");
     Serial.print(" valve_angle=");
     Serial.println(lastValveAngle);
   }
@@ -70,7 +70,7 @@ void loop() {
 void updateFanSoftwarePwm() {
   unsigned long cyclePosMs = millis() % FAN_SOFT_PWM_PERIOD_MS;
   unsigned long onTimeMs = (unsigned long)currentFanPwm * FAN_SOFT_PWM_PERIOD_MS / 255;
-  digitalWrite(PIN_FAN_PWM, cyclePosMs < onTimeMs ? LOW : HIGH);
+  digitalWrite(PIN_FAN_PWM, cyclePosMs < onTimeMs ? HIGH : LOW);
 }
 
 void sendKy028DataToPi() {
