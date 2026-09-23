@@ -29,8 +29,8 @@ nicht angebunden (Issue #180, Teil von Challenge I).
 
 | Datei | Track(s) | Inhalt |
 |---|---|---|
-| `mqtt-topics.md` | B (#194) | Vollständiges Topic-Schema: welche Werte werden publiziert, welche Control-Topics nimmt der Pi entgegen (**veraltet**, siehe "Was noch fehlt") |
-| `node-red/flows.json` | C (#195) | Node-RED-Flow: liest alle 5s die letzte Zeile aus `challenge_i.db`, publiziert sie auf die Topics aus `mqtt-topics.md`; nimmt `control/#`-Befehle entgegen, validiert sie und loggt sie nach `control_log.ndjson` (noch nicht auf dem Pi importiert) |
+| `mqtt-topics.md` | B (#194) | Vollständiges Topic-Schema: welche Werte werden publiziert, welche Control-Topics nimmt der Pi entgegen (aktualisiert 23.09.2026 auf das echte `db.py`-Datenmodell, siehe unten) |
+| `node-red/flows.json` | C (#195) | Node-RED-Flow: liest alle 5s die letzte Zeile aus `challenge_i.db`, publiziert sie auf die Topics aus `mqtt-topics.md`; nimmt `control/#`-Befehle entgegen, validiert sie und loggt sie nach `control_log.ndjson` (noch nicht auf dem Pi importiert, **`fn_format` publiziert noch die alten Feldnamen** - Teil von Track C) |
 | `mosquitto/team13-icetruck.conf`, `mosquitto/acl` | A (#193) | Auf dem Pi installierte Mosquitto-Zusatzkonfiguration (externer Listener, Auth, ACL) - Spiegel dessen, was unter `/etc/mosquitto/conf.d/` bzw. `/etc/mosquitto/acl` liegt |
 
 ## Node-RED-Flow importieren
@@ -66,14 +66,17 @@ siehe [[⚠️ Zugangsdaten - Hinweis]].
 ## Was noch fehlt (braucht Hardware-Zugriff bzw. Issue #180)
 
 - **Echter End-to-End-Test** des Node-RED-Bridge-Flows (`node-red/flows.json`, Track C #195) gegen die laufende `challenge_i.db` - der Flow selbst ist noch nicht auf dem Pi importiert
-- **Topic-Schema aktualisieren** (`mqtt-topics.md`): bezieht sich noch auf das alte Sensor-Modell (Feuchtigkeit, Lichtsensor, Taster) von vor den Challenge-I-Hardware-Updates - muss an das aktuelle Schema aus `Challenge-I-Ice-Truck/Code/pi-backend/db.py` angepasst werden (zwei kalibrierte Temperaturen, Lüfter-PWM, Ventilwinkel)
+- **Node-RED-Flow an das aktualisierte Topic-Schema anpassen** (Track C, #195): `fn_format` in `node-red/flows.json` publiziert noch die alten Feldnamen (`temperature_c`, `humidity_pct`, `ldr_raw`, `button`) - muss auf die Spalten aus `mqtt-topics.md`/`db.py` umgestellt werden (`sensor_board_raw`/`sensor_board_temp_c`, `actor_board_raw`/`actor_board_temp_c`, `fan_pwm`, `valve_angle`), danach Import auf dem Pi + DB-Pfad/Broker-Credentials anpassen + gegen die echte `challenge_i.db` testen
 - **Aktor-Fernsteuerung tatsächlich wirksam machen**: `control_log.ndjson` wird aktuell nur geschrieben, aber nichts steuert davon ausgehend den Aktor-Arduino. Der ursprüngliche Blocker (Issue [#180](https://github.com/47Felix/RasberryPI-Team-13/issues/180), `hardware.py: write_actor_setpoints()` war `NotImplementedError`) ist inzwischen erledigt - die I2C-Schreibfunktion funktioniert seit dem I2C-Bugfix vom 18.09. (siehe `Challenge-I-Ice-Truck/Code/README.md`, Hardware-Update 6). Der Node-RED-Flow muss also nur noch um den Schritt erweitert werden, der die MQTT-Befehle tatsächlich an `write_actor_setpoints()` weiterreicht.
 - **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – Screenshots/Kurzanleitung im Vault, sobald ein Gerät verfügbar ist
 
 ## Status
 
 Broker ist aufgesetzt, gesichert und end-to-end getestet (Track A, #193 -
-siehe oben). Topic-Schema und Node-RED-Bridge-Flow sind entworfen und
-committet, aber **veraltet bzw. ungetestet** - nächster Schritt: Schema
-aktualisieren, Flow importieren + Pfade anpassen, gegen die echte
-`challenge_i.db` und den jetzt laufenden Broker testen.
+siehe oben). Topic-Schema (Track B, #194) ist jetzt auf das echte
+`db.py`-Datenmodell aktualisiert. Node-RED-Bridge-Flow (Track C, #195) ist
+entworfen und committet, aber noch **nicht** auf das neue Schema umgestellt
+und **ungetestet** - nächster Schritt: `fn_format` in `flows.json` auf die
+neuen Feldnamen umstellen, Flow auf dem Pi importieren + DB-Pfad/Broker-
+Credentials anpassen, gegen die echte `challenge_i.db` und den jetzt
+laufenden Broker testen.
