@@ -87,7 +87,8 @@ void applySetpointsFromPi(int numBytes) {
   }
 
   uint8_t fanPwm = Wire.read();
-  uint8_t valveAngle = constrain(Wire.read(), 0, 180);
+  int rawValveAngle = Wire.read();
+  uint8_t valveAngle = constrain(rawValveAngle, 0, 180);
 
   currentFanPwm = fanPwm;
   lastValveAngle = valveAngle;
