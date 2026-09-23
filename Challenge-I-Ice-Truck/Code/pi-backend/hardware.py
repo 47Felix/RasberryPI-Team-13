@@ -9,8 +9,10 @@ Zwei-Board-Aufbau (siehe README "Hardware-Update 5"), zwei I2C-Adressen,
 beide jetzt mit demselben Sensorprinzip (KY-028, unkalibrierter Analog-
 wert - der DHT22 auf dem Aktor-Board gab nie eine gueltige Messung und
 wurde durch ein zweites KY-028 ersetzt, siehe README):
-  - SENSOR_ARDUINO_ADDRESS (0x08, sensor_arduino.ino): KY-028-Rohwert.
-    Lese-Format 2 Bytes.
+  - SENSOR_ARDUINO_ADDRESS (0x08, sensor_arduino.ino): KY-028-Rohwert
+    plus digitaler KY-028-Ausgang (D0, an D11 verkabelt, siehe README
+    "Sensor-Board KY-028 D0"). Lese-Format 3 Bytes: highByte(raw),
+    lowByte(raw), digital (0/1).
   - ACTOR_ARDUINO_ADDRESS (0x09, actor_arduino.ino): KY-028-Rohwert (2.
     Sensor) und nimmt Luefter-/Ventil-Sollwerte entgegen. Lese-Format 2
     Bytes, Schreib-Format 3 Bytes.
@@ -61,7 +63,7 @@ I2C_RETRY_DELAY_SECONDS = 0.05
 
 
 class I2CBus:
-    def read_sensor_board(self) -> int:
+    def read_sensor_board(self) -> tuple[int, int]:
         raise NotImplementedError
 
     def read_actor_board(self) -> int:
@@ -100,9 +102,9 @@ class RealI2CBus(I2CBus):
         assert last_error is not None
         raise last_error
 
-    def read_sensor_board(self) -> int:
-        data = self._read_block_with_retry(SENSOR_ARDUINO_ADDRESS, 2)
-        return (data[0] << 8) | data[1]
+    def read_sensor_board(self) -> tuple[int, int]:
+        data = self._read_block_with_retry(SENSOR_ARDUINO_ADDRESS, 3)
+        return (data[0] << 8) | data[1], data[2]
 
     def read_actor_board(self) -> int:
         data = self._read_block_with_retry(ACTOR_ARDUINO_ADDRESS, 2)
@@ -123,13 +125,15 @@ class MockI2CBus(I2CBus):
         self,
         sensor_board_raw: int = 300,
         actor_board_raw: int = 300,
+        sensor_board_digital: int = 0,
     ) -> None:
         self.sensor_board_raw = sensor_board_raw
         self.actor_board_raw = actor_board_raw
+        self.sensor_board_digital = sensor_board_digital
         self.last_actor_setpoints: tuple[int, int] | None = None
 
-    def read_sensor_board(self) -> int:
-        return self.sensor_board_raw
+    def read_sensor_board(self) -> tuple[int, int]:
+        return self.sensor_board_raw, self.sensor_board_digital
 
     def read_actor_board(self) -> int:
         return self.actor_board_raw
