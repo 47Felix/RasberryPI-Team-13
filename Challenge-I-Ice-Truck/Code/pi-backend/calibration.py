@@ -78,6 +78,24 @@ Rohwert verschoben:
 
 Weiterhin nur Schaetzungen ohne Referenzthermometer. Sobald eins verfuegbar
 ist: frische 2-Punkt-Messung statt weiter nachzujustieren.
+
+Sensor-Board-Nachkalibrierung 2026-09-23, dritter Test (Felix): Aktor-Board
+bestaetigt jetzt korrekt (Ruhewert ~214-217, faellt sauber auf ~175-184
+bei Fingerkuppe). Sensor-Board-Ruhewert war zu Testbeginn (~226 -> 19.4C)
+schon wieder tiefer gedriftet als der 2026-09-23-Ankerpunkt (199 -> 23.0C)
+annahm, und pendelt sich nach Loslassen bei ~180-182 ein statt zurueck auf
+199 - also erneuter Offset-Drift, gleiches Muster wie beim Aktor-Board.
+Ankerpunkte diesmal direkt aus diesem Testlauf uebernommen statt nur
+verschoben (Ruhepunkt: settled-Wert am Testende; Kontaktpunkt: niedrigster
+beobachteter Rohwert waehrend Fingerkuppen-Kontakt):
+  - Sensor-Board (0x08): 23.0C -> raw 182 (Ruhe, settled am Testende),
+    30.0C -> raw 149 (Fingerkuppe, Minimum im Testlauf)
+
+Die Zwischenwerte beim Sensor-Board waren waehrend des Kontakts recht
+unruhig (149-226 im Zickzack statt einer glatten Rampe wie beim
+Aktor-Board) - moeglicherweise eine wackelige Verbindung. Kalibrierung
+alleine kann das nicht beheben; falls es sich wiederholt, Verkabelung
+pruefen statt nur nachzukalibrieren.
 """
 
 from __future__ import annotations
@@ -85,9 +103,9 @@ from __future__ import annotations
 # (Rohwert, Temperatur in Grad C) je Referenzpunkt, niedriger und hoeherer
 # Punkt.
 SENSOR_BOARD_CALIBRATION = {
-    "raw_low": 199.0,
+    "raw_low": 182.0,
     "temp_low_c": 23.0,
-    "raw_high": 147.0,
+    "raw_high": 149.0,
     "temp_high_c": 30.0,
 }
 

@@ -5,8 +5,11 @@ const uint8_t I2C_SLAVE_ADDRESS = 0x08;
 const uint8_t PIN_KY028_ANALOG = A0;
 const uint8_t PIN_LED_KY028 = 9;
 
-const int RAW_AT_LED_FULL = 160;
-const int RAW_AT_LED_OFF = 457;
+// Muss zu calibration.py SENSOR_BOARD_CALIBRATION passen (raw_high = warm/an,
+// raw_low = Ruhewert/aus) - sonst leuchtet die LED entweder durchgehend oder
+// gar nicht, weil der reale Rohwertbereich nie in Naehe der Grenzen kommt.
+const int RAW_AT_LED_FULL = 149;
+const int RAW_AT_LED_OFF = 182;
 
 const unsigned long SENSOR_UPDATE_INTERVAL_MS = 200;
 
