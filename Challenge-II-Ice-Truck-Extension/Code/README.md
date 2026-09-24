@@ -21,24 +21,30 @@ Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db (SQLite)
    (keine Eigenbau-App noetig - Aufgabenstellung nennt beide explizit)
 ```
 
-Rueckweg (Fernsteuerung der Aktoren) laeuft ueber dieselbe Bruecke, aber siehe
-"Was noch fehlt" - das eigentliche I2C-Schreiben an den Aktor-Arduino ist noch
-nicht angebunden (Issue #180, Teil von Challenge I).
+Rueckweg (Fernsteuerung der Aktoren) laeuft ueber dieselbe Bruecke: der
+Node-RED-Flow ruft fuer jeden validierten `control/*`-Befehl per Exec-Node
+`Challenge-I-Ice-Truck/Code/pi-backend/set_control.py` auf, das
+`control_state.json` schreibt - `app.py` (Challenge-I-Regelkreis) liest das
+jeden Poll-Zyklus und schreibt bei `mode == "manual"` die manuellen
+Sollwerte tatsaechlich per I2C an den Aktor-Arduino (Issue #180 ist erledigt,
+siehe unten). Noch nicht auf echter Hardware getestet - siehe "Was noch fehlt".
 
 ## Was existiert
 
 | Datei | Track(s) | Inhalt |
 |---|---|---|
-| `mqtt-topics.md` | B (#194) | Vollständiges Topic-Schema: welche Werte werden publiziert, welche Control-Topics nimmt der Pi entgegen (**veraltet**, siehe "Was noch fehlt") |
-| `node-red/flows.json` | C (#195) | Node-RED-Flow: liest alle 5s die letzte Zeile aus `challenge_i.db`, publiziert sie auf die Topics aus `mqtt-topics.md`; nimmt `control/#`-Befehle entgegen, validiert sie und loggt sie nach `control_log.ndjson` (noch nicht auf dem Pi importiert) |
+| `mqtt-topics.md` | B (#194) | Vollständiges Topic-Schema: welche Werte werden publiziert, welche Control-Topics nimmt der Pi entgegen (aktualisiert 23.09.2026 auf das echte `db.py`-Datenmodell, siehe unten) |
+| `node-red/flows.json` | C (#195) | Node-RED-Flow: liest alle 5s die letzte Zeile aus `challenge_i.db`, publiziert sie auf die Topics aus `mqtt-topics.md` (`fn_format` seit 23.09.2026 auf die neuen Feldnamen umgestellt); nimmt `control/#`-Befehle entgegen, validiert sie, loggt sie nach `control_log.ndjson` und reicht sie seit 23.09.2026 per Exec-Node (`exec1`) an `set_control.py` weiter, das den Aktor-Arduino tatsaechlich manuell fernsteuert (noch nicht auf dem Pi importiert/getestet) |
+| `../../Challenge-I-Ice-Truck/Code/pi-backend/control_state.py`, `set_control.py` | C (#195) | Geteilter Zustand (`control_state.json`) zwischen Node-RED und `app.py`: `set_control.py` (vom Exec-Node aufgerufen) schreibt Modus/Sollwerte, `app.py` liest sie jeden Poll-Zyklus und wendet sie bei `mode == "manual"` per I2C an statt der `rules.py`-Sollwerte |
 | `mosquitto/team13-icetruck.conf`, `mosquitto/acl` | A (#193) | Auf dem Pi installierte Mosquitto-Zusatzkonfiguration (externer Listener, Auth, ACL) - Spiegel dessen, was unter `/etc/mosquitto/conf.d/` bzw. `/etc/mosquitto/acl` liegt |
 
 ## Node-RED-Flow importieren
 
 1. Node-RED-Palette `node-red-node-sqlite` installieren (Menü → Palette verwalten → Installieren)
 2. `node-red/flows.json` über Menü → Import einlesen
-3. Im `sqlitedb`-Konfigurationsknoten (`challenge_i.db`) den Pfad an den tatsächlichen Speicherort von `challenge_i.db` auf dem Pi anpassen (aktuell als Platzhalter `/home/pi/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db` eingetragen)
+3. Im `sqlitedb`-Konfigurationsknoten (`challenge_i.db`) prüfen, dass der Pfad zum tatsächlichen Speicherort von `challenge_i.db` auf dem Pi passt - eingetragen ist `/home/team13/RasberryPI-Team-13/Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db`, abgeglichen mit `WorkingDirectory` in `challenge-i-backend.service` (23.09.2026 korrigiert, vorher stand hier faelschlich ein `/home/pi/...`-Platzhalter)
 4. Im `mqtt-broker`-Konfigurationsknoten `localhost:1883` mit den `team13-1`-Zugangsdaten eintragen (Broker läuft, siehe "Broker aufgesetzt und getestet" unten) - für einen Flow direkt auf dem Pi reicht `localhost`, für Zugriff von außerhalb die Tailscale-IP/den Hostnamen des Pi verwenden
+5. Im `exec1`-Node (`set_control.py (I2C-Forwarding)`) prüfen, dass der `python3`, der `set_control.py` ausführt, dieselbe Umgebung/denselben `venv` wie `app.py` nutzt (siehe `challenge-i-backend.service: ExecStart`) - sonst könnte z.B. ein fehlendes Paket den Aufruf lautlos scheitern lassen (Fehler landen im `set_control.py Fehler`-Debug-Node)
 
 ## Broker aufgesetzt und getestet (Track A, #193, 23.09.2026)
 
@@ -63,17 +69,23 @@ siehe [[⚠️ Zugangsdaten - Hinweis]].
 
 **Nebenbei gefixt:** Der bestehende Node-RED-Flow „LED via MQTT“ (`team13-1/led/set`, aus dem August-Kurzprojekt) verband sich bisher anonym mit `localhost:1883` und wäre durch `allow_anonymous false` sofort abgerissen. Credentials für den `mqtt-broker`-Konfigurationsknoten wurden per Node-RED-Admin-API (`POST /flows`, inkl. `credentials`-Feld für den Knoten) nachgetragen und deployed - Flow läuft wieder, jetzt authentifiziert statt anonym.
 
-## Was noch fehlt (braucht Hardware-Zugriff bzw. Issue #180)
+## Was noch fehlt (braucht Hardware-/Pi-Zugriff)
 
-- **Echter End-to-End-Test** des Node-RED-Bridge-Flows (`node-red/flows.json`, Track C #195) gegen die laufende `challenge_i.db` - der Flow selbst ist noch nicht auf dem Pi importiert
-- **Topic-Schema aktualisieren** (`mqtt-topics.md`): bezieht sich noch auf das alte Sensor-Modell (Feuchtigkeit, Lichtsensor, Taster) von vor den Challenge-I-Hardware-Updates - muss an das aktuelle Schema aus `Challenge-I-Ice-Truck/Code/pi-backend/db.py` angepasst werden (zwei kalibrierte Temperaturen, Lüfter-PWM, Ventilwinkel)
-- **Aktor-Fernsteuerung tatsächlich wirksam machen**: `control_log.ndjson` wird aktuell nur geschrieben, aber nichts steuert davon ausgehend den Aktor-Arduino. Der ursprüngliche Blocker (Issue [#180](https://github.com/47Felix/RasberryPI-Team-13/issues/180), `hardware.py: write_actor_setpoints()` war `NotImplementedError`) ist inzwischen erledigt - die I2C-Schreibfunktion funktioniert seit dem I2C-Bugfix vom 18.09. (siehe `Challenge-I-Ice-Truck/Code/README.md`, Hardware-Update 6). Der Node-RED-Flow muss also nur noch um den Schritt erweitert werden, der die MQTT-Befehle tatsächlich an `write_actor_setpoints()` weiterreicht.
+- **Echter End-to-End-Test** des Node-RED-Bridge-Flows (`node-red/flows.json`, Track C #195) gegen die laufende `challenge_i.db` und den echten Aktor-Arduino - der Flow ist inhaltlich fertig (Publish + Fernsteuerung, siehe oben), aber noch nicht auf dem Pi importiert. Braucht direkten Zugriff auf die Node-RED-Instanz des Pi (Palette installieren, Import, `sqlitedb`-Pfad + `mqtt-broker`-Credentials im laufenden Node-RED eintragen, siehe "Node-RED-Flow importieren" oben) - das kann nicht aus diesem Repo-Checkout heraus erledigt werden, sondern muss jemand mit Pi-/Node-RED-Zugriff machen. Insbesondere ungetestet: ob der `exec1`-Node mit dem auf dem Pi installierten `python3` (und dessen `venv`, falls noetig - siehe `challenge-i-backend.service`) tatsaechlich `set_control.py` ausfuehren kann.
 - **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – Screenshots/Kurzanleitung im Vault, sobald ein Gerät verfügbar ist
 
 ## Status
 
 Broker ist aufgesetzt, gesichert und end-to-end getestet (Track A, #193 -
-siehe oben). Topic-Schema und Node-RED-Bridge-Flow sind entworfen und
-committet, aber **veraltet bzw. ungetestet** - nächster Schritt: Schema
-aktualisieren, Flow importieren + Pfade anpassen, gegen die echte
-`challenge_i.db` und den jetzt laufenden Broker testen.
+siehe oben). Topic-Schema (Track B, #194) ist auf das echte `db.py`-
+Datenmodell aktualisiert. Node-RED-Bridge-Flow (Track C, #195) ist
+inhaltlich fertig: Publish der Sensordaten UND Fernsteuerung (Handy →
+`control_state.json` → `app.py` → I2C) sind verdrahtet, `set_control.py`/
+`control_state.py` sind per `pytest` getestet (15/15 gruen). **Noch nicht
+auf dem Pi importiert und nicht gegen echte Hardware getestet** - nächster
+Schritt: jemand mit Zugriff auf die Pi-Node-RED-Instanz importiert
+`flows.json`, trägt DB-Pfad + Broker-Credentials ein (siehe "Node-RED-Flow
+importieren" oben) und testet gegen die echte `challenge_i.db`, den
+laufenden Broker und den Aktor-Arduino (z.B. per MQTT Dash/Explorer
+`control/mode/set` auf `manual` setzen, dann `fan_pwm`/`valve_angle`
+schicken und pruefen ob Luefter/Servo reagieren).

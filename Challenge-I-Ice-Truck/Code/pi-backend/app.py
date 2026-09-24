@@ -13,6 +13,11 @@ Ohne echte Hardware NICHT lauffaehig (RealI2CBus braucht smbus2 + einen
 tatsaechlichen I2C-Bus) - fuer den echten Betrieb auf dem Pi siehe
 README.md. Die Logik selbst (rules.py, db.py) ist ueber tests/ ohne
 Hardware verifiziert.
+
+Fernsteuerung vom Handy (Challenge II, Track C, #195): control_state.py
+haelt einen von der Node-RED-Bridge geschriebenen Modus (auto/manual) plus
+manuelle Sollwerte. Bei mode == "manual" ueberschreiben diese die aus
+rules.py berechneten Sollwerte, bevor sie per I2C geschrieben werden.
 """
 
 from __future__ import annotations
@@ -20,6 +25,7 @@ from __future__ import annotations
 import time
 
 import calibration
+import control_state
 import db
 import rules
 from hardware import I2CBus, RealI2CBus
@@ -35,14 +41,20 @@ def run_once(bus: I2CBus, conn) -> tuple[int, int]:
     actor_board_temp_c = calibration.actor_board_celsius(actor_board_raw)
 
     average_temp_c = (sensor_board_temp_c + actor_board_temp_c) / 2
-    fan_pwm, valve_angle = rules.compute_setpoints(average_temp_c)
+    auto_fan_pwm, auto_valve_angle = rules.compute_setpoints(average_temp_c)
+
+    control = control_state.read_state()
+    if control["mode"] == "manual":
+        fan_pwm, valve_angle = control["fan_pwm"], control["valve_angle"]
+    else:
+        fan_pwm, valve_angle = auto_fan_pwm, auto_valve_angle
     bus.write_actor_setpoints(fan_pwm, valve_angle)
 
     print(
         f"DEBUG pi: sensor_raw={sensor_board_raw} ({sensor_board_temp_c:.1f}C) "
         f"sensor_digital={sensor_board_digital} "
         f"actor_raw={actor_board_raw} ({actor_board_temp_c:.1f}C) "
-        f"avg={average_temp_c:.1f}C fan_on_at={rules.FAN_ON_TEMP_C}C "
+        f"avg={average_temp_c:.1f}C mode={control['mode']} "
         f"-> fan_pwm={fan_pwm} (should_run={'yes' if fan_pwm > 0 else 'no'}) "
         f"valve_angle={valve_angle}",
         flush=True,
