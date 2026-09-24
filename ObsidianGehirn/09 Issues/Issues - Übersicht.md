@@ -51,9 +51,12 @@ Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin ko
 > [!note] Challenge II: echte Aufgabenstellung erhalten (15.09.2026)
 > Für [[Challenge II - Ice Truck Extension]] ([Milestone #3](https://github.com/47Felix/RasberryPI-Team-13/milestone/3)) liegt der echte Aufgabentext vor: mobile Anzeige der Temperaturdaten + Fernsteuerung der Aktoren per MQTT, Node-RED als Integrations-Framework, MQTT Dash/Explorer statt Eigenbau-App. In 4 Tracks heruntergebrochen: #193-#196.
 
-- [#194](https://github.com/47Felix/RasberryPI-Team-13/issues/194) Track B – MQTT-Topic-Schema für Sensordaten + Aktor-Befehle definieren
-- [#195](https://github.com/47Felix/RasberryPI-Team-13/issues/195) Track C – Node-RED-Flow: Pi-Backend (I2C/SQL aus Challenge I) mit MQTT verbinden
-- [#196](https://github.com/47Felix/RasberryPI-Team-13/issues/196) Track D – Mobile Anbindung: MQTT Dash / MQTT Explorer konfigurieren + Doku
+> [!note] Challenge II Track B/C: verwaisten Branch gerettet + Node-RED-Flow auf dem Pi importiert (24.09.2026, PR #228)
+> Vier fertige Commits (Topic-Schema-Update, Node-RED-Flow-Update, Aktor-Fernsteuerung wirksam machen) lagen auf einem lokalen Branch `ci/deploy-on-main-merge`, der nie gemerged worden war (kein zugehöriges PR, Remote-Branch bereits gelöscht). Auf `main` rebased (keine Konflikte, 16/16 pytest grün) und per PR #228 gemerged. Danach den Flow direkt auf dem Pi importiert (SSH + Node-RED-Admin-API, `node-red-node-sqlite`-Palette installiert, bestehenden Broker-Knoten wiederverwendet statt Duplikat) - die DB-Lese-Seite läuft nachweislich mit echten Live-Daten. **Zwei neue Blocker gefunden, beide brauchen jemanden mit interaktivem sudo-Passwort auf dem Pi**: (1) der MQTT-Broker hängt seit heute in einer Auth-Fehlerschleife (`not authorised`, auch lokal), (2) `challenge-i-backend` lief seit dem heutigen Pi-Neustart mit dem alten `app.py` weiter und hat die neue Fernsteuerung noch nicht geladen (live mit `set_control.py` verifiziert, Zustand sicherheitshalber zurück auf `auto` gesetzt). Details siehe `Challenge-II-Ice-Truck-Extension/Code/README.md`.
+
+- [#194](https://github.com/47Felix/RasberryPI-Team-13/issues/194) Track B – MQTT-Topic-Schema für Sensordaten + Aktor-Befehle definieren (Code fertig + gemerged, siehe Note oben)
+- [#195](https://github.com/47Felix/RasberryPI-Team-13/issues/195) Track C – Node-RED-Flow: Pi-Backend (I2C/SQL aus Challenge I) mit MQTT verbinden (auf dem Pi importiert, End-to-End-Test blockiert bis die zwei Blocker oben behoben sind)
+- [#196](https://github.com/47Felix/RasberryPI-Team-13/issues/196) Track D – Mobile Anbindung: MQTT Dash / MQTT Explorer konfigurieren + Doku (noch nicht begonnen, braucht physisches Gerät)
 
 ## ✅ Geschlossen (was wurde gemacht)
 
