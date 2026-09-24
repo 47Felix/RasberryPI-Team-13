@@ -53,7 +53,7 @@ Weiteres Setup (NTP, SSH, Node.js/Node-RED-Installation) siehe Moodle-Kurs "Einf
 - [x] Node-RED mit MQTT verknüpft (Issue #2)
 - [x] Challenge I: Arduino-Sketch (Sensoren + Aktoren auf einem Board) + Pi-Backend mit SQLite-Logging/Regellogik geschrieben, DHT11/DHT22-Bug gefixt (Issue #191, noch ungetestet)
 - [ ] Challenge I: I2C-Verkabelung Arduino ↔ Pi (SDA/SCL aktuell noch unbeschaltet), danach Regellogik + Aktor-Ansteuerung über den Pi laufen lassen (Issue #180)
-- [ ] Challenge II: MQTT-Topic-Schema + Node-RED-Bridge entworfen, noch nicht gegen echten Broker getestet
+- [x] Challenge II: MQTT-Topic-Schema + Node-RED-Bridge entworfen, end-to-end gegen echten Broker getestet (Track A/C, Issues #193/#195)
 - [ ] Fernzugriff (DynDNS / Dashboard) für Challenge II
 
 ## Team
