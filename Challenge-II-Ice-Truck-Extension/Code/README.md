@@ -69,23 +69,71 @@ siehe [[⚠️ Zugangsdaten - Hinweis]].
 
 **Nebenbei gefixt:** Der bestehende Node-RED-Flow „LED via MQTT“ (`team13-1/led/set`, aus dem August-Kurzprojekt) verband sich bisher anonym mit `localhost:1883` und wäre durch `allow_anonymous false` sofort abgerissen. Credentials für den `mqtt-broker`-Konfigurationsknoten wurden per Node-RED-Admin-API (`POST /flows`, inkl. `credentials`-Feld für den Knoten) nachgetragen und deployed - Flow läuft wieder, jetzt authentifiziert statt anonym.
 
-## Was noch fehlt (braucht Hardware-/Pi-Zugriff)
+## Node-RED-Flow importiert und teilgetestet (24.09.2026)
 
-- **Echter End-to-End-Test** des Node-RED-Bridge-Flows (`node-red/flows.json`, Track C #195) gegen die laufende `challenge_i.db` und den echten Aktor-Arduino - der Flow ist inhaltlich fertig (Publish + Fernsteuerung, siehe oben), aber noch nicht auf dem Pi importiert. Braucht direkten Zugriff auf die Node-RED-Instanz des Pi (Palette installieren, Import, `sqlitedb`-Pfad + `mqtt-broker`-Credentials im laufenden Node-RED eintragen, siehe "Node-RED-Flow importieren" oben) - das kann nicht aus diesem Repo-Checkout heraus erledigt werden, sondern muss jemand mit Pi-/Node-RED-Zugriff machen. Insbesondere ungetestet: ob der `exec1`-Node mit dem auf dem Pi installierten `python3` (und dessen `venv`, falls noetig - siehe `challenge-i-backend.service`) tatsaechlich `set_control.py` ausfuehren kann.
-- **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – Screenshots/Kurzanleitung im Vault, sobald ein Gerät verfügbar ist
+Per Node-RED-Admin-API (SSH + `curl` gegen `localhost:1880`, kein UI-Zugriff
+noetig) auf dem Pi durchgefuehrt:
+
+- `node-red-node-sqlite` per `POST /nodes` installiert (kein Neustart des
+  `nodered`-Systemd-Service noetig, Node-RED laedt Palettenmodule selbst nach)
+- `node-red/flows.json` importiert, dabei den mitgelieferten `broker1`-Knoten
+  **weggelassen** und `mqtt_out1`/`mqtt_in1` stattdessen auf den bereits
+  vorhandenen Broker-Knoten "Team13-1 Mosquitto (localhost)" umgehaengt (der
+  hat schon Zugangsdaten hinterlegt, kein zweiter Broker-Knoten noetig)
+- Deploy erfolgreich (`Started flows`), `sqlitedb` oeffnet
+  `challenge_i.db` ohne Fehler, der `inject1`-Knoten liest per manuellem
+  Trigger (`POST /inject/inject1`) tatsaechlich frische Zeilen (Backend
+  loggt weiterhin alle 5s, verifiziert per `sqlite3 challenge_i.db`)
+
+**Zwei echte Blocker dabei gefunden, beide brauchen jemanden mit
+interaktivem Root-/Passwort-Zugriff auf den Pi (nicht per SSH-Key aus einer
+Session heraus loesbar):**
+
+1. **MQTT-Broker-Auth kaputt.** Der bestehende Broker-Knoten
+   "Team13-1 Mosquitto (localhost)" haengt seit mindestens 24.09.2026 morgens
+   in einer Reconnect-Schleife (`Connection Refused: not authorised`, alle
+   15s im `nodered`-Journal) - und zwar schon *lokal auf dem Pi selbst*, das
+   ist also kein Tailscale-/WLAN-Erreichbarkeitsproblem. `/etc/mosquitto/passwd`
+   existiert noch mit Stand 23.09. (als der Roundtrip laut Track-A-Test noch
+   funktionierte), aber irgendwas zwischen Node-RED-Credentials und Broker
+   passt nicht mehr zusammen. Ohne das `team13-1`-Passwort (steht wie immer
+   nicht im Repo, siehe [[⚠️ Zugangsdaten - Hinweis]]) und ohne
+   passwortlosen `sudo` auf dem Pi kann das aus einer SSH-Key-Session heraus
+   weder diagnostiziert (Logs/Passwd-Datei sind root-only) noch gefixt
+   werden. **Braucht:** jemand mit dem `team13-1`-MQTT-Passwort oder mit dem
+   interaktiven sudo-Passwort des Pi, der/die kurz `mosquitto_passwd` bzw.
+   die Node-RED-Broker-Credentials neu setzt.
+2. **`challenge-i-backend`-Service laeuft noch mit altem Code.** Der Pi ist
+   heute (24.09., ca. 09:14 CEST) neu gestartet, der Service kam vor dem
+   `git pull` dieser Aenderungen wieder hoch und haelt daher weiterhin die
+   *alte* `app.py` im Prozessspeicher (ohne `control_state`-Unterstuetzung).
+   Live verifiziert: `set_control.py mode manual` +
+   `fan_pwm 111`/`valve_angle 45` gesetzt, `control_state.json` bestaetigt
+   korrekt geschrieben, aber `challenge_i.db` loggte in den folgenden
+   Poll-Zyklen weiterhin `fan_pwm=0`/`valve_angle=0` statt der manuellen
+   Werte - der laufende Prozess kennt `control_state.py` schlicht nicht.
+   Zustand sicherheitshalber zurueck auf `mode: auto` gesetzt, damit die
+   veralteten manuellen Sollwerte (111/45) nicht unerwartet einmal
+   uebernommen werden, sobald doch neu gestartet wird. `systemctl restart
+   challenge-i-backend` verlangt interaktive Auth ("Interactive
+   authentication required"), also auch hier: **braucht** jemanden mit dem
+   sudo-Passwort, der den Service einmal neu startet.
+
+- **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – noch offen, braucht ein physisches Gerät
 
 ## Status
 
-Broker ist aufgesetzt, gesichert und end-to-end getestet (Track A, #193 -
-siehe oben). Topic-Schema (Track B, #194) ist auf das echte `db.py`-
-Datenmodell aktualisiert. Node-RED-Bridge-Flow (Track C, #195) ist
-inhaltlich fertig: Publish der Sensordaten UND Fernsteuerung (Handy →
-`control_state.json` → `app.py` → I2C) sind verdrahtet, `set_control.py`/
-`control_state.py` sind per `pytest` getestet (15/15 gruen). **Noch nicht
-auf dem Pi importiert und nicht gegen echte Hardware getestet** - nächster
-Schritt: jemand mit Zugriff auf die Pi-Node-RED-Instanz importiert
-`flows.json`, trägt DB-Pfad + Broker-Credentials ein (siehe "Node-RED-Flow
-importieren" oben) und testet gegen die echte `challenge_i.db`, den
-laufenden Broker und den Aktor-Arduino (z.B. per MQTT Dash/Explorer
-`control/mode/set` auf `manual` setzen, dann `fan_pwm`/`valve_angle`
-schicken und pruefen ob Luefter/Servo reagieren).
+Broker ist aufgesetzt und war end-to-end getestet (Track A, #193), ist aber
+seit heute (24.09.) wieder kaputt - siehe Blocker 1 oben. Topic-Schema
+(Track B, #194) ist auf das echte `db.py`-Datenmodell aktualisiert.
+Node-RED-Bridge-Flow (Track C, #195) ist **jetzt auf dem Pi importiert und
+deployed** (siehe oben), die DB-Lese-Seite funktioniert nachweislich mit
+echten Live-Daten. Fernsteuerung (`control_state.json` → `app.py` → I2C)
+ist inhaltlich fertig und per `pytest` getestet (16/16 gruen), aber auf dem
+Pi noch nicht wirksam, weil der laufende Service den neuen Code noch nicht
+geladen hat (Blocker 2). **Naechster Schritt braucht 5 Minuten mit dem
+sudo-Passwort:** `sudo systemctl restart challenge-i-backend` (laedt den
+neuen Code) und einmal `mosquitto_passwd`/die Node-RED-Broker-Credentials
+fuer `team13-1` neu setzen (behebt die Auth-Schleife) - danach sollte der
+komplette Pfad (Handy → MQTT → Node-RED → `set_control.py` → `app.py` →
+I2C → Luefter/Servo) durchgetestet werden koennen.
