@@ -19,6 +19,7 @@ Präfix: `team13-1/icetruck/`
 | `team13-1/icetruck/sensors/sensor_board_temp_c` | Zahl, °C (z.B. `6.8`) | `readings.sensor_board_temp_c` (kalibriert, `calibration.py: sensor_board_celsius()`) |
 | `team13-1/icetruck/sensors/actor_board_raw` | Ganzzahl, KY-028-Rohwert (2. Sensor) | `readings.actor_board_raw` |
 | `team13-1/icetruck/sensors/actor_board_temp_c` | Zahl, °C | `readings.actor_board_temp_c` (kalibriert, `calibration.py: actor_board_celsius()`) |
+| `team13-1/icetruck/sensors/avg_temp_c` | Zahl, °C | Mittelwert aus `sensor_board_temp_c` und `actor_board_temp_c`, berechnet im `fn_format`-Node (`node-red/flows.json`) - fürs App-Widget "Ø Temperatur", 25.09.2026 ergänzt; entspricht dem Mittelwert, den `rules.py` intern für `fan_pwm` schon verwendet |
 | `team13-1/icetruck/actuators/fan_pwm` | Ganzzahl 0-255 | `readings.fan_pwm` (Regellogik-Sollwert aus `rules.py`, berechnet aus dem Mittelwert beider kalibrierter Temperaturen) |
 | `team13-1/icetruck/actuators/valve_angle` | Ganzzahl 0-180 | `readings.valve_angle` |
 | `team13-1/icetruck/status` | JSON, alle Felder + `timestamp_utc` in einem Payload | komplette letzte Zeile aus `readings`, für ein einzelnes Dashboard-Widget in MQTT Dash |

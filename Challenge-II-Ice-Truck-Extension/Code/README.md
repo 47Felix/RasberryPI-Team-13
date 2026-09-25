@@ -119,6 +119,44 @@ Session heraus loesbar):**
    authentication required"), also auch hier: **braucht** jemanden mit dem
    sudo-Passwort, der den Service einmal neu startet.
 
+> [!info] Update 25.09.2026: Blocker 1 reproduziert vom Client aus (MQTT-App auf dem Handy)
+> `team13-1`-Passwort auf `felix123` gesetzt/neu gesetzt und per MQTT-App (Track D, #196) gegen
+> `tcp://172.20.10.4:1883` (Pi-IP im CCiPhone-Hotspot) verbunden - weiterhin
+> "Failed to connect to broker" / Auth-Fehler, passt also zu Blocker 1 (Auth kaputt seit
+> 24.09., auch lokal auf dem Pi). Reines Passwort-Setzen allein loest es demnach nicht - ob
+> `systemctl restart mosquitto` nach dem `mosquitto_passwd`-Aufruf gemacht wurde und ob das
+> Passwort mit den Node-RED-Broker-Credentials uebereinstimmt, ist noch offen. Naechster
+> Diagnoseschritt (braucht Pi-Zugriff): lokal `mosquitto_sub -h localhost -u team13-1 -P
+> felix123 -t 'team13-1/#' -v` und `journalctl -u mosquitto -n 30` pruefen, um Netzwerk-
+> vs. Auth-Ursache eindeutig zu trennen.
+
+> [!success] Update 25.09.2026 (spaeter): Blocker 1 geloest - lokale Broker-Auth funktioniert wieder
+> `mosquitto_sub -h localhost -p 1883 -u team13-1 -P felix123 -t 'team13-1/#' -v` direkt auf
+> dem Pi liefert sauber authentifizierte Live-Daten von `team13-1/icetruck/...` (Sensor-/
+> Aktor-Board-Werte, Status-JSON). Die Auth-Schleife aus Blocker 1 ist damit **lokal nicht
+> mehr reproduzierbar** - `team13-1`/`felix123` ist das aktuell gueltige Passwort.
+>
+> Der fehlgeschlagene Verbindungsversuch vom Handy (siehe Eintrag oben) ist demnach kein
+> Auth-Problem mehr, sondern vermutlich Netzwerk-/Erreichbarkeit auf dem externen
+> `0.0.0.0:1883`-Listener. Naechste Schritte (offen, braucht Pi-Zugriff):
+> - `hostname -I` - stimmt `172.20.10.4` noch mit der aktuellen Pi-IP im CCiPhone-Hotspot
+>   ueberein? (Apple-Hotspot vergibt IPs dynamisch, kann sich nach Reconnect geaendert haben)
+> - `sudo ss -tlnp | grep 1883` - lauscht der Listener wirklich auf `0.0.0.0:1883` und nicht
+>   nur auf `127.0.0.1:1883`?
+> - `sudo ufw status` - blockt die Firewall Port 1883 von aussen (lokale Verbindung umgeht
+>   das, daher hat der Test oben trotzdem funktioniert)?
+
+> [!success] Update 25.09.2026 (Ursache gefunden): IP-Mismatch, nicht Auth/Firewall
+> `hostname -I` auf dem Pi zeigt `172.20.10.3` im CCiPhone-Hotspot - nicht `172.20.10.4`, wie
+> in der MQTT-App konfiguriert. Das war die eigentliche Ursache fuer "Failed to connect to
+> broker": falsche/veraltete IP, kein Auth- oder Firewall-Problem. Apple-Hotspot vergibt die
+> IP offenbar bei jedem Reconnect neu. Fix: Broker-Adresse in der App auf
+> `tcp://172.20.10.3:1883` aendern, Zugangsdaten (`team13-1`/`felix123`) unveraendert lassen.
+> **Lernpunkt/offen:** Bei jedem neuen CCiPhone-Hotspot-Verbindungsaufbau kurz `hostname -I`
+> auf dem Pi pruefen statt sich auf eine zuvor notierte IP zu verlassen - ggf. lohnt sich ein
+> Reservieren einer festen IP oder ein mDNS-Hostname (`team13-1.local`) als dauerhafter Fix,
+> siehe [[Offene Punkte]].
+
 - **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – noch offen, braucht ein physisches Gerät
 
 ## Status
