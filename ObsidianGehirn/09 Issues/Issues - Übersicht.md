@@ -11,7 +11,7 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 22.09.2026 (per GitHub-API geprüft) – weiterhin 12 offene Issues, unverändert seit 18.09.2026.
+Stand 24.09.2026 (per GitHub-API geprüft) – noch 9 offene Issues (waren 12 am 22.09.2026, seither #193/#195/#196 geschlossen).
 
 > [!note] Challenge I: echte Aufgabenstellung erhalten (14.09.2026)
 > Alle 11 DTEW-Workshop-Issues (#92-#102) sind mittlerweile geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
