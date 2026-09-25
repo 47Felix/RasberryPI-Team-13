@@ -130,6 +130,22 @@ Session heraus loesbar):**
 > felix123 -t 'team13-1/#' -v` und `journalctl -u mosquitto -n 30` pruefen, um Netzwerk-
 > vs. Auth-Ursache eindeutig zu trennen.
 
+> [!success] Update 25.09.2026 (spaeter): Blocker 1 geloest - lokale Broker-Auth funktioniert wieder
+> `mosquitto_sub -h localhost -p 1883 -u team13-1 -P felix123 -t 'team13-1/#' -v` direkt auf
+> dem Pi liefert sauber authentifizierte Live-Daten von `team13-1/icetruck/...` (Sensor-/
+> Aktor-Board-Werte, Status-JSON). Die Auth-Schleife aus Blocker 1 ist damit **lokal nicht
+> mehr reproduzierbar** - `team13-1`/`felix123` ist das aktuell gueltige Passwort.
+>
+> Der fehlgeschlagene Verbindungsversuch vom Handy (siehe Eintrag oben) ist demnach kein
+> Auth-Problem mehr, sondern vermutlich Netzwerk-/Erreichbarkeit auf dem externen
+> `0.0.0.0:1883`-Listener. Naechste Schritte (offen, braucht Pi-Zugriff):
+> - `hostname -I` - stimmt `172.20.10.4` noch mit der aktuellen Pi-IP im CCiPhone-Hotspot
+>   ueberein? (Apple-Hotspot vergibt IPs dynamisch, kann sich nach Reconnect geaendert haben)
+> - `sudo ss -tlnp | grep 1883` - lauscht der Listener wirklich auf `0.0.0.0:1883` und nicht
+>   nur auf `127.0.0.1:1883`?
+> - `sudo ufw status` - blockt die Firewall Port 1883 von aussen (lokale Verbindung umgeht
+>   das, daher hat der Test oben trotzdem funktioniert)?
+
 - **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – noch offen, braucht ein physisches Gerät
 
 ## Status
