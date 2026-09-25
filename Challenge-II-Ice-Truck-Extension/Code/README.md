@@ -146,6 +146,17 @@ Session heraus loesbar):**
 > - `sudo ufw status` - blockt die Firewall Port 1883 von aussen (lokale Verbindung umgeht
 >   das, daher hat der Test oben trotzdem funktioniert)?
 
+> [!success] Update 25.09.2026 (Ursache gefunden): IP-Mismatch, nicht Auth/Firewall
+> `hostname -I` auf dem Pi zeigt `172.20.10.3` im CCiPhone-Hotspot - nicht `172.20.10.4`, wie
+> in der MQTT-App konfiguriert. Das war die eigentliche Ursache fuer "Failed to connect to
+> broker": falsche/veraltete IP, kein Auth- oder Firewall-Problem. Apple-Hotspot vergibt die
+> IP offenbar bei jedem Reconnect neu. Fix: Broker-Adresse in der App auf
+> `tcp://172.20.10.3:1883` aendern, Zugangsdaten (`team13-1`/`felix123`) unveraendert lassen.
+> **Lernpunkt/offen:** Bei jedem neuen CCiPhone-Hotspot-Verbindungsaufbau kurz `hostname -I`
+> auf dem Pi pruefen statt sich auf eine zuvor notierte IP zu verlassen - ggf. lohnt sich ein
+> Reservieren einer festen IP oder ein mDNS-Hostname (`team13-1.local`) als dauerhafter Fix,
+> siehe [[Offene Punkte]].
+
 - **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – noch offen, braucht ein physisches Gerät
 
 ## Status
