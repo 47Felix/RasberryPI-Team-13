@@ -35,9 +35,23 @@ void setup() {
   Wire.begin(I2C_SLAVE_ADDRESS);
   Wire.onRequest(sendKy028DataToPi);
   Wire.onReceive(applySetpointsFromPi);
+  disableInternalI2CPullups();
 
   Serial.begin(9600);
   Serial.println("actor_arduino ready, I2C slave 0x09 (KY-028)");
+}
+
+// Kein Levelshifter zwischen Arduino (5V) und Pi (3.3V) - externe Pull-ups
+// (4,7k) haengen auf der Pi-Seite an 3,3V statt an 5V (siehe README, Pin-
+// Tabelle I2C). Wire.begin() aktiviert aber standardmaessig eigene interne
+// 5V-Pull-ups auf SDA/SCL (A4/A5), die den Bus sonst Richtung 5V ziehen und
+// die Pi-GPIOs gefaehrden. I2C ist open-drain, daher reicht reiner Pull-up-
+// Tausch ohne aktiven Levelshifter-Baustein.
+void disableInternalI2CPullups() {
+  pinMode(A4, INPUT);
+  pinMode(A5, INPUT);
+  digitalWrite(A4, LOW);
+  digitalWrite(A5, LOW);
 }
 
 void loop() {
