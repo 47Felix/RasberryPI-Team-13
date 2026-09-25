@@ -119,6 +119,17 @@ Session heraus loesbar):**
    authentication required"), also auch hier: **braucht** jemanden mit dem
    sudo-Passwort, der den Service einmal neu startet.
 
+> [!info] Update 25.09.2026: Blocker 1 reproduziert vom Client aus (MQTT-App auf dem Handy)
+> `team13-1`-Passwort auf `felix123` gesetzt/neu gesetzt und per MQTT-App (Track D, #196) gegen
+> `tcp://172.20.10.4:1883` (Pi-IP im CCiPhone-Hotspot) verbunden - weiterhin
+> "Failed to connect to broker" / Auth-Fehler, passt also zu Blocker 1 (Auth kaputt seit
+> 24.09., auch lokal auf dem Pi). Reines Passwort-Setzen allein loest es demnach nicht - ob
+> `systemctl restart mosquitto` nach dem `mosquitto_passwd`-Aufruf gemacht wurde und ob das
+> Passwort mit den Node-RED-Broker-Credentials uebereinstimmt, ist noch offen. Naechster
+> Diagnoseschritt (braucht Pi-Zugriff): lokal `mosquitto_sub -h localhost -u team13-1 -P
+> felix123 -t 'team13-1/#' -v` und `journalctl -u mosquitto -n 30` pruefen, um Netzwerk-
+> vs. Auth-Ursache eindeutig zu trennen.
+
 - **MQTT Dash / MQTT Explorer konfigurieren** (Track D, #196) – noch offen, braucht ein physisches Gerät
 
 ## Status
