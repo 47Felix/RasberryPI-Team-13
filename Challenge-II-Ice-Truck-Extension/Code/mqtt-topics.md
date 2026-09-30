@@ -17,6 +17,7 @@ Präfix: `team13-1/icetruck/`
 |---|---|---|
 | `team13-1/icetruck/sensors/sensor_board_raw` | Ganzzahl, KY-028-Rohwert | `readings.sensor_board_raw` |
 | `team13-1/icetruck/sensors/sensor_board_temp_c` | Zahl, °C (z.B. `6.8`) | `readings.sensor_board_temp_c` (kalibriert, `calibration.py: sensor_board_celsius()`) |
+| `team13-1/icetruck/sensors/sensor_board_digital` | `0`/`1`, KY-028-D0-Schwellwert | `readings.sensor_board_digital` |
 | `team13-1/icetruck/sensors/actor_board_raw` | Ganzzahl, KY-028-Rohwert (2. Sensor) | `readings.actor_board_raw` |
 | `team13-1/icetruck/sensors/actor_board_temp_c` | Zahl, °C | `readings.actor_board_temp_c` (kalibriert, `calibration.py: actor_board_celsius()`) |
 | `team13-1/icetruck/sensors/avg_temp_c` | Zahl, °C | Mittelwert aus `sensor_board_temp_c` und `actor_board_temp_c`, berechnet im `fn_format`-Node (`node-red/flows.json`) - fürs App-Widget "Ø Temperatur", 25.09.2026 ergänzt; entspricht dem Mittelwert, den `rules.py` intern für `fan_pwm` schon verwendet |
@@ -58,6 +59,7 @@ getestet - siehe `Code/README.md`, Abschnitt "Was noch fehlt".
   "timestamp_utc": "2026-09-23T09:12:03+00:00",
   "sensor_board_raw": 612,
   "sensor_board_temp_c": 6.8,
+  "sensor_board_digital": 1,
   "actor_board_raw": 598,
   "actor_board_temp_c": 7.1,
   "fan_pwm": 96,
