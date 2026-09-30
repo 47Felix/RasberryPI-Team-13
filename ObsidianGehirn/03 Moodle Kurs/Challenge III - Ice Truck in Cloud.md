@@ -32,6 +32,9 @@ Wir haben ein Azure-for-Students-Konto → **Azure IoT Hub F1 (kostenlos)** + Bl
 - **Cloud:** `azure/setup.sh` (Cloud Shell) legt Hub, Device, Storage, Routen an; `azure/adx.kql` enthält Tabelle, Funktion `Readings()` und Dashboard-Abfragen
 - Status 30.09.2026: Code + 8 Tests grün, SDK-Aufrufe gegen `azure-iot-device` 2.14 geprüft. **Offen:** `setup.sh` im echten Abo ausführen, Bridge auf dem Pi installieren, Offline-Test, ADX-Dashboard + Screenshots für die Präsentation → [[Offene Punkte]]
 
+## Plan B ohne Azure: ThingSpeak (30.09.2026)
+Azure-for-Students war heute nicht erreichbar → zweites Backend `CLOUD_BACKEND=thingspeak` (MathWorks, kostenlos, keine Kreditkarte). HTTPS-Bulk-Update, jede 3. Messung (15-s-Raster wegen Free-Limit 1 Request/15 s + ~3 Mio. Nachrichten/Jahr), Flags im Statusfeld, MATLAB-Auswertung/React-Alarme in ThingSpeak. 12 Tests grün, gegen echtes ThingSpeak noch nicht getestet. Anleitung: README Abschnitt „Plan B“, NIST-Begründung: `ENTSCHEIDUNG.md` Abschnitt 5.
+
 ## Alternative: IaaS mit eigener VM (Plan B / Vergleich)
 Zusätzlich liegt ein vollständiger Entwurf für eigenen MQTT-Broker + InfluxDB + Grafana auf einer gemieteten VM (Docker Compose, TLS, Mosquitto-Bridge vom Pi) unter `Challenge-III-Ice-Truck-Cloud/Code/alternative-iaas-vm/`. Nicht deployt, nicht die gewählte Lösung – aber gut für die Präsentation als Vergleich IaaS (volle Kontrolle, manuelle Elastizität, Betrieb selbst) vs. PaaS (IoT Hub: verwaltet, Vendor-Bindung). Die Aufgabenstellung nennt diese Variante ausdrücklich als Option.
 
