@@ -117,3 +117,76 @@ def test_open_db_is_read_only(db_path):
     conn = bridge.open_db(db_path)
     with pytest.raises(Exception):
         conn.execute("DELETE FROM readings")
+
+
+class FakeResponse:
+    def __init__(self, payload):
+        self.payload = payload
+
+    def read(self):
+        return json.dumps(self.payload).encode()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+class FakeOpener:
+    def __init__(self, payload=None):
+        self.requests = []
+        self.payload = {"success": True} if payload is None else payload
+
+    def __call__(self, request, timeout):
+        self.requests.append(json.loads(request.data))
+        return FakeResponse(self.payload)
+
+
+def test_thingspeak_downsamples_and_keeps_last_row(db_path, tmp_path):
+    conn = db.connect(db_path)
+    for i in range(10):
+        _log(conn, temp=5.0 + i)
+    opener = FakeOpener()
+    sender = bridge.ThingSpeakSender("123", "KEY", downsample=3, opener=opener)
+    bridge.send_pending(conn, sender, str(tmp_path / "s.json"), max_rows=60, start_from="all")
+
+    (req,) = opener.requests
+    assert req["write_api_key"] == "KEY"
+    assert [u["status"] for u in req["updates"]] == ["id=3", "id=6", "id=9", "id=10"]
+    first = req["updates"][0]
+    assert first["field1"] == 7.0 and first["field2"] == 7.0 and first["field3"] == 7.0
+    assert first["created_at"].endswith("+00:00")
+
+
+def test_thingspeak_flags_go_into_status(db_path):
+    conn = db.connect(db_path)
+    _log(conn, temp=30.0)
+    body, _ = bridge.build_message(bridge.fetch_batch(conn, 0, 10), "t1", 28.0, 3.0)
+    updates = bridge.ThingSpeakSender("1", "K").build_updates(json.loads(body))
+    assert updates == [{
+        "created_at": updates[0]["created_at"], "field1": 30.0, "field2": 30.0, "field3": 30.0,
+        "field4": 0, "field5": 0, "field6": 600, "field7": 600, "field8": 0,
+        "status": "id=1 flags=temp_high",
+    }]
+
+
+def test_thingspeak_rejection_keeps_cursor(db_path, tmp_path):
+    conn = db.connect(db_path)
+    for _ in range(3):
+        _log(conn)
+    state = str(tmp_path / "s.json")
+    sender = bridge.ThingSpeakSender("1", "K", opener=FakeOpener({"success": False}))
+    with pytest.raises(RuntimeError):
+        bridge.send_pending(conn, sender, state, start_from="all")
+    assert bridge.load_state(state)["last_sent_id"] == 0
+
+
+def test_create_sender_selects_backend(monkeypatch):
+    monkeypatch.setenv("CLOUD_BACKEND", "thingspeak")
+    monkeypatch.setenv("THINGSPEAK_CHANNEL_ID", "42")
+    monkeypatch.setenv("THINGSPEAK_WRITE_API_KEY", "K")
+    assert isinstance(bridge.create_sender(), bridge.ThingSpeakSender)
+    monkeypatch.setenv("CLOUD_BACKEND", "foo")
+    with pytest.raises(ValueError):
+        bridge.create_sender()

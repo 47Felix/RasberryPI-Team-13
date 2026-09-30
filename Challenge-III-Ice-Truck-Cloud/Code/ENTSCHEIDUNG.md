@@ -73,3 +73,32 @@ Hause. Dort fehlen Resource Pooling, Elastizität und verbrauchsabhängige Abrec
 - **Ausfallsicherheit:** Die Daten liegen doppelt vor, lokal in der SQLite-DB auf dem
   Pi und in der Cloud. Fällt der Pi aus, bleibt das Cloud-Archiv. Fällt das Netz aus,
   puffert die DB und die Bridge liefert nach.
+
+## 5. Plan B: ThingSpeak (30.09.2026, Azure nicht erreichbar)
+
+Weil der Zugang zu Azure for Students am 30.09.2026 nicht funktionierte, gibt es
+ThingSpeak (MathWorks) als zweites Backend (`CLOUD_BACKEND=thingspeak`). Pi-Code,
+Cursor und Store & Forward bleiben gleich.
+
+| Kriterium | ThingSpeak |
+|---|---|
+| **Einordnung** | SaaS (fertige IoT-Anwendung mit Kanälen/Diagrammen), mit PaaS-Anteil (eigene MATLAB-Skripte laufen auf der Plattform) |
+| **Protokolle** | MQTT (publish) und HTTP/REST; wir nutzen HTTPS-Bulk-Update, weil es nachgeholte Messungen mit Originalzeitstempel annimmt |
+| **Speicherung** | Kanal mit 8 Feldern + Status; dauerhaft gespeichert; CSV-Export für Kontrollen |
+| **Visualisierung** | automatische Diagramme, Widgets, eigene MATLAB-Visualisierungen |
+| **Kosten** | 0 € für nicht-kommerzielle Nutzung (ca. 3 Mio. Nachrichten/Jahr, 1 Update/15 s), kein Kreditkarten-Zwang |
+| **Datenschutz** | MathWorks, Server in den USA → Drittlandübermittlung (DSGVO Kap. V). Für Temperaturdaten ohne Personenbezug vertretbar, für GPS/Fahrerdaten nicht ohne Weiteres |
+
+**NIST-Merkmale mit ThingSpeak:**
+
+| Merkmal | Begründung |
+|---|---|
+| On-demand Self-Service | Konto, Kanal und API-Keys selbst im Browser angelegt, ohne Rückfrage |
+| Broad Network Access | HTTPS/MQTT aus jedem Netz; Diagramme per Browser und Handy-App |
+| Resource Pooling | MathWorks betreibt die Plattform mandantenfähig für sehr viele Nutzer auf gemeinsamer Infrastruktur |
+| Rapid Elasticity | mehr Kanäle, höhere Update-Rate und mehr Nachrichten per Lizenz-Upgrade sofort verfügbar, ohne Codeänderung |
+| Measured Service | Nachrichtenkontingent wird gezählt und im Konto angezeigt (*Account → My Account*) |
+
+**Warum trotzdem Azure die erste Wahl bleibt:** EU-Datenhaltung, WORM-Archiv für den
+1-Jahres-Nachweis, keine Ausdünnung der Messwerte nötig und bessere Skalierung auf eine
+ganze Flotte. ThingSpeak ist der schnellere Weg zum laufenden Prototyp.

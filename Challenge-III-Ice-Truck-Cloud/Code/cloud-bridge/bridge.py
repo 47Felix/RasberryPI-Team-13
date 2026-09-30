@@ -1,4 +1,4 @@
-"""Challenge III: Cloud-Bridge Pi -> Azure IoT Hub.
+"""Challenge III: Cloud-Bridge Pi -> Azure IoT Hub (Plan B: ThingSpeak).
 
 Liest neue Zeilen aus der `readings`-Tabelle von Challenge I
 (`Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db`, geschrieben von
@@ -24,6 +24,8 @@ import json
 import os
 import sqlite3
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Protocol
 
@@ -194,6 +196,90 @@ def send_pending(
     return sent
 
 
+class ThingSpeakSender:
+    """Plan B ohne Azure: ThingSpeak (MathWorks), per HTTPS-Bulk-Update.
+
+    Nimmt denselben Batch-Body wie der Azure-Sender entgegen, damit
+    send_pending (Cursor, Store & Forward, Health-Flags) unveraendert bleibt.
+
+    Einschraenkungen des kostenlosen Tarifs:
+    - hoechstens 1 Request alle 15 s -> hier per MIN_REQUEST_SPACING erzwungen
+    - ca. 3 Mio. Nachrichten/Jahr (~8.200/Tag), jeder Eintrag im Bulk-Update
+      zaehlt einzeln -> nur jede DOWNSAMPLE-te Messung wird hochgeladen
+      (5 s * 3 = 15-s-Raster, 5.760/Tag). Lokal bleiben alle Messungen in der DB.
+    - bis zu 960 Eintraege pro Bulk-Update
+
+    Feldbelegung des Kanals (so in ThingSpeak benennen, siehe README):
+      field1 sensor_board_temp_c   field5 valve_angle
+      field2 actor_board_temp_c    field6 sensor_board_raw
+      field3 avg_temp_c            field7 actor_board_raw
+      field4 fan_pwm               field8 sensor_board_digital
+      status  "id=<lokale id>" + ggf. Health-Flags des Batches
+    """
+
+    URL = "https://api.thingspeak.com/channels/{channel_id}/bulk_update.json"
+    MIN_REQUEST_SPACING = 15.5
+    MAX_ENTRIES = 960
+
+    def __init__(self, channel_id: str, write_api_key: str, downsample: int = 3, opener=None) -> None:
+        self._url = self.URL.format(channel_id=channel_id)
+        self._write_api_key = write_api_key
+        self._downsample = max(1, downsample)
+        self._opener = opener or urllib.request.urlopen
+        self._last_request = None
+
+    def build_updates(self, body: dict) -> list[dict]:
+        idx = {name: i for i, name in enumerate(body["cols"])}
+        rows = [r for r in body["rows"] if r[idx["id"]] % self._downsample == 0]
+        # Alarme duerfen durchs Ausduennen nicht verloren gehen: letzte Zeile des
+        # Batches immer mitnehmen, die Flags stehen dort im status-Feld.
+        if body["rows"] and (not rows or rows[-1] is not body["rows"][-1]):
+            rows.append(body["rows"][-1])
+        updates = []
+        for r in rows:
+            sensor_c, actor_c = r[idx["sensor_board_temp_c"]], r[idx["actor_board_temp_c"]]
+            updates.append({
+                "created_at": r[idx["timestamp_utc"]],
+                "field1": sensor_c,
+                "field2": actor_c,
+                "field3": round((sensor_c + actor_c) / 2, 2),
+                "field4": r[idx["fan_pwm"]],
+                "field5": r[idx["valve_angle"]],
+                "field6": r[idx["sensor_board_raw"]],
+                "field7": r[idx["actor_board_raw"]],
+                "field8": r[idx["sensor_board_digital"]],
+                "status": f"id={r[idx['id']]}",
+            })
+        if body["flags"]:
+            updates[-1]["status"] += " flags=" + ",".join(body["flags"])
+        return updates
+
+    def send(self, body: str, properties: dict[str, str]) -> None:
+        updates = self.build_updates(json.loads(body))
+        if len(updates) > self.MAX_ENTRIES:
+            raise ValueError(
+                f"{len(updates)} Eintraege > {self.MAX_ENTRIES}: MAX_ROWS_PER_MESSAGE verkleinern"
+            )
+        if self._last_request is not None:
+            wait = self.MIN_REQUEST_SPACING - (time.monotonic() - self._last_request)
+            if wait > 0:
+                time.sleep(wait)
+        data = json.dumps({"write_api_key": self._write_api_key, "updates": updates}).encode()
+        request = urllib.request.Request(
+            self._url, data=data, headers={"Content-Type": "application/json"}, method="POST"
+        )
+        self._last_request = time.monotonic()
+        with self._opener(request, timeout=30) as response:
+            result = json.loads(response.read() or b"{}")
+        # ThingSpeak antwortet mit {"success": true}; Fehler (401 falscher Key,
+        # 429 zu schnell) wirft urlopen bereits als HTTPError -> Cursor bleibt stehen.
+        if not result.get("success", False):
+            raise RuntimeError(f"ThingSpeak hat den Batch abgelehnt: {result}")
+
+    def shutdown(self) -> None:
+        pass
+
+
 class AzureIoTHubSender:
     """Sendet per azure-iot-device SDK (MQTT 3.1.1 ueber TLS) an den IoT Hub."""
 
@@ -221,11 +307,27 @@ class AzureIoTHubSender:
         self._client.shutdown()
 
 
+def create_sender():
+    backend = os.environ.get("CLOUD_BACKEND", "azure")
+    if backend == "thingspeak":
+        return ThingSpeakSender(
+            os.environ["THINGSPEAK_CHANNEL_ID"],
+            os.environ["THINGSPEAK_WRITE_API_KEY"],
+            downsample=_env_int("THINGSPEAK_DOWNSAMPLE", 3),
+        )
+    if backend == "azure":
+        websockets = os.environ.get("IOTHUB_WEBSOCKETS", "0") == "1"
+        return AzureIoTHubSender(os.environ["IOTHUB_DEVICE_CONNECTION_STRING"], websockets=websockets)
+    raise ValueError(f"Unbekanntes CLOUD_BACKEND: {backend!r} (azure oder thingspeak)")
+
+
 def main() -> None:
-    connection_string = os.environ["IOTHUB_DEVICE_CONNECTION_STRING"]
-    websockets = os.environ.get("IOTHUB_WEBSOCKETS", "0") == "1"
-    sender = AzureIoTHubSender(connection_string, websockets=websockets)
-    print(f"cloud-bridge: truck_id={TRUCK_ID} db={DB_PATH} interval={SEND_INTERVAL_SECONDS}s", flush=True)
+    sender = create_sender()
+    print(
+        f"cloud-bridge: backend={os.environ.get('CLOUD_BACKEND', 'azure')} truck_id={TRUCK_ID} "
+        f"db={DB_PATH} interval={SEND_INTERVAL_SECONDS}s",
+        flush=True,
+    )
     try:
         while True:
             try:
