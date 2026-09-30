@@ -1,0 +1,62 @@
+# Challenge III - Ice Truck Cloud-Stack (IaaS: gemietete VM + Docker)
+# Pi (Mosquitto-Bridge, TLS) -> Cloud-Mosquitto -> Telegraf -> InfluxDB -> Grafana
+# Start: cp .env.example .env && (Werte setzen) && docker compose up -d
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    ports: ["8883:8883"]
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/acl:/mosquitto/config/acl:ro
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro   # per mosquitto_passwd erzeugt, nicht im Repo
+      - ${TLS_CERT_DIR}:/mosquitto/certs:ro              # Let's Encrypt: fullchain.pem + privkey.pem
+      - mosquitto-data:/mosquitto/data
+
+  influxdb:
+    image: influxdb:2.7
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_ADMIN_USER}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_ADMIN_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: team13
+      DOCKER_INFLUXDB_INIT_BUCKET: icetruck
+      DOCKER_INFLUXDB_INIT_RETENTION: 0   # Nachweispflicht: keine automatische Loeschung (spaeter ggf. Downsampling)
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN}
+    volumes: [influx-data:/var/lib/influxdb2]
+    # Port 8086 bewusst NICHT nach aussen veroeffentlicht (nur Docker-Netz)
+
+  telegraf:
+    image: telegraf:1.32
+    restart: unless-stopped
+    depends_on: [mosquitto, influxdb]
+    environment:
+      MQTT_USER: telegraf
+      MQTT_PASSWORD: ${TELEGRAF_MQTT_PASSWORD}
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on: [influxdb]
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_SERVER_ROOT_URL: https://${GRAFANA_DOMAIN}
+      INFLUX_TOKEN: ${INFLUX_TOKEN}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+  caddy:   # HTTPS-Reverse-Proxy mit automatischem Let's-Encrypt-Zertifikat fuer Grafana
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    command: caddy reverse-proxy --from ${GRAFANA_DOMAIN} --to grafana:3000
+    volumes: [caddy-data:/data]
+
+volumes: {mosquitto-data: {}, influx-data: {}, grafana-data: {}, caddy-data: {}}

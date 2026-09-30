@@ -51,6 +51,8 @@ In 4 Tracks heruntergebrochen (#193-#196), siehe [[Issues - Übersicht]].
 
 **Track C (#195) inhaltlich fertig (23.09.2026):** `fn_format` in `node-red/flows.json` publiziert die neuen Feldnamen aus Track B statt der alten (`temperature_c`/`humidity_pct`/`ldr_raw`/`button`). Zusätzlich die Fernsteuerung fertiggestellt: beim Draufschauen fiel auf, dass `Challenge-I-Ice-Truck/Code/pi-backend/app.py` bislang **gar keinen** Modus-Umschalter (auto/manuell) kannte - der Regelkreis hat immer nur die aus `rules.py` berechneten Sollwerte geschrieben, unabhängig von MQTT. Neu: `control_state.py`/`set_control.py` (pi-backend) halten einen geteilten Zustand (`control_state.json`), den `fn_validate` per neuem Exec-Node (`exec1`) für jeden validierten `control/*`-Befehl schreiben lässt; `app.py` liest ihn jeden Poll-Zyklus (5s) und schreibt bei `mode == "manual"` die manuellen `fan_pwm`/`valve_angle`-Werte statt der Regellogik-Sollwerte per I2C. Per `pytest` getestet (15/15 grün), aber **noch nicht** auf dem Pi importiert/gegen echte Hardware verifiziert. Offen: Import in die Node-RED-Instanz auf dem Pi (Palette installieren, `sqlitedb`-Pfad + `mqtt-broker`-Credentials eintragen, siehe README) sowie der End-to-End-Test gegen die echte `challenge_i.db`, den laufenden Broker und den Aktor-Arduino - das braucht jemanden mit physischem/Tailscale-Zugriff auf den Pi.
 
+**Abschluss (30.09.2026):** Challenge III läuft an. Verbleibende Hardware-/Sudo-Punkte (Service-Neustart, App-Test Track D #196) sind gebündelt in [[Offene Punkte]] und blockieren den Cloud-Start nur beim End-to-End-Test.
+
 ## Prüfungsbezug
 Nach dieser Challenge: Kurztest (20%), siehe [[Leistungsnachweise]]
 
