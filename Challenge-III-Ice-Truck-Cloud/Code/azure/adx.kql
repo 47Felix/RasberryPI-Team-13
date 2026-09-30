@@ -1,0 +1,89 @@
+// Challenge III: Auswertung/Visualisierung in Azure Data Explorer (ADX).
+// Kostenloser Cluster: https://dataexplorer.azure.com/freecluster
+// Jeden Block einzeln markieren und mit Shift+Enter ausfuehren.
+
+// ---------------------------------------------------------------------------
+// 1. Rohtabelle: eine Zeile pro IoT-Hub-Nachricht (= ein Batch vom Pi)
+// ---------------------------------------------------------------------------
+.create table IceTruckRaw (payload: dynamic)
+
+// Mapping bei Ingestion direkt vom IoT Hub (Body ist die ganze Nachricht)
+.create table IceTruckRaw ingestion json mapping "IceTruckMapping"
+'[{"column":"payload","Properties":{"Path":"$"}}]'
+
+// Mapping bei Ingestion aus dem Blob-Archiv (IoT Hub verpackt den Body in "Body")
+.create table IceTruckRaw ingestion json mapping "IceTruckBlobMapping"
+'[{"column":"payload","Properties":{"Path":"$.Body"}}]'
+
+// ---------------------------------------------------------------------------
+// 2. Batches in einzelne Messungen auffalten, Duplikate (at-least-once) entfernen
+// ---------------------------------------------------------------------------
+.create-or-alter function Readings() {
+    IceTruckRaw
+    | mv-expand row = payload.rows
+    | project
+        truck_id = tostring(payload.truck_id),
+        id = tolong(row[0]),
+        timestamp = todatetime(row[1]),
+        sensor_board_raw = toint(row[2]),
+        sensor_board_temp_c = todouble(row[3]),
+        sensor_board_digital = toint(row[4]),
+        actor_board_raw = toint(row[5]),
+        actor_board_temp_c = todouble(row[6]),
+        fan_pwm = toint(row[7]),
+        valve_angle = toint(row[8])
+    | summarize take_any(*) by truck_id, id
+}
+
+// ---------------------------------------------------------------------------
+// 3. Dashboard-Kacheln (ADX -> Dashboards -> New tile, Abfrage einfuegen)
+// ---------------------------------------------------------------------------
+
+// Temperaturverlauf beider Sensoren (Nachweis Kuehlkette)
+Readings()
+| where timestamp > ago(24h)
+| project timestamp, sensor_board_temp_c, actor_board_temp_c
+| render timechart
+
+// Aktoren: Luefter und Ventil
+Readings()
+| where timestamp > ago(24h)
+| project timestamp, fan_pwm, valve_angle
+| render timechart
+
+// Letzter Stand pro Truck (Tabelle/Kachel)
+Readings()
+| summarize arg_max(timestamp, *) by truck_id
+
+// Alarme/Health-Flags vom Pi (temp_high, sensor_mismatch, sensor_stuck)
+IceTruckRaw
+| where array_length(payload.flags) > 0
+| project first_ts = todatetime(payload.first_ts), truck_id = tostring(payload.truck_id),
+          flags = payload.flags, max_temp_c = todouble(payload.max_temp_c)
+| order by first_ts desc
+
+// Predictive Maintenance 1: driftet ein Sensor weg? Stuendliche Abweichung beider Boards
+Readings()
+| where timestamp > ago(7d)
+| summarize avg_delta_c = avg(abs(sensor_board_temp_c - actor_board_temp_c)) by bin(timestamp, 1h)
+| render timechart
+
+// Predictive Maintenance 2: Anomalien im Temperaturverlauf automatisch markieren
+Readings()
+| where timestamp > ago(3d)
+| make-series temp = avg((sensor_board_temp_c + actor_board_temp_c) / 2) on timestamp step 10m
+| extend anomalies = series_decompose_anomalies(temp, 2.0)
+| render anomalychart with (anomalycolumns = anomalies)
+
+// Predictive Maintenance 3: Wie lange laeuft der Luefter pro Tag? (steigende Laufzeit
+// bei gleicher Aussentemperatur = Kuehlaggregat verliert Leistung)
+Readings()
+| summarize fan_on_share = countif(fan_pwm > 0) * 1.0 / count() by bin(timestamp, 1d)
+| render columnchart
+
+// Nachweis fuer eine Kontrolle: Min/Max/Mittel je Tag
+Readings()
+| summarize min_c = min(sensor_board_temp_c), max_c = max(sensor_board_temp_c),
+            avg_c = round(avg(sensor_board_temp_c), 1), messungen = count()
+  by truck_id, tag = startofday(timestamp)
+| order by tag desc

@@ -13,59 +13,27 @@ Um Prozesse in der Lieferkette transparent zu machen und zu optimieren, sollen d
 
 ## Konkrete Aufgabenstellung (erhalten 30.09.2026)
 
-> **Problem:** Nachweispflicht zur Rückverfolgbarkeit/Qualitätssicherung nach EU-VO 178/2002/EG und 37/2005/EG (Merkblatt Tiefkühl-LM LM-05-MBL-504-PM, Stand 01.04.2020). Temperaturkontrolle nur stichprobenartig, Daten nur lokal auf dem Pi im Truck, manuelles Auslesen bei Ankunft in der Zentrale -> keine sofortige, standortunabhängige Verfügbarkeit. Dazu Störungen: Sensorausfälle, Kühlaggregate, Hardwarefehler trotz Wartung.
->
-> **Erweiterung:** Daten automatisiert in die Cloud -> jederzeit/ortsunabhängig abrufbar, zusätzliche Datensicherung bei Pi-Ausfall, kein manuelles Auslesen, kontinuierliche Analyse (Predictive Maintenance).
->
-> **Mehrwert:** weniger Ausfallzeiten, effizientere Wartung, geringere Kosten, einfachere Nachweise.
->
-> **Ziel:** Sensordaten eines IoT-Geräts in geeigneter Cloud speichern und auswerten.
-> 1. Informieren: AWS IoT Core, Azure IoT Hub, Arduino Cloud, oder eigener MQTT-Broker + Zeitreihen-DB (z. B. InfluxDB) auf Cloud-Infrastruktur (VM/Container)
-> 2. Auswählen + fachlich begründen: IoT-Protokolle, Speicherung, Visualisierung, Kosten, Datenschutz u. a., Einordnung IaaS/PaaS/SaaS
-> 3. Umsetzen: Daten in die Cloud, **alle fünf NIST-Merkmale** erfüllen (SP 800-145: On-demand Self-Service, Broad Network Access, Resource Pooling, Rapid Elasticity, Measured Service). Privater Server im eigenen Netz (Homeserver, Pi zuhause) gilt i. d. R. **nicht** als Cloud; Ausnahme nur nach Absprache mit der Lehrkraft und dann mit Reflexion, welche NIST-Merkmale fehlen.
-> 4. Letzter Tag: Lösungen gegenseitig vorstellen, NIST-Erfüllung begründen.
+**Problem:** EU-VO 178/2002 + 37/2005 verlangen Rückverfolgbarkeit und Nachweis der Temperaturen (Merkblatt LM-05-MBL-504-PM). Bisher liegen die Daten nur lokal auf dem Pi im Truck und werden erst in der Zentrale manuell ausgelesen. Dazu kommen regelmäßige Hardwareausfälle (Sensoren, Kühlaggregate) trotz Wartung.
 
-## Entscheidungsvorschlag (Team muss bestätigen)
+**Ziel:** Sensordaten automatisiert in eine Cloud bringen, speichern und auswerten (Predictive Maintenance). Zeitrahmen ca. 1 Woche.
 
-**Eigene IoT-Serverlösung auf gemieteter Azure-VM (IaaS):** Mosquitto (TLS) -> Telegraf -> InfluxDB -> Grafana, als Docker-Compose. Code: `Challenge-III-Ice-Truck-Cloud/Code/`.
+1. IoT-Plattformen recherchieren (AWS IoT Core, Azure IoT Hub, Arduino Cloud, eigener MQTT-Broker + InfluxDB auf gemieteter VM)
+2. Auswahl begründen nach: Protokolle, Speicherung, Visualisierung, Kosten, Datenschutz, Einordnung IaaS/PaaS/SaaS
+3. Umsetzen – Lösung muss die **5 NIST-Merkmale** (SP 800-145) erfüllen: On-demand Self-Service, Broad Network Access, Resource Pooling, Rapid Elasticity, Measured Service. Homeserver/Pi zu Hause zählt **nicht** als Cloud.
+4. Am letzten Tag Vorstellung inkl. NIST-Begründung
 
-| Kriterium | Eigene Lösung (VM+Docker) | AWS IoT Core / Azure IoT Hub | Arduino Cloud |
-|---|---|---|---|
-| Einordnung | IaaS (Stack selbst betrieben) | PaaS | SaaS |
-| Protokolle | MQTT direkt (bereits im Einsatz, Challenge II), HTTP möglich | MQTT/HTTP, eigene Auth (Zertifikate/SAS) | proprietär/MQTT-ähnlich, an Arduino-Boards gebunden |
-| Speicherung | InfluxDB, Retention frei (Nachweispflicht!) | braucht Zusatzdienst (Timestream/S3, ADX) | begrenzte Historie im Free-Tier |
-| Visualisierung | Grafana, frei gestaltbar | Zusatzdienst nötig | fertige Dashboards, wenig flexibel |
-| Kosten | kleine VM ~10-15 EUR/Monat bzw. Studentenguthaben | pay-per-message, günstig bei kleiner Last | Free-Tier, dann Abo |
-| Datenschutz | Region frei wählbar (Azure Germany West Central/EU), volle Kontrolle | EU-Region möglich, US-Anbieter | Anbieter in EU/US, wenig Kontrolle |
-| Lerneffekt/Passung | hoch, baut direkt auf Mosquitto/Node-RED/MQTT auf | mittel | gering (Pi/Node-RED-Aufbau passt nicht) |
-| Nachteil | Betrieb/Sicherheit/Updates selbst verantwortlich | Vendor-Lock-in | Pi-Anbindung umständlich |
+## Unsere Lösung: Azure IoT Hub (PaaS)
 
-Begründung: Topic-Schema und Broker existieren schon, Azure-VM ist im Team vorhanden (Discord-Bot, siehe [[Claude Discord Bot Setup]]), und die VM ist eine echte Cloud-Ressource.
+Wir haben ein Azure-for-Students-Konto → **Azure IoT Hub F1 (kostenlos)** + Blob Storage (Archiv/Nachweis) + Azure Data Explorer Free Cluster (Dashboard, Anomalie-Erkennung). Begründung + NIST-Tabelle: `Challenge-III-Ice-Truck-Cloud/Code/ENTSCHEIDUNG.md`, Einrichtung: `Challenge-III-Ice-Truck-Cloud/Code/README.md`.
 
-## NIST-Nachweis (für die Präsentation)
+- **Edge:** `cloud-bridge/bridge.py` liest `challenge_i.db` read-only, schickt 1 Batch/Minute im Spaltenformat per MQTT/TLS (Fallback WebSockets 443) → passt ins F1-Kontingent (8.000 × 0,5 KB/Tag)
+- **Store & Forward:** Cursor (`bridge_state.json`) rückt erst nach erfolgreichem Senden weiter, Funkloch wird nachgeholt
+- **Health-Flags am Edge:** `temp_high`, `sensor_mismatch` (unser KY-028-Wackelkontakt!), `sensor_stuck` → Application Property `alarm` für IoT-Hub-Routing
+- **Cloud:** `azure/setup.sh` (Cloud Shell) legt Hub, Device, Storage, Routen an; `azure/adx.kql` enthält Tabelle, Funktion `Readings()` und Dashboard-Abfragen
+- Status 30.09.2026: Code + 8 Tests grün, SDK-Aufrufe gegen `azure-iot-device` 2.14 geprüft. **Offen:** `setup.sh` im echten Abo ausführen, Bridge auf dem Pi installieren, Offline-Test, ADX-Dashboard + Screenshots für die Präsentation → [[Offene Punkte]]
 
-| Merkmal | Wie erfüllt |
-|---|---|
-| On-demand Self-Service | VM/Netzwerk/Storage im Azure-Portal bzw. per CLI selbst bereitgestellt, ohne Anbieterkontakt |
-| Broad Network Access | Grafana per HTTPS, MQTT per TLS 8883 von jedem Netz/Gerät (Handy, Laptop, Truck über Mobilfunk) |
-| Resource Pooling | VM läuft auf geteilter Azure-Hardware (Multi-Tenant), Ressourcen dynamisch zugewiesen |
-| Rapid Elasticity | VM-Größe/Disk per Klick ändern; Docker-Services skalierbar; mehrere Trucks = nur weitere Topics/Tags |
-| Measured Service | Azure Cost Management / Metrics, Abrechnung nach Nutzung; InfluxDB/Telegraf-Selbstmessung |
-
-Ehrliche Einschränkung für die Reflexion: Elastizität ist bei IaaS **manuell** (kein Autoscaling ohne VMSS/Kubernetes), und Betrieb/Patching liegen beim Team (im Gegensatz zu PaaS/SaaS).
-
-## Architektur
-`Arduinos -> pi-backend -> Node-RED -> lokaler Mosquitto -> Bridge (TLS, QoS1, gepuffert) -> Cloud-Mosquitto -> Telegraf -> InfluxDB -> Grafana`
-Details und Deployment: `Challenge-III-Ice-Truck-Cloud/Code/README.md`.
-
-## Tracks / Fortschritt
-- [ ] **A – Entscheidung:** Cloud-Lösung im Team bestätigen, Azure-Kosten/Guthaben klären, Lehrkraft nur nötig bei Ausnahme (Self-Hosting)
-- [ ] **B – Cloud-VM:** VM, DNS-Name, NSG (80/443/8883), Zertifikat (Let's Encrypt)
-- [ ] **C – Stack deployen:** `docker compose up`, Broker-Nutzer anlegen (Code fertig entworfen, nicht getestet)
-- [ ] **D – Pi-Bridge:** `team13-cloud-bridge.conf` auf dem Pi aktivieren, Daten kommen in InfluxDB an (setzt funktionierenden lokalen Mosquitto/Node-RED aus Challenge II voraus)
-- [ ] **E – Visualisierung + Auswertung:** Grafana-Dashboard (provisioniert), Alerts + Predictive-Maintenance-Queries (`analysis/flux-queries.md`)
-- [ ] **F – Datenschutz/Sicherheit:** EU-Region, keine Klartext-Ports, Zugangsdaten nur in `.env`, Retention/Löschkonzept schreiben (Temperaturdaten sind nicht personenbezogen, GPS/Fahrer wären es)
-- [ ] **G – Präsentation:** NIST-Tabelle + Live-Demo (Handy-Dashboard, Pi trennen -> Nachlieferung)
+## Alternative: IaaS mit eigener VM (Plan B / Vergleich)
+Zusätzlich liegt ein vollständiger Entwurf für eigenen MQTT-Broker + InfluxDB + Grafana auf einer gemieteten VM (Docker Compose, TLS, Mosquitto-Bridge vom Pi) unter `Challenge-III-Ice-Truck-Cloud/Code/alternative-iaas-vm/`. Nicht deployt, nicht die gewählte Lösung – aber gut für die Präsentation als Vergleich IaaS (volle Kontrolle, manuelle Elastizität, Betrieb selbst) vs. PaaS (IoT Hub: verwaltet, Vendor-Bindung). Die Aufgabenstellung nennt diese Variante ausdrücklich als Option.
 
 ## Relevante Kursinhalte
 - "Datenbankanbindung und Object-Relational Mapping" (Kurs-ID 564) – **benötigt Einschreibekennwort**, siehe [[Offene Punkte]]

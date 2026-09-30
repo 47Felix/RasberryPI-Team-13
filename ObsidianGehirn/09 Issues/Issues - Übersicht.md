@@ -11,7 +11,7 @@ Zusammenfassung aller GitHub-Issues des Repos, aufgeteilt nach offen/geschlossen
 
 ## 🟢 Offen
 
-Stand 24.09.2026 (per GitHub-API geprüft) – noch 9 offene Issues (waren 12 am 22.09.2026, seither #193/#195/#196 geschlossen).
+Stand 25.09.2026 (per GitHub-API erneut geprüft, unverändert seit 24.09.2026) – weiterhin 9 offene Issues (waren 12 am 22.09.2026, seither #193/#195/#196 geschlossen).
 
 > [!note] Challenge I: echte Aufgabenstellung erhalten (14.09.2026)
 > Alle 11 DTEW-Workshop-Issues (#92-#102) sind mittlerweile geschlossen (siehe unten) - Workshop vorbei, Code/Deliverables archiviert (siehe [[Doku-Regeln]]). Für [[Challenge I - Ice Truck Problem]] ([Milestone #2](https://github.com/47Felix/RasberryPI-Team-13/milestone/2)) liegt jetzt der echte Aufgabentext vor (I2C-Bus, Sensoren versch. Formate, LED-Helligkeit pro Sensor, Lüfter/Ventil-Aktorik, SQL-Logging - siehe die Notiz für den vollen Text). Die 4 vorherigen Platzhalter-Issues #171-#174 (Node-RED/MQTT/Discord-Alarm-Ansatz) waren dadurch überholt und wurden geschlossen, #169 (Aufgabenstellung ableiten) ist damit erledigt. Ersetzt durch 6 Tracks nach demselben Muster wie beim Tresor-Kurzprojekt (#15-#20): #176-#181.
@@ -56,6 +56,12 @@ Das Kurzprojekt "Digitaler Tresor" (Issues #1-#42, siehe unten) ist weiterhin ko
 
 > [!note] Challenge II Track C/D: beide Blocker vom Vortag behoben, MQTT Dash end-to-end verifiziert (24.09.2026)
 > Felix hat mit interaktivem sudo-Zugriff auf dem Pi beide am 23.09. gefundenen Blocker gefixt: `challenge-i-backend` per `systemctl restart` neu gestartet (läuft seitdem mit dem aktuellen `app.py`, Fernsteuerung/Digitalsensor-Feld aktiv, keine Fehler im Journal). Das Mosquitto-Passwort für den User `team13-1` war zwischenzeitlich unklar/nicht gesetzt (Node-RED hing in einer `not authorised`-Schleife) - Felix hat es im Terminal neu gesetzt (liegt jetzt in `~/.env` auf der Shared-VM, nicht im Repo, siehe [[⚠️ Zugangsdaten - Hinweis]]). Node-RED verbindet sich seitdem stabil und published live auf `team13-1/icetruck/#` (Status-Message beim Test nur Sekunden alt). Anschließend direkt vom Handy aus MQTT Dash gegen den Pi (per WLAN/Hotspot, IP im `172.20.10.0/28`-Bereich) verbunden und Live-Daten empfangen - End-to-End-Pfad Pi-Backend → Node-RED → Mosquitto → Handy-App damit vollständig verifiziert.
+
+> [!note] Challenge II: Blocker 1 tauchte erneut auf, Ursache war IP-Mismatch statt Auth/Firewall (25.09.2026)
+> Beim erneuten Verbindungsversuch vom Handy aus (`tcp://172.20.10.4:1883`) kam wieder ein Auth-Fehler ("Failed to connect to broker"), zunächst wie ein Rückfall auf Blocker 1 vom Vortag aussehend. Ein direkter Test auf dem Pi (`mosquitto_sub -h localhost -u team13-1 -P felix123 -t 'team13-1/#' -v`) lieferte aber sauber authentifizierte Live-Daten, die lokale Broker-Auth funktioniert also. Tatsächliche Ursache: `hostname -I` zeigte `172.20.10.3` statt der in der MQTT-App hinterlegten `.4` - der Apple-Hotspot (CCiPhone) vergibt die Pi-IP bei jedem Reconnect neu. Kein Auth- oder Firewall-Problem, Fix war nur die IP in der App zu korrigieren. Neuer offener Punkt dazu in [[Offene Punkte]]. Details siehe `Challenge-II-Ice-Truck-Extension/Code/README.md`.
+
+> [!note] Challenge II Track B: neues MQTT-Topic `avg_temp_c` ergänzt (25.09.2026)
+> `node-red/flows.json` (`fn_format`-Node) publiziert jetzt zusätzlich `team13-1/icetruck/sensors/avg_temp_c` (Mittelwert aus beiden kalibrierten Board-Temperaturen), fürs App-Widget "Ø Temperatur". Topic-Schema (`mqtt-topics.md`) entsprechend ergänzt.
 
 - [#194](https://github.com/47Felix/RasberryPI-Team-13/issues/194) Track B – MQTT-Topic-Schema für Sensordaten + Aktor-Befehle definieren (Code fertig + gemerged, siehe Note oben)
 
