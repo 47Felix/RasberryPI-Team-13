@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>The Ice Truck Problem(s) – Team 13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fg: #1c1f22;
+    --bg: #ffffff;
+    --muted: #6b6f73;
+    --code-bg: #f4f7f8;
+    --rule: #e2e6e8;
+    --accent: #1c6e8c;
+    --accent-dark: #124a5e;
+    --accent-light: #eaf4f7;
+    --accent-border: #bfe0ea;
+  }
+  .p-anton { --p: #c2650a; --pbg: #fdf1e3; }
+  .p-felix { --p: #1f8a4c; --pbg: #e8f7ee; }
+  .p-dogan { --p: #9333c9; --pbg: #f5ecfc; }
+  .p-erik  { --p: #2f6fb0; --pbg: #eaf2fa; }
+  .p-team  { --p: #1c6e8c; --pbg: #eaf4f7; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #24272a;
+    font-family: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--fg);
+  }
+  #deck {
+    height: 100%; width: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slide {
+    display: none;
+    background: var(--bg);
+    width: 100vw; height: 56.25vw; /* 16:9 */
+    max-height: 100vh; max-width: 177.78vh;
+    padding: 4vh 6vw;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+
+  .eyebrow {
+    font-family: "Kalam", cursive;
+    font-weight: 700;
+    font-size: 0.88em;
+    color: var(--p, var(--accent));
+    margin-bottom: 0.3em;
+  }
+  .slide h1 { font-size: 2.1em; margin: 0 0 0.2em 0; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; }
+  .slide h2 { font-size: 1.4em; margin: 0 0 0.35em 0; padding-bottom: 0.25em; border-bottom: 3px solid var(--p, var(--rule)); font-weight: 700; letter-spacing: -0.01em; }
+  .slide h3 { font-weight: 700; color: var(--p, var(--muted)); margin: 0.1em 0 0.5em 0; font-size: 1.2em; font-family: "Kalam", cursive; }
+  .slide p { line-height: 1.42; font-size: 0.96em; }
+  .slide ul { line-height: 1.38; font-size: 0.96em; padding-left: 1.1em; }
+  .slide li { margin-bottom: 0.28em; }
+  .slide li ul { margin-top: 0.25em; font-size: 0.9em; }
+  .slide li::marker { color: var(--p, var(--accent)); }
+  .slide code { font-family: "SF Mono", Menlo, Consolas, monospace; background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.88em; color: var(--accent-dark); }
+  .slide pre { background: var(--code-bg); border-left: 3px solid var(--p, var(--accent)); padding: 0.9em 1.1em; border-radius: 0 6px 6px 0; overflow: auto; font-size: 0.82em; line-height: 1.5; }
+  .slide pre code { background: none; padding: 0; color: var(--fg); }
+  .slide table { border-collapse: collapse; font-size: 0.92em; margin-top: 0.5em; width: 100%; }
+  .slide th, .slide td { border: 1px solid var(--rule); padding: 0.45em 0.8em; text-align: left; }
+  .slide th { background: var(--pbg, var(--accent-light)); color: var(--p, var(--accent-dark)); font-weight: 600; border-bottom: 2px solid var(--rule); }
+  .slide strong { font-weight: 700; }
+  .slide .body { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 0.2em; }
+  .slide .pagenum {
+    position: absolute; bottom: 1.4vh; right: 1.4vw;
+    color: var(--p, var(--muted)); font-family: "Kalam", cursive; font-weight: 700;
+    font-size: 0.9em; font-variant-numeric: tabular-nums;
+  }
+  .slide .chip {
+    position: absolute; top: 1.6vh; right: 1.6vw;
+    font-family: "Kalam", cursive; font-weight: 700; font-size: 0.85em; letter-spacing: 0.01em;
+    color: var(--p, var(--accent-dark)); background: var(--pbg, var(--accent-light));
+    border: 1.5px dashed var(--p, var(--accent-border));
+    padding: 0.2em 0.85em; border-radius: 10px;
+    transform: rotate(-2deg);
+    box-shadow: 2px 3px 0 rgba(0,0,0,0.05);
+  }
+  .badge {
+    display: inline-block; align-self: flex-start; background: #ffe066; color: #5c4400;
+    font-family: "Kalam", cursive; font-weight: 700; font-size: 0.9em;
+    padding: 0.15em 0.8em; border-radius: 6px 14px 6px 14px;
+    transform: rotate(-1.5deg);
+    box-shadow: 2px 3px 0 rgba(0,0,0,0.08);
+    margin-bottom: 0.35em;
+  }
+  .icon { display: block; margin: 0 auto 0.6em auto; color: var(--p, var(--accent)); }
+  .slide.lead { align-items: center; justify-content: center; text-align: center; background: var(--pbg, var(--bg)); }
+  .slide.lead h1 { font-size: 2.5em; }
+  .slide.lead h3 { font-size: 1.5em; }
+  .slide.lead p { color: var(--muted); }
+  .diagram { width: 100%; height: auto; }
+  .diagram text { font-family: "Inter", -apple-system, Helvetica, Arial, sans-serif; }
+  #hint {
+    position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+    color: #999; font-family: "Inter", -apple-system, Helvetica, Arial, sans-serif;
+    font-size: 12px; z-index: 10;
+  }
+  #progress {
+    position: fixed; left: 0; bottom: 0; height: 3px; width: 100%;
+    background: rgba(255,255,255,0.08); z-index: 5;
+  }
+  #progress-bar { height: 100%; width: 0%; background: var(--accent); transition: width 0.2s ease, background 0.2s ease; }
+</style>
+</head>
+<body>
+<div id="deck">
+
+  <!-- Slide 1 -->
+  <section class="slide lead p-team">
+    <svg class="icon" viewBox="0 0 100 60" width="64" height="38" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="66" y="27" width="8" height="8" rx="1" fill="#ffffff" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="2.5" fill="currentColor"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="2.5" fill="currentColor"/>
+      <line x1="24" y1="29" x2="42" y2="29" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="28.5" y1="21.2" x2="37.5" y2="36.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="37.5" y1="21.2" x2="28.5" y2="36.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1>The Ice Truck Problem(s)</h1>
+    <h3>Team 13 – Technisches Fachgespräch Challenge I + II</h3>
+    <p>Anton · Felix · Dogan · Erik · Smart Systems (BH4ab)</p>
+    <span class="pagenum">01 / 29</span>
+  </section>
+
+  <!-- Slide 2 -->
+  <section class="slide p-team">
+    <div class="eyebrow">Überblick</div>
+    <h2>Worum geht's heute</h2>
+    <div class="body">
+      <ul>
+        <li><strong>Ein</strong> Kühl-Truck-Szenario, zwei Challenges nacheinander gebaut:
+          <ul>
+            <li><strong>Challenge I</strong> – Signale &amp; Bus-Systeme (Sensoren, LEDs, I2C, Aktorik)</li>
+            <li><strong>Challenge II</strong> – Kommunikation &amp; Entwicklungswerkzeuge (MQTT, Node-RED, Handy)</li>
+          </ul>
+        </li>
+        <li>Roter Faden: Sensor → Arduino → I2C → Pi (Regellogik + SQL) → Aktor, danach zusätzlich → MQTT → Node-RED → Handy</li>
+        <li>Wir gehen den Datenfluss entlang – jede:r erklärt den Abschnitt, an dem er/sie am tiefsten drin war</li>
+      </ul>
+    </div>
+    <span class="pagenum">02 / 29</span>
+  </section>
+
+  <!-- Slide 3 -->
+  <section class="slide p-team">
+    <div class="eyebrow">Überblick</div>
+    <h2>Team &amp; Aufteilung</h2>
+    <div class="body">
+      <table>
+        <tr><th>Block</th><th>Thema</th><th>Wer</th></tr>
+        <tr><td>1</td><td>Hardware &amp; Sensorik (Ch I)</td><td>Anton</td></tr>
+        <tr><td>2</td><td>Datenübertragung &amp; Speicherung (Ch I)</td><td>Felix</td></tr>
+        <tr><td>3</td><td>Regellogik &amp; Aktorik (Ch I)</td><td>Dogan</td></tr>
+        <tr><td>4</td><td>MQTT &amp; Topics (Ch II)</td><td>Erik</td></tr>
+        <tr><td>5</td><td>Node-RED &amp; Fernsteuerung (Ch II)</td><td>Anton</td></tr>
+        <tr><td>6</td><td>Mobiles Endgerät &amp; Status (Ch II)</td><td>Felix</td></tr>
+        <tr><td>7</td><td>Fazit</td><td>Dogan</td></tr>
+      </table>
+      <p style="margin-top:0.8em; color:var(--muted); font-size:0.92em;">Gesamtdauer: ca. 15 Minuten Vortrag, danach Rückfragen · 5 Folien pro Person</p>
+    </div>
+    <span class="pagenum">03 / 29</span>
+  </section>
+
+  <!-- Slide 4 -->
+  <section class="slide lead p-anton">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">Challenge I</div>
+    <h1>Block 1: Hardware &amp; Sensorik</h1>
+    <h3>Anton</h3>
+    <span class="pagenum">04 / 29</span>
+  </section>
+
+  <!-- Slide 5 -->
+  <section class="slide p-anton">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Hardware &amp; Sensorik</div>
+    <h2>Systemarchitektur Challenge I</h2>
+    <div class="body">
+      <svg class="diagram" viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#c2650a"/>
+          </marker>
+        </defs>
+        <rect x="40" y="20" width="330" height="130" rx="8" fill="#fdf1e3" stroke="#c2650a" stroke-width="2"/>
+        <text x="58" y="46" font-size="16" font-weight="700" fill="#7a3d05">Sensor-Board · I2C 0x08</text>
+        <text x="58" y="70" font-size="13" fill="#333">KY-028 Temperatursensor → A0</text>
+        <text x="58" y="92" font-size="13" fill="#333">Status-LED (PWM) → D9</text>
+
+        <rect x="530" y="20" width="330" height="130" rx="8" fill="#fdf1e3" stroke="#c2650a" stroke-width="2"/>
+        <text x="548" y="46" font-size="16" font-weight="700" fill="#7a3d05">Aktor-Board · I2C 0x09</text>
+        <text x="548" y="70" font-size="13" fill="#333">KY-028 Temperatursensor → A0</text>
+        <text x="548" y="92" font-size="13" fill="#333">Status-LED (PWM) → D5</text>
+        <text x="548" y="114" font-size="13" fill="#333">Lüfter (Software-PWM) → D4</text>
+        <text x="548" y="136" font-size="13" fill="#333">Servo/Ventil → D6</text>
+
+        <line x1="205" y1="150" x2="205" y2="192" stroke="#c2650a" stroke-width="2"/>
+        <line x1="695" y1="150" x2="695" y2="192" stroke="#c2650a" stroke-width="2"/>
+        <line x1="205" y1="192" x2="695" y2="192" stroke="#c2650a" stroke-width="2"/>
+        <text x="450" y="184" text-anchor="middle" font-size="13" fill="#7a3d05">I2C · SDA/SCL · Pull-ups auf 3,3V</text>
+        <line x1="450" y1="192" x2="450" y2="216" stroke="#c2650a" stroke-width="2.5" marker-end="url(#arrow1)"/>
+
+        <rect x="250" y="222" width="400" height="66" rx="8" fill="#c2650a"/>
+        <text x="450" y="250" text-anchor="middle" font-size="15" font-weight="700" fill="#ffffff">Raspberry Pi — pi-backend/app.py</text>
+        <text x="450" y="272" text-anchor="middle" font-size="12.5" fill="#fdf1e3">liest beide Boards · rechnet &amp; regelt · loggt in SQLite</text>
+      </svg>
+      <p style="margin-top:0.5em;">Zwei Arduino Unos, ein gemeinsamer I2C-Bus, ein Pi als Gehirn.</p>
+    </div>
+    <span class="pagenum">05 / 29</span>
+  </section>
+
+  <!-- Slide 6 -->
+  <section class="slide p-anton">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Hardware &amp; Sensorik &nbsp;·&nbsp; Bewertung: Sensor funktionstüchtig (5 Pkt)</div>
+    <h2>Sensorik: von DHT22 zu 2× KY-028</h2>
+    <div class="body">
+      <ul>
+        <li>Ursprünglich geplant: DHT22 (Temp/Feuchte) auf dem Aktor-Board</li>
+        <li><strong>Problem:</strong> <code>readTemperature()</code>/<code>readHumidity()</code> lieferten ab dem ersten Aufruf nach jedem Reset nur <code>NaN</code> – per Serial direkt verifiziert, Verkabelung mehrfach gegengeprüft</li>
+        <li><strong>Entscheidung:</strong> DHT22 raus, stattdessen ein zweites KY-028 – beide Boards messen jetzt nach demselben Prinzip</li>
+        <li>Beide Sensoren einzeln mit einem Referenzthermometer kalibriert (2 Punkte je Board)</li>
+      </ul>
+    </div>
+    <span class="pagenum">06 / 29</span>
+  </section>
+
+  <!-- Slide 7 -->
+  <section class="slide p-anton">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Hardware &amp; Sensorik &nbsp;·&nbsp; Bewertung: LED + Helligkeit folgt Sensor (4 + 6 Pkt)</div>
+    <h2>LED zeigt den Messwert</h2>
+    <div class="body">
+      <span class="badge">👉 Live-Demo</span>
+      <ul>
+        <li>Jedes Board hat eine eigene PWM-LED, die <strong>lokal auf dem Arduino</strong> aus dem Rohwert berechnet wird – kein I2C-Umweg nötig</li>
+        <li>Kalibrierte Eckwerte pro Board (z.B. Aktor-Board: <code>RAW_AT_LED_FULL=129</code>, <code>RAW_AT_LED_OFF=385</code>), dazwischen linear interpoliert</li>
+        <li>LED voll hell ab ~30°C, aus ab ~-10°C</li>
+        <li>Wir zeigen das jetzt kurz live: Finger auf den Sensor, Helligkeit ändert sich in Echtzeit</li>
+      </ul>
+    </div>
+    <span class="pagenum">07 / 29</span>
+  </section>
+
+  <!-- Slide 8 -->
+  <section class="slide lead p-felix">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">Challenge I</div>
+    <h1>Block 2: Datenübertragung &amp; Speicherung</h1>
+    <h3>Felix</h3>
+    <span class="pagenum">08 / 29</span>
+  </section>
+
+  <!-- Slide 9 -->
+  <section class="slide p-felix">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Datenübertragung &nbsp;·&nbsp; Bewertung: Kommunikation mehrerer Arduinos mit dem Pi (5 Pkt)</div>
+    <h2>I2C-Kommunikation Pi ↔ beide Arduinos</h2>
+    <div class="body">
+      <ul>
+        <li>Pi liest beide Boards per I2C aus (<code>smbus2</code>, <code>/dev/i2c-1</code>), Adressen <code>0x08</code> / <code>0x09</code></li>
+        <li><strong>Bug, den wir gefunden haben:</strong> <code>smbus2</code>s <code>write_i2c_block_data()</code>/<code>read_i2c_block_data()</code> sprechen die SMBus-Block-Konvention (ein Register-Byte vorab, erstes Byte = Längenangabe) – unsere Sketches senden aber rohe Bytes ohne Präfix</li>
+        <li>Symptom: Lüfter- und Ventil-Sollwerte vertauscht, Sensorwerte um ein Byte verschoben</li>
+        <li><strong>Fix:</strong> <code>smbus2.i2c_msg.read()</code>/<code>.write()</code> statt der Block-Funktionen – exakte Byte-Anzahl, kein Präfix</li>
+      </ul>
+    </div>
+    <span class="pagenum">09 / 29</span>
+  </section>
+
+  <!-- Slide 10 -->
+  <section class="slide p-felix">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Datenübertragung &nbsp;·&nbsp; Bewertung: Datenformate dargestellt (5 Pkt)</div>
+    <h2>Datenformate der Sensoren</h2>
+    <div class="body">
+      <ul>
+        <li>Jedes Board sendet <strong>2 rohe Bytes</strong> (KY-028-Analogwert) über I2C – keine Umrechnung in der Firmware</li>
+        <li>Umrechnung passiert komplett im Pi-Backend (<code>calibration.py</code>): 2-Punkt-lineare Interpolation, <strong>pro Board eigene Kurve</strong></li>
+      </ul>
+      <table>
+        <tr><th>Board</th><th>23°C → Rohwert</th><th>30°C → Rohwert</th></tr>
+        <tr><td>Sensor-Board</td><td>212</td><td>160</td></tr>
+        <tr><td>Aktor-Board</td><td>174</td><td>126 (bei 30,5°C)</td></tr>
+      </table>
+    </div>
+    <span class="pagenum">10 / 29</span>
+  </section>
+
+  <!-- Slide 11 -->
+  <section class="slide p-felix">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Datenübertragung &nbsp;·&nbsp; Bewertung: Messdaten in SQL-DB protokolliert (4 Pkt)</div>
+    <h2>Messdaten in SQLite protokolliert</h2>
+    <div class="body">
+      <ul>
+        <li>Tabelle <code>readings</code> (<code>db.py</code>), eine Zeile je Poll-Zyklus (alle 5s)</li>
+        <li>Felder: <code>timestamp</code>, <code>sensor_board_raw</code>, <code>sensor_board_temp_c</code>, <code>actor_board_raw</code>, <code>actor_board_temp_c</code>, <code>fan_pwm</code>, <code>valve_angle</code></li>
+        <li>Läuft als systemd-Service (<code>challenge-i-backend.service</code>) – startet automatisch bei jedem Boot</li>
+        <li>Rohwert <strong>und</strong> kalibrierter Wert werden geloggt – falls die Kalibrierung später nachjustiert wird, bleiben die Rohdaten auswertbar</li>
+      </ul>
+    </div>
+    <span class="pagenum">11 / 29</span>
+  </section>
+
+  <!-- Slide 12 -->
+  <section class="slide lead p-dogan">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">Challenge I</div>
+    <h1>Block 3: Regellogik &amp; Aktorik</h1>
+    <h3>Dogan</h3>
+    <span class="pagenum">12 / 29</span>
+  </section>
+
+  <!-- Slide 13 -->
+  <section class="slide p-dogan">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Regellogik &amp; Aktorik</div>
+    <h2>Regellogik: zwei Kühlstufen</h2>
+    <div class="body">
+      <pre><code># rules.py – vereinfacht
+if temp &lt; 25°C:        fan = 0,          valve = 0
+if 25°C &lt;= temp &lt; 28°C: fan = 40..255,   valve = 0     # Stufe 1
+if temp &gt;= 28°C:        fan = 255,       valve = 30..180  # Stufe 2</code></pre>
+      <ul>
+        <li>Berechnungsgrundlage: <strong>Mittelwert</strong> beider kalibrierter Temperaturen</li>
+        <li>Schwellwerte sind aktuell Tischtest-Platzhalter, nicht die echten Betriebswerte aus der Moodle-Aufgabenstellung – offener Punkt</li>
+      </ul>
+    </div>
+    <span class="pagenum">13 / 29</span>
+  </section>
+
+  <!-- Slide 14 -->
+  <section class="slide p-dogan">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Regellogik &amp; Aktorik &nbsp;·&nbsp; Bewertung: Lüfter über Transistor vom Pi gesteuert (8 Pkt)</div>
+    <h2>Lüfter: Ansteuerung über Transistor</h2>
+    <div class="body">
+      <span class="badge">👉 Live-Demo</span>
+      <ul>
+        <li>DC-Lüfter hängt über einen Transistor/H-Brücke am Arduino, der Pi liefert den PWM-Sollwert per I2C</li>
+        <li><strong>Die Odyssee dahin:</strong> D9 (Timer1) kollidierte mit der Servo-Bibliothek → auf D3 (Timer2) umverkabelt → Timer2 lief auf diesem Board generell nicht (vermutlich LGT8F328P-Klon-Chip statt echtem ATmega328P) → <strong>Software-PWM auf D4</strong>, per <code>digitalWrite()</code> und <code>millis()</code></li>
+        <li>Danach drehte der Lüfter erst <strong>rückwärts</strong> (schneller bei Kälte) – Board schaltet active-low, Logik invertiert, jetzt korrekt</li>
+      </ul>
+    </div>
+    <span class="pagenum">14 / 29</span>
+  </section>
+
+  <!-- Slide 15 -->
+  <section class="slide p-dogan">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Regellogik &amp; Aktorik &nbsp;·&nbsp; Bewertung: Servomotor vom Pi gesteuert (3 Pkt)</div>
+    <h2>Ventil: Servo-Ansteuerung</h2>
+    <div class="body">
+      <span class="badge">👉 Live-Demo</span>
+      <ul>
+        <li>Servo am Ventil, Signal auf D6, Standard-Arduino-<code>Servo</code>-Bibliothek</li>
+        <li>Winkel 0–180° direkt aus <code>rules.py</code>, vom Pi per I2C an den Aktor-Arduino geschrieben</li>
+        <li>Genau diese Bibliothek belegt intern Timer1 – <strong>das</strong> war die Ursache für den Lüfter-Konflikt auf D9/D10 (siehe vorherige Folie)</li>
+      </ul>
+    </div>
+    <span class="pagenum">15 / 29</span>
+  </section>
+
+  <!-- Slide 16 -->
+  <section class="slide p-dogan">
+    <div class="chip">Challenge I</div>
+    <div class="eyebrow">Regellogik &amp; Aktorik &nbsp;·&nbsp; Bewertung: Szenario sinnvoll erweitert (5 Pkt)</div>
+    <h2>Szenario sinnvoll erweitert</h2>
+    <div class="body">
+      <ul>
+        <li>Zwei physische Boards statt nur des geforderten Minimums (Sensor + Platzhalter-Slave) – echte 2-Sensor-Redundanz</li>
+        <li>Kalibrierung nicht geschätzt, sondern mit Referenzthermometer gemessen</li>
+        <li>Automatischer Systemd-Start, kein manuelles Hochfahren nötig</li>
+        <li><code>control_state.py</code>/<code>set_control.py</code>: manueller Override-Kanal – die Brücke zu Challenge II</li>
+      </ul>
+    </div>
+    <span class="pagenum">16 / 29</span>
+  </section>
+
+  <!-- Slide 17 -->
+  <section class="slide lead p-erik">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">Challenge II</div>
+    <h1>Block 4: MQTT &amp; Topics</h1>
+    <h3>Erik</h3>
+    <span class="pagenum">17 / 29</span>
+  </section>
+
+  <!-- Slide 18 -->
+  <section class="slide p-erik">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">MQTT &amp; Topics</div>
+    <h2>Von Challenge I zu Challenge II</h2>
+    <div class="body">
+      <svg class="diagram" viewBox="0 0 900 290" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#2f6fb0"/>
+          </marker>
+        </defs>
+
+        <rect x="20" y="30" width="160" height="56" rx="7" fill="#eaf2fa" stroke="#2f6fb0" stroke-width="2"/>
+        <text x="100" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d4a78">SQLite</text>
+        <text x="100" y="72" text-anchor="middle" font-size="11" fill="#333">challenge_i.db</text>
+
+        <rect x="250" y="30" width="160" height="56" rx="7" fill="#eaf2fa" stroke="#2f6fb0" stroke-width="2"/>
+        <text x="330" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d4a78">Node-RED</text>
+        <text x="330" y="72" text-anchor="middle" font-size="11" fill="#333">Flow</text>
+
+        <rect x="480" y="30" width="180" height="56" rx="7" fill="#eaf2fa" stroke="#2f6fb0" stroke-width="2"/>
+        <text x="570" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1d4a78">MQTT-Broker</text>
+        <text x="570" y="72" text-anchor="middle" font-size="11" fill="#333">Mosquitto (Pi)</text>
+
+        <rect x="710" y="30" width="170" height="56" rx="7" fill="#2f6fb0"/>
+        <text x="795" y="54" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ffffff">Handy</text>
+        <text x="795" y="72" text-anchor="middle" font-size="11" fill="#eaf2fa">MQTT Dash / Explorer</text>
+
+        <line x1="180" y1="58" x2="248" y2="58" stroke="#2f6fb0" stroke-width="2" marker-end="url(#arrow2)"/>
+        <text x="214" y="49" text-anchor="middle" font-size="10.5" fill="#1d4a78">alle 5s</text>
+        <line x1="410" y1="58" x2="478" y2="58" stroke="#2f6fb0" stroke-width="2" marker-end="url(#arrow2)"/>
+        <text x="444" y="49" text-anchor="middle" font-size="10.5" fill="#1d4a78">publish</text>
+        <line x1="660" y1="58" x2="708" y2="58" stroke="#2f6fb0" stroke-width="2" marker-end="url(#arrow2)"/>
+        <text x="684" y="49" text-anchor="middle" font-size="10.5" fill="#1d4a78">MQTT</text>
+
+        <line x1="795" y1="86" x2="795" y2="172" stroke="#2f6fb0" stroke-width="2"/>
+        <line x1="330" y1="172" x2="795" y2="172" stroke="#2f6fb0" stroke-width="2"/>
+        <text x="562" y="164" text-anchor="middle" font-size="11" fill="#1d4a78">control/* (Fernsteuerung)</text>
+        <line x1="330" y1="172" x2="330" y2="88" stroke="#2f6fb0" stroke-width="2" marker-end="url(#arrow2)"/>
+        <line x1="330" y1="172" x2="330" y2="208" stroke="#2f6fb0" stroke-width="2" marker-end="url(#arrow2)"/>
+
+        <rect x="180" y="212" width="300" height="56" rx="7" fill="#eaf2fa" stroke="#2f6fb0" stroke-width="2"/>
+        <text x="330" y="236" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1d4a78">set_control.py → control_state.json</text>
+        <text x="330" y="254" text-anchor="middle" font-size="11" fill="#333">app.py liest jeden Poll-Zyklus → I2C</text>
+      </svg>
+      <p style="margin-top:0.4em;">Die lokale Regelung aus Challenge I läuft automatisch – Challenge II macht Zustand <strong>sichtbar</strong> und Aktoren <strong>fernsteuerbar</strong>, ohne die Ch-I-Logik zu ersetzen.</p>
+    </div>
+    <span class="pagenum">18 / 29</span>
+  </section>
+
+  <!-- Slide 19 -->
+  <section class="slide p-erik">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">MQTT &amp; Topics &nbsp;·&nbsp; Bewertung: Kommunikation über MQTT realisiert (8 Pkt)</div>
+    <h2>MQTT-Broker: lokaler Mosquitto</h2>
+    <div class="body">
+      <ul>
+        <li>Entscheidung: lokaler Mosquitto auf dem Pi statt ITECH-Broker (war schon installiert)</li>
+        <li>Eigene Config: Listener auf <code>0.0.0.0:1883</code> statt nur <code>localhost</code>, <strong>Passwort-Pflicht</strong> (<code>allow_anonymous false</code>)</li>
+        <li>ACL beschränkt den Nutzer <code>team13-1</code> strikt auf <code>team13-1/#</code></li>
+        <li>Getestet: authentifizierter Roundtrip ✅, anonyme Verbindung abgelehnt ✅, Publish außerhalb der ACL wird verworfen ✅</li>
+      </ul>
+    </div>
+    <span class="pagenum">19 / 29</span>
+  </section>
+
+  <!-- Slide 20 -->
+  <section class="slide p-erik">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">MQTT &amp; Topics &nbsp;·&nbsp; Bewertung: Organisation/Hierarchie der Topics (5 Pkt)</div>
+    <h2>Topic-Schema &amp; Hierarchie</h2>
+    <div class="body">
+      <p>Präfix: <code>team13-1/icetruck/</code></p>
+      <table>
+        <tr><th>Richtung</th><th>Topics</th><th>Payload</th></tr>
+        <tr><td>Pi → Handy (retained)</td><td><code>sensors/sensor_board_temp_c</code>, <code>sensors/actor_board_temp_c</code>, <code>actuators/fan_pwm</code>, <code>actuators/valve_angle</code>, <code>status</code></td><td>Zahl bzw. JSON</td></tr>
+        <tr><td>Handy → Pi</td><td><code>control/mode/set</code>, <code>control/fan_pwm/set</code>, <code>control/valve_angle/set</code></td><td><code>auto</code>/<code>manual</code>, Zahl</td></tr>
+      </table>
+      <p><strong>Retained</strong>, damit ein neu verbundenes Handy sofort den letzten Stand sieht, statt 5s auf den nächsten Poll zu warten.</p>
+    </div>
+    <span class="pagenum">20 / 29</span>
+  </section>
+
+  <!-- Slide 21 -->
+  <section class="slide lead p-anton">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">Challenge II</div>
+    <h1>Block 5: Node-RED &amp; Fernsteuerung</h1>
+    <h3>Anton</h3>
+    <span class="pagenum">21 / 29</span>
+  </section>
+
+  <!-- Slide 22 -->
+  <section class="slide p-anton">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">Node-RED &amp; Fernsteuerung &nbsp;·&nbsp; Bewertung: Steuerung über Node-RED realisiert (9 Pkt)</div>
+    <h2>Node-RED als Integrationsschicht</h2>
+    <div class="body">
+      <ul>
+        <li>Ein Flow liest alle 5s die letzte Zeile aus <code>challenge_i.db</code> (<code>node-red-node-sqlite</code>) und publiziert sie auf die Topics aus dem Schema</li>
+        <li>Gleicher Flow abonniert <code>control/#</code>, validiert eingehende Befehle, loggt sie nach <code>control_log.ndjson</code></li>
+        <li>Per Exec-Node ruft er <code>set_control.py</code> auf – das schreibt den gewünschten Zustand in <code>control_state.json</code></li>
+        <li>Damit ist Node-RED die Brücke in <strong>beide</strong> Richtungen zwischen Pi-Backend und MQTT</li>
+      </ul>
+    </div>
+    <span class="pagenum">22 / 29</span>
+  </section>
+
+  <!-- Slide 23 -->
+  <section class="slide p-anton">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">Node-RED &amp; Fernsteuerung &nbsp;·&nbsp; Bewertung: Zusätzliche Funktionen realisiert (8 Pkt)</div>
+    <h2>Fernsteuerung: auto/manual als Extra-Feature</h2>
+    <div class="body">
+      <ul>
+        <li><code>control/mode/set</code> schaltet zwischen automatischer Regellogik (<code>rules.py</code>) und manuellem Override vom Handy</li>
+        <li>Im <code>manual</code>-Modus liest <code>app.py</code> <code>control_state.json</code> jeden Poll-Zyklus und schreibt die vom Handy gesendeten Werte <strong>direkt per I2C</strong> – statt der berechneten Werte</li>
+        <li>Modul-seitig komplett getestet (<code>pytest</code>, 16/16 grün), auf der echten Hardware End-to-End noch nicht final verifiziert</li>
+      </ul>
+    </div>
+    <span class="pagenum">23 / 29</span>
+  </section>
+
+  <!-- Slide 24 -->
+  <section class="slide lead p-felix">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <div class="eyebrow">Challenge II</div>
+    <h1>Block 6: Mobiles Endgerät &amp; Status</h1>
+    <h3>Felix</h3>
+    <span class="pagenum">24 / 29</span>
+  </section>
+
+  <!-- Slide 25 -->
+  <section class="slide p-felix">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">Mobiles Endgerät &amp; Status &nbsp;·&nbsp; Bewertung: weiteres Endgerät über MQTT eingebunden (8 Pkt)</div>
+    <h2>Mobiles Endgerät statt Eigenbau-App</h2>
+    <div class="body">
+      <ul>
+        <li>Aufgabenstellung erlaubt explizit MQTT Dash oder MQTT Explorer statt einer selbstgebauten App – genau das nutzen wir</li>
+        <li>Einzelwert-Topics als reiner Zahlen-Payload → passen direkt in numerische Widgets/Gauges</li>
+        <li><code>status</code>-Topic zusätzlich als JSON für alle, die lieber Rohdaten sehen (z.B. MQTT Explorer)</li>
+        <li>Retained Topics sorgen dafür, dass ein Widget sofort einen Wert zeigt, nicht erst nach dem nächsten Poll</li>
+      </ul>
+    </div>
+    <span class="pagenum">25 / 29</span>
+  </section>
+
+  <!-- Slide 26 -->
+  <section class="slide p-felix">
+    <div class="chip">Challenge II</div>
+    <div class="eyebrow">Mobiles Endgerät &amp; Status</div>
+    <h2>Stand heute &amp; offene Punkte</h2>
+    <div class="body">
+      <p><strong>Läuft:</strong> I2C-Bug behoben, Regellogik pytest-getestet, SQLite-Logging live im Systemd-Service, Node-RED-Flow importiert und mit echten Live-Daten verifiziert (Lese-Richtung)</p>
+      <p><strong>Noch offen, braucht kurz Root-Zugriff auf dem Pi:</strong></p>
+      <ul>
+        <li>Broker-Auth hängt seit 24.09. in einer Reconnect-Schleife – Passwort/Credentials müssen neu gesetzt werden</li>
+        <li>Backend-Service hält noch alten Code im Speicher (kein <code>control_state</code>-Support) – braucht <code>systemctl restart</code></li>
+        <li>MQTT Dash auf einem echten Handy noch nicht konfiguriert</li>
+      </ul>
+      <p><strong>Ausblick:</strong> Challenge III (Cloud-Speicherung/-Auswertung) – noch nicht begonnen</p>
+    </div>
+    <span class="pagenum">26 / 29</span>
+  </section>
+
+  <!-- Slide 27 -->
+  <section class="slide lead p-dogan">
+    <svg class="icon" viewBox="0 0 100 60" width="48" height="29" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="14" width="54" height="30" rx="4" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <rect x="62" y="24" width="24" height="20" rx="3" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="22" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+      <circle cx="78" cy="48" r="7" fill="#ffffff" stroke="currentColor" stroke-width="3"/>
+    </svg>
+    <h1>Fazit</h1>
+    <h3>Dogan</h3>
+    <span class="pagenum">27 / 29</span>
+  </section>
+
+  <!-- Slide 28 -->
+  <section class="slide p-dogan">
+    <div class="eyebrow">Fazit</div>
+    <h2>Lessons Learned</h2>
+    <div class="body">
+      <ul>
+        <li>Erst auf der echten Hardware messen, nicht raten – der DHT22 "war kaputt", nicht unser Code; der PWM-Timer-Konflikt war chip-spezifisch, keine Verkabelungsfrage</li>
+        <li>Modul-Tests (pytest, Mock-I2C) geben Sicherheit <em>vor</em> dem Hardware-Test, ersetzen ihn aber nicht – der End-to-End-Test auf echter Hardware fand nochmal eigene Bugs</li>
+        <li>Ehrliches Logging (Rohwert <strong>und</strong> kalibrierter Wert) macht Fehlersuche später erst möglich</li>
+      </ul>
+    </div>
+    <span class="pagenum">28 / 29</span>
+  </section>
+
+  <!-- Slide 29 -->
+  <section class="slide lead p-team">
+    <h1>Danke! 🎉</h1>
+    <h3>Fragen?</h3>
+    <span class="pagenum">29 / 29</span>
+  </section>
+
+</div>
+<div id="progress"><div id="progress-bar"></div></div>
+<div id="hint">← → zum Blättern, oder klicken</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const progressBar = document.getElementById('progress-bar');
+  let idx = 0;
+  function show(i) {
+    idx = Math.max(0, Math.min(total - 1, i));
+    slides.forEach((s, n) => s.classList.toggle('active', n === idx));
+    progressBar.style.width = ((idx + 1) / total * 100) + '%';
+    const activeSlide = slides[idx];
+    const p = getComputedStyle(activeSlide).getPropertyValue('--p').trim();
+    if (p) progressBar.style.background = p;
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(idx + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(idx - 1);
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(total - 1);
+  });
+  document.getElementById('deck').addEventListener('click', (e) => {
+    const rect = document.getElementById('deck').getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    if (clickX > rect.width / 2) show(idx + 1); else show(idx - 1);
+  });
+  show(0);
+</script>
+</body>
+</html>

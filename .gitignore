@@ -30,3 +30,10 @@ archive/Code/feed-diversity-prototype/.env
 archive/Code/feed-diversity-prototype/venv/
 archive/Code/feed-diversity-prototype/**/__pycache__/
 archive/Code/feed-diversity-prototype/.pytest_cache/
+
+# Challenge III Cloud-Bridge: .env mit IoT-Hub-Device-Key, Cursor-Datei und venv
+# leben nur auf dem Pi, nie committen
+Challenge-III-Ice-Truck-Cloud/Code/cloud-bridge/.env
+Challenge-III-Ice-Truck-Cloud/Code/cloud-bridge/bridge_state.json*
+Challenge-III-Ice-Truck-Cloud/Code/cloud-bridge/venv/
+.pytest_cache/
