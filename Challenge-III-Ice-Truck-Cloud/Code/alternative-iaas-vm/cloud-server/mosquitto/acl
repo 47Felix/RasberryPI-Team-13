@@ -1,0 +1,7 @@
+# pi-bridge: darf nur Truck-Daten schreiben
+user pi-bridge
+topic write team13-1/icetruck/#
+
+# telegraf: darf nur lesen
+user telegraf
+topic read team13-1/icetruck/#

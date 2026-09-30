@@ -31,7 +31,7 @@ Zentrales Gedächtnis für unser Pi-Projekt (Lernfeld Smart Systems, BH4ab). Die
 - [[Kursstruktur]]
 - [[Challenge I - Ice Truck Problem]]
 - [[Challenge II - Ice Truck Extension]]
-- [[Challenge III - Ice Truck in Cloud]]
+- [[Challenge III - Ice Truck in Cloud]] – aktuell, Code in `Challenge-III-Ice-Truck-Cloud/`
 - [[Infotheke]]
 - [[WS-Präsentationen]]
 - [[WS-Kurzprojekt Freitag]] – Abschluss-Challenge, Deadline Freitag 28.08.
