@@ -73,10 +73,15 @@ den ursprünglichen Zeitstempeln hoch. Der Cursor springt auf 220.
 3. Realistischer ist ein echter Netzausfall (WLAN des Pi kurz trennen), zum Vorführen aber riskanter,
    weil dabei auch die SSH-Verbindung abbricht.
 
-## Kontingent (ThingSpeak Free, laut Anbieter prüfen)
+## Kontingent (ThingSpeak Free, laut [Licensing FAQ](https://thingspeak.mathworks.com/pages/license_faq))
 
-- höchstens **1 Request alle 15 s**; die Bridge wartet von selbst
-- ca. **3 Mio. Nachrichten pro Jahr** (≈ 8.200 pro Tag); jeder Eintrag im Bulk-Update zählt einzeln
+- nur für **nicht-kommerzielle** kleine Projekte; ein Free-Konto pro Person
+- höchstens **1 Update alle 15 s pro Kanal**; die Bridge wartet von selbst
+- unter **3 Mio. Nachrichten pro Jahr** (≈ 8.200 pro Tag); eine Nachricht = ein Schreibzugriff mit bis zu
+  8 Feldern, also zählt jeder Eintrag im Bulk-Update einzeln
+- höchstens **4 Kanäle** (ein Truck = ein Kanal) und bis zu **10 Mio. gespeicherte Nachrichten**
+- Verbrauch und Restkontingent: *My Account*. Ist das Kontingent leer, nimmt der Kanal keine Daten mehr an
+  (die Bridge puffert dann lokal weiter und loggt Fehler)
 
 | Einstellung | Einträge pro Tag | Kontingent reicht … |
 |---|---|---|

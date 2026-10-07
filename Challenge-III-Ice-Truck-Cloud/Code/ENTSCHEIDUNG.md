@@ -11,8 +11,12 @@ Verwandte Dokumente:
 [`DATENSCHUTZ.md`](DATENSCHUTZ.md) (Datensicherheit und DSGVO) ·
 [`README.md`](README.md) (Einrichtung, Store and Forward)
 
-> Hinweis: Preise, Limits und Konditionen stammen aus unserer Recherche und den
-> Anbieter-Websites. Vor der Abgabe nochmals auf den Seiten der Anbieter gegenprüfen.
+> Quellen für ThingSpeak (Stand 30.09.2026):
+> [Licensing FAQ](https://thingspeak.mathworks.com/pages/license_faq),
+> [License Options](https://thingspeak.mathworks.com/prices),
+> [MathWorks Privacy Policy](https://www.mathworks.com/company/trust-center/privacy-policy.html).
+> Die Angaben zu Azure, AWS und Arduino Cloud stammen aus unserer Recherche und sollten vor
+> der Abgabe nochmals auf den Seiten der Anbieter gegengeprüft werden.
 
 ## 1. Anforderungen aus der Aufgabe
 
@@ -31,8 +35,8 @@ Verwandte Dokumente:
 | **Protokolle** | HTTP(S)-REST, MQTT | MQTT 3.1.1 (TLS 8883 oder WebSockets 443), AMQP, HTTPS | MQTT, WebSockets, HTTPS | MQTT über eigene Bibliothek, auf Arduino/ESP zugeschnitten | frei wählbar |
 | **Speicherung** | Kanal mit 8 Feldern und Statusfeld, CSV/JSON-Export | Routing ohne Code in Blob Storage, Data Lake, Cosmos DB | Rules Engine nach S3, DynamoDB, Timestream | eingebaut, im Free-Tarif nur sehr kurze Historie | InfluxDB, selbst betrieben |
 | **Visualisierung** | Diagramme, Widgets, MATLAB-Auswertung eingebaut | Azure Data Explorer (Free Cluster), Power BI, Grafana | Managed Grafana (kostenpflichtig), QuickSight | fertige Dashboards | Grafana, frei gestaltbar |
-| **Kosten** | Free-Tarif für nicht-kommerzielle Nutzung, keine Kreditkarte | IoT Hub F1 gratis (8.000 Nachrichten/Tag), Rest aus dem Schülerguthaben | Free Tier zeitlich begrenzt, Kreditkarte nötig | Free-Tarif mit starken Einschränkungen | VM-Miete ab ca. 8–15 € im Monat |
-| **Datenschutz** | Anbieter und Server in den USA | EU-Regionen möglich (Germany West Central) | EU-Region Frankfurt möglich | Anbieter in der EU, wenig Kontrolle über Speicherdauer | volle Kontrolle, volle Verantwortung |
+| **Kosten** | Free-Tarif für nicht-kommerzielle kleine Projekte (unter 3 Mio. Nachrichten pro Jahr, 4 Kanäle, 15 s Intervall), keine Kreditkarte | IoT Hub F1 gratis (8.000 Nachrichten/Tag), Rest aus dem Schülerguthaben | Free Tier zeitlich begrenzt, Kreditkarte nötig | Free-Tarif mit starken Einschränkungen | VM-Miete ab ca. 8–15 € im Monat |
+| **Datenschutz** | Anbieter in den USA, Speicherort weltweit, beruft sich auf das EU-US Data Privacy Framework | EU-Regionen möglich (Germany West Central) | EU-Region Frankfurt möglich | Anbieter in der EU, wenig Kontrolle über Speicherdauer | volle Kontrolle, volle Verantwortung |
 | **Aufwand für uns** | gering | mittel | mittel | gering | hoch (Betrieb, Updates, Zertifikate) |
 | **Zugang für uns** | Konto in Minuten angelegt, **läuft** | Schülerkonto am 30.09. nicht erreichbar, **nie in Betrieb** | Kreditkarte nötig | nicht geprüft | nur als Entwurf (`alternative-iaas-vm/`), **nie deployt** |
 
@@ -50,9 +54,12 @@ Wir setzen **ThingSpeak** ein, weil es die Anforderungen bei geringstem Aufwand 
 2. **Speicherung und Visualisierung eingebaut:** Kanal, Diagramme, Widgets und CSV-Export
    gibt es ohne eigenen Server. Für Predictive Maintenance laufen MATLAB-Auswertungen direkt
    in der Anwendung (Sensor-Drift, Ausreißer).
-3. **Kosten:** 0 €, keine Kreditkarte. Nach Anbieterangabe ca. 3 Mio. Nachrichten im Jahr und
-   höchstens ein Update alle 15 Sekunden. Daraus folgt unser Aufbau: Die Messung läuft alle
-   5 Sekunden, die Bridge bündelt und lädt alle 15 Sekunden hoch.
+3. **Kosten:** 0 €, keine Kreditkarte. Laut Licensing FAQ gilt der Free-Tarif für
+   nicht-kommerzielle Nutzung mit höchstens 3 Mio. Nachrichten im Jahr, 4 Kanälen und einem
+   Update-Intervall von 15 Sekunden. Daraus folgt unser Aufbau: Die Messung läuft alle
+   5 Sekunden, die Bridge bündelt und lädt alle 15 Sekunden hoch. Ein Schulprojekt ist
+   nicht-kommerziell, die Lizenzen „Academic“ und „Student“ sind für Hochschulen
+   („degree-granting institution“) gedacht und „Home“ nur für Privatnutzung.
 4. **Datenschutz vertretbar:** Es werden nur Truck-ID, Temperaturen, Aktorwerte und
    Zeitstempel übertragen, keine Personendaten (siehe `DATENSCHUTZ.md`).
 5. **Verfügbarkeit für uns:** Azure war am Tag der Umsetzung nicht erreichbar. Mit
@@ -64,7 +71,8 @@ Wir setzen **ThingSpeak** ein, weil es die Anforderungen bei geringstem Aufwand 
 |---|---|
 | Server in den USA (Drittland) | Nur Daten ohne Personenbezug; Prüfung von Auftragsverarbeitung und Datenübertragung, siehe `DATENSCHUTZ.md` |
 | Kein unveränderliches Archiv (kein WORM) wie bei Azure Blob Storage | Das Original bleibt in der lokalen SQLite-Datenbank; regelmäßiger CSV-Export als zusätzliches Archiv |
-| Free-Tarif mit festen Limits | Bündeln und Ausdünnen (`THINGSPEAK_DOWNSAMPLE`); für die Flotte Lizenz-Upgrade |
+| Free-Tarif mit festen Limits; ist das Jahreskontingent leer, nimmt der Kanal keine Daten mehr an | Bündeln und Ausdünnen (`THINGSPEAK_DOWNSAMPLE`), Verbrauch unter *My Account* beobachten; die Bridge puffert lokal weiter |
+| Free-Tarif nur für **nicht-kommerzielle** Nutzung, max. 4 Kanäle | Für ein Schulprojekt passend; ein Unternehmen mit echten Trucks braucht die kostenpflichtige Standard-Lizenz |
 | Ein Write Key für den ganzen Kanal | Pro Truck ein eigener Kanal mit eigenem Key; Key-Rotation, siehe `SICHERHEITSKONZEPT.md` |
 | Vendor-Lock-in | Der Sender ist austauschbar: dieselbe Bridge kann auch an Azure IoT Hub senden (`CLOUD_BACKEND=azure`) |
 
@@ -95,9 +103,9 @@ Routing, Archiv und Auswertung selbst. Die eigene VM wäre IaaS.
 |---|---|---|
 | **On-demand Self-Service** | Konto, Kanal und API-Keys selbst im Browser angelegt, in Minuten, ohne Vertrag oder Rückfrage | Free-Tarif mit festen Nutzungsbedingungen |
 | **Broad Network Access** | HTTPS aus jedem Netz; Diagramme im Browser und in der Handy-Ansicht | Der Pi braucht Internet; Ausfälle überbrückt der lokale Puffer |
-| **Resource Pooling** | Die Plattform bedient viele Kunden gemeinsam auf geteilter Infrastruktur | Nur Herstellerangabe, von uns nicht überprüfbar; wir kennen weder Server noch genauen Standort |
-| **Rapid Elasticity** | Mehr Kanäle, höhere Update-Rate und mehr Nachrichten durch Lizenzwechsel, ohne Codeänderung | Im Free-Tarif feste Limits, **kein automatisches** Skalieren; ein Upgrade ist ein bewusster Schritt |
-| **Measured Service** | Das Nachrichtenkontingent wird gezählt und im Konto angezeigt | Im Free-Tarif keine Abrechnung, nur die Zählung (Screenshot aus dem Konto als Beleg) |
+| **Resource Pooling** | Die Plattform bedient viele Kunden gemeinsam; die Daten werden laut Privacy Policy dort gespeichert, „wo immer wir oder unsere Drittserviceanbieter arbeiten“ | Von uns nicht überprüfbar; wir kennen weder Server noch genauen Standort |
+| **Rapid Elasticity** | Weitere „Units“ lassen sich jederzeit zukaufen (Licensing FAQ, Frage 10): 1 Unit = 33 Mio. Nachrichten pro Jahr, Intervall bis 1 s, mehr Kanäle, ohne Codeänderung | Im Free-Tarif feste Limits, **kein automatisches** Skalieren; ein Upgrade ist ein bewusster Schritt, bei leerem Kontingent nimmt der Kanal keine Daten mehr an (Frage 12) |
+| **Measured Service** | Verbrauch und Restkontingent stehen auf der Seite *My Account* (Frage 16); ThingSpeak warnt bei knappem oder erschöpftem Kontingent (Fragen 17 und 18) | Im Free-Tarif keine Rechnung, nur Zählung und Warnung (Screenshot aus *My Account* als Beleg) |
 
 **Nicht Cloud wäre:** ein Mosquitto/InfluxDB auf einem Pi oder Homeserver bei uns zu Hause.
 Dort fehlen Resource Pooling, Elastizität und verbrauchsabhängige Abrechnung.
