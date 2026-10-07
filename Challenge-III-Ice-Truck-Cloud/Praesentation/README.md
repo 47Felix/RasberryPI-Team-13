@@ -41,5 +41,6 @@ Gesamt ca. 14 Minuten. Die Aufteilung ist ein Vorschlag und lässt sich im `rede
 
 Die zugehörigen Dokumente stehen in [`../Code/`](../Code/): `ENTSCHEIDUNG.md`, `SICHERHEITSKONZEPT.md`, `DATENSCHUTZ.md`, `README.md`.
 
-**Vor dem Vortrag noch tun:** Platzhalter auf Folie 11 durch einen Screenshot der ThingSpeak-Diagramme ersetzen, auf
-Folie 12 den Status der Karte „Sensor-Drift erkennen“ aktualisieren, Pi vorher durchlaufen lassen.
+**Stand der PowerPoint-Datei (07.10.2026):** Die Datei ist von euch bearbeitet (Screenshot der ThingSpeak-Diagramme auf Folie 11) und ersetzt die von uns erzeugte Fassung. Die Folien-Quellen in `deck-source/` und die Live-Version bei claude.ai entsprechen noch der ursprünglichen Fassung, die `.pptx` ist die maßgebliche Datei.
+
+**Vor dem Vortrag noch tun:** auf Folie 12 den Status der Karte „Sensor-Drift erkennen“ aktualisieren, Pi vorher durchlaufen lassen.
