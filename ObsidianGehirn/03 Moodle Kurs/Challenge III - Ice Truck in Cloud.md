@@ -22,18 +22,36 @@ Um Prozesse in der Lieferkette transparent zu machen und zu optimieren, sollen d
 3. Umsetzen – Lösung muss die **5 NIST-Merkmale** (SP 800-145) erfüllen: On-demand Self-Service, Broad Network Access, Resource Pooling, Rapid Elasticity, Measured Service. Homeserver/Pi zu Hause zählt **nicht** als Cloud.
 4. Am letzten Tag Vorstellung inkl. NIST-Begründung
 
-## Unsere Lösung: Azure IoT Hub (PaaS)
+## Unsere Lösung: ThingSpeak (SaaS), Plan A war Azure IoT Hub
 
-Wir haben ein Azure-for-Students-Konto → **Azure IoT Hub F1 (kostenlos)** + Blob Storage (Archiv/Nachweis) + Azure Data Explorer Free Cluster (Dashboard, Anomalie-Erkennung). Begründung + NIST-Tabelle: `Challenge-III-Ice-Truck-Cloud/Code/ENTSCHEIDUNG.md`, Einrichtung: `Challenge-III-Ice-Truck-Cloud/Code/README.md`.
+**Entscheidung:** ThingSpeak (MathWorks), eingeordnet als **SaaS**. Plan A war Azure IoT Hub (PaaS); Code und Setup-Skript sind fertig (`azure/`), liefen aber nie, weil der Zugang zum Azure-Schülerkonto am 30.09.2026 nicht funktionierte. Die Übertragung läuft seitdem mit demselben Bridge-Code nach ThingSpeak (Kanal läuft, von Felix bestätigt).
 
-- **Edge:** `cloud-bridge/bridge.py` liest `challenge_i.db` read-only, schickt 1 Batch/Minute im Spaltenformat per MQTT/TLS (Fallback WebSockets 443) → passt ins F1-Kontingent (8.000 × 0,5 KB/Tag)
-- **Store & Forward:** Cursor (`bridge_state.json`) rückt erst nach erfolgreichem Senden weiter, Funkloch wird nachgeholt
-- **Health-Flags am Edge:** `temp_high`, `sensor_mismatch` (unser KY-028-Wackelkontakt!), `sensor_stuck` → Application Property `alarm` für IoT-Hub-Routing
-- **Cloud:** `azure/setup.sh` (Cloud Shell) legt Hub, Device, Storage, Routen an; `azure/adx.kql` enthält Tabelle, Funktion `Readings()` und Dashboard-Abfragen
-- Status 30.09.2026: Code + 8 Tests grün, SDK-Aufrufe gegen `azure-iot-device` 2.14 geprüft. **Offen:** `setup.sh` im echten Abo ausführen, Bridge auf dem Pi installieren, Offline-Test, ADX-Dashboard + Screenshots für die Präsentation → [[Offene Punkte]]
+Dokumente im Repo (`Challenge-III-Ice-Truck-Cloud/Code/`):
+- `ENTSCHEIDUNG.md`: Vergleich (ThingSpeak, Azure, AWS, Arduino Cloud, eigene VM), Begründung, Einordnung SaaS, NIST-Tabelle mit Einschränkungen
+- `SICHERHEITSKONZEPT.md`: sichere Datenübertragung (HTTPS, getrennte Keys, `.env` chmod 600, Cursor, read-only DB), Key-Rotation, Nachweis-Befehle, Restrisiken
+- `DATENSCHUTZ.md`: Datensicherheit und DSGVO (kein Personenbezug im Prototyp, USA-Server, Auftragsverarbeitung, Prüfliste)
+- `README.md`: Einrichtung, Store and Forward erklärt, Alarme und MATLAB
 
-## Plan B ohne Azure: ThingSpeak (30.09.2026)
-Azure-for-Students war heute nicht erreichbar → zweites Backend `CLOUD_BACKEND=thingspeak` (MathWorks, kostenlos, keine Kreditkarte). HTTPS-Bulk-Update, jede 3. Messung (15-s-Raster wegen Free-Limit 1 Request/15 s + ~3 Mio. Nachrichten/Jahr), Flags im Statusfeld, MATLAB-Auswertung/React-Alarme in ThingSpeak. 12 Tests grün, gegen echtes ThingSpeak noch nicht getestet. Anleitung: README Abschnitt „Plan B“, NIST-Begründung: `ENTSCHEIDUNG.md` Abschnitt 5.
+Technik:
+- **Edge:** `cloud-bridge/bridge.py` liest `challenge_i.db` read-only und schickt per HTTPS-Bulk-Update. 5-s-Betrieb mit `THINGSPEAK_DOWNSAMPLE=1`, `SEND_INTERVAL_SECONDS=15` (Free: 1 Request/15 s, ~3 Mio. Nachrichten/Jahr, bei jeder Messung ca. 6 Monate Kontingent)
+- **Store & Forward:** DB ist der Puffer, Cursor (`bridge_state.json`) rückt erst nach bestätigtem Senden weiter, verpasste Messungen kommen mit Originalzeit nach
+- **Health-Flags am Edge:** `temp_high`, `sensor_mismatch` (unser KY-028-Wackelkontakt), `sensor_stuck` im Statusfeld
+- 12 Tests grün (`cloud-bridge/tests/`)
+- Präsentation entlang des Bewertungsbogens (13 Folien): https://claude.ai/artifact/VmjCaHCTtuXDeyr3WgLdfa
+
+**Offen:** E-Mail- und Discord-Alarm einrichten, Sensor-Drift-MATLAB, Offline-Demo, Keys neu erzeugen (standen im Chat), Prüfliste in `DATENSCHUTZ.md` abhaken → [[Offene Punkte]]
+
+## Bewertungsbogen Challenge III (50 Punkte sichtbar)
+| Kriterium | Punkte | Wo |
+|---|---|---|
+| Mindestens zwei Clouddienste vorgestellt | 5 | ENTSCHEIDUNG.md §2, Folie 5 |
+| Entscheidung technisch begründet | 5 | ENTSCHEIDUNG.md §3, Folie 6 |
+| NIST-Kriterien erfüllt bzw. Abweichungen begründet | 5 | ENTSCHEIDUNG.md §5, Folie 7 |
+| Einordnung IaaS/PaaS/SaaS | 5 | ENTSCHEIDUNG.md §4, Folie 8 |
+| Datensicherheit und DSGVO | 5 | DATENSCHUTZ.md, Folie 9 |
+| Konzept sichere Datenübertragung | 10 | SICHERHEITSKONZEPT.md, Folie 10 |
+| Messdaten in der Cloud protokolliert und visualisiert | 10 | README.md, Folie 11 |
+| Zusätzliche Funktionen | 5 | Store and Forward, Health-Flags, Alarme, Folie 12 |
 
 ## Alternative: IaaS mit eigener VM (Plan B / Vergleich)
 Zusätzlich liegt ein vollständiger Entwurf für eigenen MQTT-Broker + InfluxDB + Grafana auf einer gemieteten VM (Docker Compose, TLS, Mosquitto-Bridge vom Pi) unter `Challenge-III-Ice-Truck-Cloud/Code/alternative-iaas-vm/`. Nicht deployt, nicht die gewählte Lösung – aber gut für die Präsentation als Vergleich IaaS (volle Kontrolle, manuelle Elastizität, Betrieb selbst) vs. PaaS (IoT Hub: verwaltet, Vendor-Bindung). Die Aufgabenstellung nennt diese Variante ausdrücklich als Option.

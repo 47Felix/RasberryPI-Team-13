@@ -1,104 +1,125 @@
 # Challenge III – Auswahl der IoT-Cloud-Lösung
 
-**Entscheidung:** **Microsoft Azure IoT Hub (PaaS)** mit Blob Storage als Archiv und
-Azure Data Explorer für Auswertung und Visualisierung.
+**Entscheidung: ThingSpeak (MathWorks), eingeordnet als SaaS.**
+Plan A war Azure IoT Hub (PaaS). Code und Einrichtungsskript dafür sind fertig
+(`azure/`), liefen aber nie, weil der Zugang zum Azure-Schülerkonto am 30.09.2026 nicht
+funktionierte. Seitdem läuft die Übertragung vom Raspberry Pi über denselben Bridge-Code
+nach ThingSpeak.
 
-## 1. Vergleich der Optionen
+Verwandte Dokumente:
+[`SICHERHEITSKONZEPT.md`](SICHERHEITSKONZEPT.md) (sichere Übertragung) ·
+[`DATENSCHUTZ.md`](DATENSCHUTZ.md) (Datensicherheit und DSGVO) ·
+[`README.md`](README.md) (Einrichtung, Store and Forward)
 
-| Kriterium | **Azure IoT Hub** | AWS IoT Core | Arduino Cloud | Eigener Server (VM + Mosquitto + InfluxDB + Grafana) |
-|---|---|---|---|---|
-| **Einordnung** | **PaaS** | PaaS | SaaS | IaaS |
-| **Protokolle** | MQTT 3.1.1, MQTT über WebSockets (443), AMQP, HTTPS | MQTT 3.1.1/5, WebSockets, HTTPS | MQTT intern, eher auf Arduino-/ESP-Boards zugeschnitten, Python-SDK begrenzt | frei wählbar (MQTT 5, HTTP ...) |
-| **Speicherung** | Routing ohne Code nach Blob Storage/Data Lake, Cosmos DB, Event Hubs | Rules Engine → S3, DynamoDB, Timestream | eingebaut, Historie je nach Plan nur kurz (Free: 1 Tag) | InfluxDB, selbst betrieben |
-| **Visualisierung** | Azure Data Explorer (Free Cluster, KQL-Dashboards), Power BI, Grafana | Grafana (Managed, kostenpflichtig), QuickSight | fertige Dashboards, sehr einfach | Grafana, frei konfigurierbar |
-| **Kosten** | **F1 = 0 €** (8.000 Nachr./Tag), Storage < 1 ct/Monat; bezahlt aus dem Azure-for-Students-Guthaben (100 $, ohne Kreditkarte) | Free Tier nur 12 Monate, **Kreditkarte nötig**, kein Schüler-Konto vorhanden | Free: 2 Things, 1 Tag Historie → für den 1-Jahres-Nachweis ungeeignet | VM ab ~8–15 €/Monat, dazu Patchen, Backups und Zertifikate selbst machen |
-| **Datenschutz** | EU-Regionen (Germany West Central), EU Data Boundary, TLS 1.2, pro Gerät eigener Schlüssel, RBAC | EU-Region Frankfurt möglich | Anbieter in der EU, aber wenig Kontrolle über Speicherort/-dauer | volle Kontrolle, aber auch volle Verantwortung (Updates, Härtung) |
-| **Aufwand für uns** | mittel | mittel | gering | hoch |
-| **Skalierung Flotte** | Tarifwechsel F1 → S1/S2/S3 ohne Codeänderung, Device Provisioning Service für tausende Trucks | sehr gut | begrenzt | selbst bauen |
+> Hinweis: Preise, Limits und Konditionen stammen aus unserer Recherche und den
+> Anbieter-Websites. Vor der Abgabe nochmals auf den Seiten der Anbieter gegenprüfen.
 
-## 2. Begründung
+## 1. Anforderungen aus der Aufgabe
 
-1. **Konto vorhanden:** Wir haben ein **Azure-for-Students-Konto** mit Guthaben und
-   ohne Kreditkarte. AWS würde eine Kreditkarte verlangen.
-2. **Protokoll passt zu unserem Stack:** Seit Challenge II arbeiten wir mit MQTT. IoT Hub
-   spricht MQTT über TLS. Für Netze, die Port 8883 sperren, gibt es MQTT über WebSockets
-   auf Port 443. Das offizielle Python-SDK (`azure-iot-device`) läuft direkt auf dem Pi.
-3. **Nachweispflicht (VO 178/2002, 37/2005):** Die Aufzeichnungen müssen lückenlos und
-   datiert sein und mindestens ein Jahr aufbewahrt werden. Blob Storage speichert jede
-   Nachricht als JSON-Datei nach Datum. Das Archiv kostet praktisch nichts, lässt sich
-   per Lifecycle-Regel länger aufbewahren und per Immutability-Policy (WORM) gegen
-   nachträgliche Änderung sperren. Die Arduino Cloud hält im Free-Tarif nur einen Tag
-   Historie.
-4. **Kosten:** IoT Hub F1, der ADX Free Cluster und wenige MB Blob Storage kosten
-   zusammen **0 € bis wenige Cent im Monat**. Ein eigener Server bräuchte eine
-   dauerhaft laufende VM.
-5. **PaaS statt IaaS:** Um Betriebssystem-Updates, Broker-Zertifikate, Backups und
-   Hochverfügbarkeit kümmert sich Microsoft. Wir konzentrieren uns auf die fachliche
-   Logik, also Store & Forward, Alarm-Flags und Auswertung.
-6. **Predictive Maintenance:** Azure Data Explorer bringt Zeitreihen- und
-   Anomalie-Funktionen mit (`series_decompose_anomalies`). Damit sehen wir
-   Sensor-Drift, also genau unser Wackelkontakt-Problem am KY-028, und die steigende
-   Lüfterlaufzeit eines schwächer werdenden Aggregats, bevor der Truck ausfällt.
+- Nachweis von Temperaturverläufen (VO (EG) 178/2002, 37/2005): lückenlos, datiert, jederzeit
+  und ortsunabhängig abrufbar, ohne manuelles Auslesen
+- Daten dürfen bei Ausfall des Raspberry Pi nicht verloren gehen
+- Auswertung der Messwerte für Predictive Maintenance
+- Lösung muss die fünf NIST-Merkmale (SP 800-145) erfüllen, ein privater Server zu Hause
+  zählt nicht als Cloud
 
-**Nachteile:** Das F1-Kontingent ist knapp. Wir lösen das mit Batches im
-Spaltenformat, siehe README. Außerdem gibt es einen Vendor-Lock-in. Weil wir aber
-standardisiertes MQTT und JSON verwenden, wäre ein Wechsel mit überschaubarem Aufwand
-möglich.
+## 2. Vergleich der Optionen
 
-## 3. Erfüllung der NIST-Merkmale (SP 800-145)
+| Kriterium | **ThingSpeak** | **Azure IoT Hub** | AWS IoT Core | Arduino Cloud | Eigene VM (Mosquitto + InfluxDB + Grafana) |
+|---|---|---|---|---|---|
+| **Einordnung** | **SaaS** | PaaS | PaaS | SaaS | IaaS |
+| **Protokolle** | HTTP(S)-REST, MQTT | MQTT 3.1.1 (TLS 8883 oder WebSockets 443), AMQP, HTTPS | MQTT, WebSockets, HTTPS | MQTT über eigene Bibliothek, auf Arduino/ESP zugeschnitten | frei wählbar |
+| **Speicherung** | Kanal mit 8 Feldern und Statusfeld, CSV/JSON-Export | Routing ohne Code in Blob Storage, Data Lake, Cosmos DB | Rules Engine nach S3, DynamoDB, Timestream | eingebaut, im Free-Tarif nur sehr kurze Historie | InfluxDB, selbst betrieben |
+| **Visualisierung** | Diagramme, Widgets, MATLAB-Auswertung eingebaut | Azure Data Explorer (Free Cluster), Power BI, Grafana | Managed Grafana (kostenpflichtig), QuickSight | fertige Dashboards | Grafana, frei gestaltbar |
+| **Kosten** | Free-Tarif für nicht-kommerzielle Nutzung, keine Kreditkarte | IoT Hub F1 gratis (8.000 Nachrichten/Tag), Rest aus dem Schülerguthaben | Free Tier zeitlich begrenzt, Kreditkarte nötig | Free-Tarif mit starken Einschränkungen | VM-Miete ab ca. 8–15 € im Monat |
+| **Datenschutz** | Anbieter und Server in den USA | EU-Regionen möglich (Germany West Central) | EU-Region Frankfurt möglich | Anbieter in der EU, wenig Kontrolle über Speicherdauer | volle Kontrolle, volle Verantwortung |
+| **Aufwand für uns** | gering | mittel | mittel | gering | hoch (Betrieb, Updates, Zertifikate) |
+| **Zugang für uns** | Konto in Minuten angelegt, **läuft** | Schülerkonto am 30.09. nicht erreichbar, **nie in Betrieb** | Kreditkarte nötig | nicht geprüft | nur als Entwurf (`alternative-iaas-vm/`), **nie deployt** |
 
-| NIST-Merkmal | So erfüllt unsere Lösung es |
+Vorgestellt und verglichen werden vor allem **ThingSpeak** und **Azure IoT Hub**; AWS,
+Arduino Cloud und die eigene VM sind als weitere Alternativen bewertet.
+
+## 3. Entscheidung und technische Begründung
+
+Wir setzen **ThingSpeak** ein, weil es die Anforderungen bei geringstem Aufwand erfüllt:
+
+1. **Protokolle:** Die HTTPS-Schnittstelle (`bulk_update.json`) passt zur Bridge und nimmt
+   viele Messungen mit **eigenem Zeitstempel** pro Eintrag an. Genau das braucht Store and
+   Forward: Nach einem Funkloch werden verpasste Messungen mit ihrer Originalzeit
+   nachgeliefert, und das Diagramm füllt die Lücke. MQTT wäre ebenfalls möglich.
+2. **Speicherung und Visualisierung eingebaut:** Kanal, Diagramme, Widgets und CSV-Export
+   gibt es ohne eigenen Server. Für Predictive Maintenance laufen MATLAB-Auswertungen direkt
+   in der Anwendung (Sensor-Drift, Ausreißer).
+3. **Kosten:** 0 €, keine Kreditkarte. Nach Anbieterangabe ca. 3 Mio. Nachrichten im Jahr und
+   höchstens ein Update alle 15 Sekunden. Daraus folgt unser Aufbau: Die Messung läuft alle
+   5 Sekunden, die Bridge bündelt und lädt alle 15 Sekunden hoch.
+4. **Datenschutz vertretbar:** Es werden nur Truck-ID, Temperaturen, Aktorwerte und
+   Zeitstempel übertragen, keine Personendaten (siehe `DATENSCHUTZ.md`).
+5. **Verfügbarkeit für uns:** Azure war am Tag der Umsetzung nicht erreichbar. Mit
+   ThingSpeak konnten wir sofort liefern.
+
+**Nachteile und wie wir damit umgehen:**
+
+| Nachteil | Umgang |
 |---|---|
-| **On-demand Self-Service** | IoT Hub, Device und Storage haben wir selbst per Portal/CLI (`azure/setup.sh`) in Minuten angelegt, ohne Vertrag, Ticket oder Rückfrage beim Anbieter. |
-| **Broad Network Access** | Zugriff über das Internet mit Standardprotokollen (MQTT/TLS, HTTPS). Der Pi sendet aus dem Truck über jedes Netz. Daten und Dashboards sind per Browser von jedem Gerät erreichbar, etwa bei einer Lebensmittelkontrolle vor Ort. |
-| **Resource Pooling** | Microsoft betreibt IoT Hub, Storage und ADX mandantenfähig auf gemeinsamer Hardware im Rechenzentrum Frankfurt. Wir wissen nicht, auf welchem Server unsere Daten liegen, nur die Region. |
-| **Rapid Elasticity** | Mehr Trucks bedeuten nur einen Tarifwechsel (F1 → S1 → S3) oder mehr Units. Storage und ADX skalieren automatisch. Am Code ändert sich nichts, bei tausenden Trucks kommt der Device Provisioning Service dazu. |
-| **Measured Service** | Abgerechnet wird nach Verbrauch: IoT-Hub-Nachrichten/Tag, GB im Storage, Abfragen in ADX. Im Portal sehen wir die Metriken (*IoT Hub → Metriken → Telemetrienachrichten gesendet*) und die *Kostenverwaltung* des Schülerguthabens. |
+| Server in den USA (Drittland) | Nur Daten ohne Personenbezug; Prüfung von Auftragsverarbeitung und Datenübertragung, siehe `DATENSCHUTZ.md` |
+| Kein unveränderliches Archiv (kein WORM) wie bei Azure Blob Storage | Das Original bleibt in der lokalen SQLite-Datenbank; regelmäßiger CSV-Export als zusätzliches Archiv |
+| Free-Tarif mit festen Limits | Bündeln und Ausdünnen (`THINGSPEAK_DOWNSAMPLE`); für die Flotte Lizenz-Upgrade |
+| Ein Write Key für den ganzen Kanal | Pro Truck ein eigener Kanal mit eigenem Key; Key-Rotation, siehe `SICHERHEITSKONZEPT.md` |
+| Vendor-Lock-in | Der Sender ist austauschbar: dieselbe Bridge kann auch an Azure IoT Hub senden (`CLOUD_BACKEND=azure`) |
 
-**Nicht Cloud wäre:** ein Mosquitto/InfluxDB auf einem Pi oder Homeserver bei uns zu
-Hause. Dort fehlen Resource Pooling, Elastizität und verbrauchsabhängige Abrechnung.
+## 4. Einordnung: IaaS, PaaS oder SaaS?
 
-## 4. Datenschutz und Sicherheit
+**Unsere Lösung ist SaaS.**
 
-- **Keine personenbezogenen Daten:** Übertragen werden nur Truck-ID, Temperaturen und
-  Aktorwerte. Kämen später GPS oder Fahrer-IDs dazu, wären das personenbezogene Daten
-  (DSGVO Art. 4). Dann bräuchten wir eine Rechtsgrundlage und einen AV-Vertrag mit
-  Microsoft (DPA).
-- **Datenhaltung in der EU:** Region Germany West Central, Microsoft EU Data Boundary.
-- **Transportverschlüsselung:** TLS 1.2, Storage mit `min-tls-version TLS1_2` und ohne
-  öffentlichen Blob-Zugriff.
-- **Identität pro Gerät:** Jeder Truck bekommt einen eigenen SAS-Schlüssel und kann nur
-  als er selbst senden. Einen kompromittierten Truck sperrt man einzeln. Der Schlüssel
-  liegt nur in `.env` auf dem Pi (`chmod 600`, in `.gitignore`).
-- **Ausfallsicherheit:** Die Daten liegen doppelt vor, lokal in der SQLite-DB auf dem
-  Pi und in der Cloud. Fällt der Pi aus, bleibt das Cloud-Archiv. Fällt das Netz aus,
-  puffert die DB und die Bridge liefert nach.
+| Wer verwaltet …? | IaaS (eigene VM) | PaaS (Azure IoT Hub) | **SaaS (ThingSpeak)** |
+|---|---|---|---|
+| Hardware, Rechenzentrum | Anbieter | Anbieter | Anbieter |
+| Betriebssystem, Laufzeit | **wir** | Anbieter | Anbieter |
+| Broker und Datenbank | **wir** | Anbieter | Anbieter |
+| Anwendung (Kanäle, Diagramme) | **wir** | **wir** (Routing, Auswertung) | Anbieter |
+| Daten und Konfiguration | wir | wir | **wir** |
 
-## 5. Plan B: ThingSpeak (30.09.2026, Azure nicht erreichbar)
+**Begründung:** ThingSpeak ist eine fertige Anwendung, die wir im Browser nutzen. Wir
+legen einen Kanal an und liefern Daten. Wir installieren, programmieren und patchen keine
+Plattform. Die MATLAB-Skripte sind eine Funktion innerhalb dieser Anwendung und machen
+sie nicht zu einer Plattform, auf der wir eigene Dienste betreiben, daher gilt es nicht als
+PaaS.
 
-Weil der Zugang zu Azure for Students am 30.09.2026 nicht funktionierte, gibt es
-ThingSpeak (MathWorks) als zweites Backend (`CLOUD_BACKEND=thingspeak`). Pi-Code,
-Cursor und Store & Forward bleiben gleich.
+Zum Vergleich wäre Azure IoT Hub PaaS: Die Plattform gehört dem Anbieter, aber wir bauen
+Routing, Archiv und Auswertung selbst. Die eigene VM wäre IaaS.
 
-| Kriterium | ThingSpeak |
-|---|---|
-| **Einordnung** | SaaS (fertige IoT-Anwendung mit Kanälen/Diagrammen), mit PaaS-Anteil (eigene MATLAB-Skripte laufen auf der Plattform) |
-| **Protokolle** | MQTT (publish) und HTTP/REST; wir nutzen HTTPS-Bulk-Update, weil es nachgeholte Messungen mit Originalzeitstempel annimmt |
-| **Speicherung** | Kanal mit 8 Feldern + Status; dauerhaft gespeichert; CSV-Export für Kontrollen |
-| **Visualisierung** | automatische Diagramme, Widgets, eigene MATLAB-Visualisierungen |
-| **Kosten** | 0 € für nicht-kommerzielle Nutzung (ca. 3 Mio. Nachrichten/Jahr, 1 Update/15 s), kein Kreditkarten-Zwang |
-| **Datenschutz** | MathWorks, Server in den USA → Drittlandübermittlung (DSGVO Kap. V). Für Temperaturdaten ohne Personenbezug vertretbar, für GPS/Fahrerdaten nicht ohne Weiteres |
+## 5. NIST-Merkmale (SP 800-145)
 
-**NIST-Merkmale mit ThingSpeak:**
+| Merkmal | So erfüllt unsere Lösung es | Einschränkung / Abweichung |
+|---|---|---|
+| **On-demand Self-Service** | Konto, Kanal und API-Keys selbst im Browser angelegt, in Minuten, ohne Vertrag oder Rückfrage | Free-Tarif mit festen Nutzungsbedingungen |
+| **Broad Network Access** | HTTPS aus jedem Netz; Diagramme im Browser und in der Handy-Ansicht | Der Pi braucht Internet; Ausfälle überbrückt der lokale Puffer |
+| **Resource Pooling** | Die Plattform bedient viele Kunden gemeinsam auf geteilter Infrastruktur | Nur Herstellerangabe, von uns nicht überprüfbar; wir kennen weder Server noch genauen Standort |
+| **Rapid Elasticity** | Mehr Kanäle, höhere Update-Rate und mehr Nachrichten durch Lizenzwechsel, ohne Codeänderung | Im Free-Tarif feste Limits, **kein automatisches** Skalieren; ein Upgrade ist ein bewusster Schritt |
+| **Measured Service** | Das Nachrichtenkontingent wird gezählt und im Konto angezeigt | Im Free-Tarif keine Abrechnung, nur die Zählung (Screenshot aus dem Konto als Beleg) |
 
-| Merkmal | Begründung |
-|---|---|
-| On-demand Self-Service | Konto, Kanal und API-Keys selbst im Browser angelegt, ohne Rückfrage |
-| Broad Network Access | HTTPS/MQTT aus jedem Netz; Diagramme per Browser und Handy-App |
-| Resource Pooling | MathWorks betreibt die Plattform mandantenfähig für sehr viele Nutzer auf gemeinsamer Infrastruktur |
-| Rapid Elasticity | mehr Kanäle, höhere Update-Rate und mehr Nachrichten per Lizenz-Upgrade sofort verfügbar, ohne Codeänderung |
-| Measured Service | Nachrichtenkontingent wird gezählt und im Konto angezeigt (*Account → My Account*) |
+**Nicht Cloud wäre:** ein Mosquitto/InfluxDB auf einem Pi oder Homeserver bei uns zu Hause.
+Dort fehlen Resource Pooling, Elastizität und verbrauchsabhängige Abrechnung.
 
-**Warum trotzdem Azure die erste Wahl bleibt:** EU-Datenhaltung, WORM-Archiv für den
-1-Jahres-Nachweis, keine Ausdünnung der Messwerte nötig und bessere Skalierung auf eine
-ganze Flotte. ThingSpeak ist der schnellere Weg zum laufenden Prototyp.
+## 6. Datensicherheit, DSGVO und sichere Übertragung
+
+- **Sichere Datenübertragung:** [`SICHERHEITSKONZEPT.md`](SICHERHEITSKONZEPT.md): Verschlüsselung,
+  Authentifizierung, Schlüsselverwaltung, Vollständigkeit, Bedrohungen und Restrisiken.
+- **Datensicherheit und DSGVO:** [`DATENSCHUTZ.md`](DATENSCHUTZ.md): welche Daten, Personenbezug,
+  Drittlandübermittlung, technische und organisatorische Maßnahmen, Prüfliste.
+
+## 7. Plan A: Azure IoT Hub (vorbereitet, nicht eingesetzt)
+
+Für die Flotte bleibt Azure die bessere Wahl: EU-Datenhaltung, unveränderliches Archiv
+(Blob Storage mit Immutability-Policy) für den Ein-Jahres-Nachweis, ein eigener Schlüssel
+pro Gerät und keine Ausdünnung der Messwerte nötig.
+
+Vorbereitet sind:
+
+- `azure/setup.sh`: legt IoT Hub (F1), Device, Storage-Container und Routing an
+- `azure/adx.kql`: Abfragen für Data Explorer (Verlauf, Alarme, Sensor-Drift, Anomalien)
+- `cloud-bridge/bridge.py`: Sender `AzureIoTHubSender`, aktivierbar mit `CLOUD_BACKEND=azure`
+  (Python-Bibliothek `azure-iot-device` gegen die echte Bibliothek geprüft, nie gegen einen
+  echten IoT Hub)
+- `alternative-iaas-vm/`: Entwurf für die IaaS-Variante mit eigener VM, ebenfalls nie deployt
