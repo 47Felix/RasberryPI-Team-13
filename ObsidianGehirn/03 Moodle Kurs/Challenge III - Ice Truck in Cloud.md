@@ -39,9 +39,9 @@ Technik:
 - 12 Tests grün (`cloud-bridge/tests/`)
 - Präsentation entlang des Bewertungsbogens (13 Folien): https://claude.ai/artifact/VmjCaHCTtuXDeyr3WgLdfa
 
-**Offen:** E-Mail- und Discord-Alarm einrichten, Sensor-Drift-MATLAB, Offline-Demo, Keys neu erzeugen (standen im Chat), Prüfliste in `DATENSCHUTZ.md` abhaken → [[Offene Punkte]]
+**Stand 07.10.2026:** Discord- und Mail-Alarm läuft ([[Challenge III - Alarme (Discord + Mail)]]), Keys sind erneuert, Kanal bewusst **öffentlich** (nur nicht-sensible Messdaten, Begründung in `DATENSCHUTZ.md` 5a), Aufbewahrung auf 12 Monate festgelegt (Annahme, dokumentiert), MathWorks im Data Privacy Framework geprüft (aktiv, nur Non-HR-Daten). **Offen:** Pi läuft ab morgen wieder, Sensor-Drift-Skript (`Challenge-III-Ice-Truck-Cloud/Code/thingspeak/sensor_drift_visualization.m`) in ThingSpeak anlegen und testen, Offline-Demo, Screenshots, neuen Write Key auf dem Pi prüfen → [[Offene Punkte]]
 
-## Bewertungsbogen Challenge III (50 Punkte sichtbar)
+## Bewertungsbogen Challenge III: Zuordnung zu Folien und Dokumenten (50 Punkte sichtbar)
 | Kriterium | Punkte | Wo |
 |---|---|---|
 | Mindestens zwei Clouddienste vorgestellt | 5 | ENTSCHEIDUNG.md §2, Folie 5 |
@@ -57,6 +57,7 @@ Technik:
 Zusätzlich liegt ein vollständiger Entwurf für eigenen MQTT-Broker + InfluxDB + Grafana auf einer gemieteten VM (Docker Compose, TLS, Mosquitto-Bridge vom Pi) unter `Challenge-III-Ice-Truck-Cloud/Code/alternative-iaas-vm/`. Nicht deployt, nicht die gewählte Lösung – aber gut für die Präsentation als Vergleich IaaS (volle Kontrolle, manuelle Elastizität, Betrieb selbst) vs. PaaS (IoT Hub: verwaltet, Vendor-Bindung). Die Aufgabenstellung nennt diese Variante ausdrücklich als Option.
 
 ## Bewertungsbogen Challenge III (Stand 07.10.2026)
+> Hinweis: Die Spalte „Wo abgedeckt“ unten stammt aus der ersten Fassung (noch Azure als Hauptlösung). Maßgeblich ist die Zuordnung zu Folien und Dokumenten weiter oben.
 Quelle: Bewertungsbogen (Screenshot vom 07.10.2026, unterer Teil war abgeschnitten – falls dort weitere Zeilen stehen, hier ergänzen). Punkte stehen als „/x“ im Bogen.
 
 | Kriterium | Punkte | Wo abgedeckt | Stand |

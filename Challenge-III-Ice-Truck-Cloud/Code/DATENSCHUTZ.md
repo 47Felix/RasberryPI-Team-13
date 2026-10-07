@@ -100,7 +100,7 @@ Wahl, weil dort auch der Speicherort zugesagt werden kann.
 
 | Schutzziel | Maßnahme |
 |---|---|
-| **Vertraulichkeit** | HTTPS/TLS auf dem Transportweg; Kanal ist **privat** (bei öffentlichen Kanälen zeigt MathWorks den Kontonamen und einen Link zum Profil an, Teil 2 Nr. 11); private Daten sind mit API-Keys geschützt, die jederzeit zurückgesetzt werden können; getrennte Keys für Schreiben und Lesen; Keys nur in `.env` mit `chmod 600`, nicht im Git |
+| **Vertraulichkeit** | HTTPS/TLS auf dem Transportweg; Schreiben nur mit dem geheimen Write Key; getrennte Keys für Schreiben und Lesen, bereits einmal erneuert und jederzeit zurücksetzbar (Privacy Policy, Teil 2 Nr. 11); Keys nur in `.env` mit `chmod 600`, nicht im Git; Alarm-Zugangsdaten (Discord-Webhook, Alerts-Key) nur in ThingSpeak. Der **Kanal ist bewusst öffentlich** (siehe 5a), weil er keine sensiblen Daten enthält |
 | **Integrität** | Messdatenbank wird von der Bridge nur gelesen; jede Messung hat eine ID; Cursor wird atomar geschrieben; Originaldaten bleiben lokal |
 | **Verfügbarkeit** | Lokaler Puffer (SQLite) und Nachholen nach Funkloch (Store and Forward); Daten liegen doppelt (Pi und Cloud) |
 | **Belastbarkeit** | Dienst startet bei Fehlern neu (`Restart=on-failure`), Netzfehler stoppen die Bridge nicht |
@@ -112,6 +112,32 @@ Bekannte Lücken (ehrlich benannt, mit Plan im Sicherheitskonzept): das Pi-Termi
 Anmeldung, der Klartext-Key in `.env`, kein unveränderliches Archiv bei ThingSpeak, keine
 Batterie-Uhr im Pi.
 
+## 5a. Warum der Kanal öffentlich ist
+
+**Entscheidung:** Der ThingSpeak-Kanal bleibt für den Prototyp **öffentlich**.
+
+**Gründe:**
+1. Er enthält nur **nicht-sensible Messdaten**: Temperaturen, Lüfter- und Ventilwerte, Zeitstempel und
+   eine Fahrzeugkennung. Kein Personenbezug, keine Kundendaten, kein GPS (siehe Abschnitt 1).
+2. **Transparenz passt zum Ziel der Aufgabe:** Die Temperaturverläufe sollen bei Kontrollen
+   „jederzeit und ortsunabhängig“ nachweisbar sein. Prüfer, Lehrkraft und Mitschüler können den
+   Verlauf ohne Anmeldung ansehen.
+3. **Schreiben bleibt geschützt.** Öffentliches Lesen ändert nichts daran, dass nur mit dem
+   geheimen Write Key Daten in den Kanal geschrieben werden können. Fälschungen bleiben damit
+   ausgeschlossen, solange der Key geheim ist.
+
+**Folgen und Risiken:**
+- Jeder mit dem Link sieht die Verläufe und damit auch die **Betriebszeiten** des Trucks.
+- Bei öffentlichen Kanälen zeigt MathWorks Angaben zum Konto und einen Link zum Profil
+  (Privacy Policy, Teil 2 Nr. 11). Bei uns erscheint als Autor die MathWorks-Kennung
+  (`mwa…`). Im MathWorks-Profil sollten deshalb **keine Klarnamen, Fotos oder E-Mail-Adressen**
+  öffentlich stehen.
+- Dritte könnten die Daten kopieren. Das ist bei reinen Temperaturdaten vertretbar.
+
+**Im Realbetrieb** wäre der Kanal **privat**: Zugriff für Behörden und Mitarbeiter über *Sharing →
+Share channel view only with the following users* (im Free-Tarif für bis zu drei weitere Personen)
+oder über den Read Key.
+
 ## 6. Speicherdauer und Löschung
 
 - **Speicherlimit im Free-Tarif:** bis zu **10 Millionen Nachrichten** pro Nutzer (Licensing
@@ -122,8 +148,16 @@ Batterie-Uhr im Pi.
   feste Frist nennt die Privacy Policy nicht (Teil 1 Nr. 3). Langzeitarchivierung bietet
   MathWorks nur Bezahlkunden an (FAQ Frage 23). Deshalb: **Originale bleiben in der lokalen
   Datenbank, zusätzlich regelmäßig als CSV exportieren und sicher ablegen.**
-- **[PRÜFEN]** Aufbewahrungsfrist für Temperaturaufzeichnungen aus Aufgabenstellung bzw. Merkblatt
-  LM-05-MBL-504-PM nachlesen: `[Frist eintragen]`
+- **Aufbewahrungsfrist (Festlegung des Teams):** Aufgabenstellung und Merkblatt nennen uns keine
+  konkrete Frist. Wir legen für unser Konzept fest: **mindestens 12 Monate** lückenlos abrufbar.
+  Begründung: Eine Jahresfrist ist eine übliche Dokumentationsdauer für Temperaturaufzeichnungen
+  (Annahme, nicht geprüft). Sie passt zur Lizenzlaufzeit der Free-Lizenz (*My Account*: gültig bis
+  29.09.2027) und zum Jahreskontingent von 3 Mio. Nachrichten.
+  **Umsetzung:** 12 Monate online im ThingSpeak-Kanal, dazu **monatlicher CSV-Export** als zweites
+  Archiv. Die lokale Datenbank bleibt das Original und wird erst nach Ablauf der 12 Monate
+  archiviert oder gelöscht. Im Realbetrieb muss die gesetzlich geforderte Frist vorher geklärt
+  werden (Merkblatt LM-05-MBL-504-PM bzw. zuständige Behörde), z. B. mit längerer Archivierung
+  im Azure Blob Storage mit Immutability.
 - **Löschen und Betroffenenrechte:** Daten im Kanal löschen geht über *Channel → Clear Channel
   Data* bzw. den Kanal löschen. Betroffenenrechte (Auskunft, Löschung, Berichtigung) für die
   Kontodaten bearbeitet MathWorks über privacy@mathworks.com und das
@@ -136,6 +170,7 @@ Batterie-Uhr im Pi.
 |---|---|
 | Personenbezogene Daten im Prototyp? | **Messdaten: nein.** Personenbezogen sind nur die Kontodaten der Teammitglieder bei MathWorks |
 | DSGVO-Risiko durch USA-Server? | **Gering**, solange kein Personenbezug besteht. MathWorks ist im Data Privacy Framework aktiv gelistet, das gilt aber nicht für Beschäftigtendaten |
+| Ist der öffentliche Kanal vertretbar? | **Für den Prototyp ja**: nur nicht-sensible Messdaten, Schreiben nur mit Write Key. **Im Realbetrieb nein**, dort privat mit Freigabe für Berechtigte |
 | Technische Absicherung ausreichend? | **Für den Prototyp ja**, mit den benannten Restrisiken |
 | Free-Tarif für den Betrieb erlaubt? | **Für das Schulprojekt ja** (nicht-kommerziell). Ein Unternehmen braucht die Standard-Lizenz |
 | Reicht das für den Flottenbetrieb? | **Nein, nicht unverändert.** Vorher: Standard-Lizenz, EU-Region (z. B. Azure IoT Hub), Auftragsverarbeitungsvertrag, unveränderliches Archiv, Schlüssel pro Truck |
@@ -145,8 +180,10 @@ Batterie-Uhr im Pi.
 - [x] Privacy Policy gelesen: Speicherort weltweit, DPF-Erklärung, Datenschutzvertreter in München, kein DPA für Kunden erwähnt
 - [x] Licensing FAQ gelesen: Free-Lizenz nicht-kommerziell, 3 Mio. Nachrichten pro Jahr, 4 Kanäle, 15 s, 10 Mio. gespeicherte Nachrichten
 - [x] Im Verzeichnis dataprivacyframework.gov „The MathWorks“ gesucht (07.10.2026): aktiv, Ergebnis in Abschnitt 3 und auf Folie 9 eingetragen
-- [ ] Aufbewahrungsfrist aus Aufgabe/Merkblatt in Abschnitt 6 eingetragen
-- [ ] Im ThingSpeak-Kanal: *Sharing* steht auf „Keep channel view private“ (Screenshot)
-- [ ] Unter *My Account* Restkontingent und Verbrauch fotografiert (Beleg für „Measured Service“)
-- [ ] Write und Read Key neu erzeugt (beide standen im Chat), neuen Write Key in `.env` eingetragen
-- [ ] Screenshots für die Folien: TLS-Nachweis (`curl -sv`), `ls -l .env`, Kanal-Einstellung „privat“
+- [x] Aufbewahrungsfrist festgelegt: 12 Monate (Annahme des Teams, in Abschnitt 6 begründet, im Realbetrieb prüfen)
+- [x] Kanal bewusst **öffentlich** und begründet (Abschnitt 5a)
+- [ ] Im MathWorks-Profil geprüft, was öffentlich sichtbar ist (kein Klarname, kein Foto, keine E-Mail)
+- [x] Unter *My Account* Restkontingent fotografiert (07.10.2026): 2.999.270 von 3.000.000 Nachrichten übrig, 3 von 4 Kanälen frei, 798 von 800 Alarm-Mails übrig
+- [x] Write und Read Key (außerdem Alerts-Key und Discord-Webhook) neu erzeugt
+- [ ] Neuen Write Key in der `.env` auf dem Pi eingetragen und geprüft (`journalctl -u cloud-bridge -n 20`, keine Fehlermeldung)
+- [ ] Screenshots für die Folien: TLS-Nachweis (`curl -sv`), `ls -l .env`, Kanal-Einstellung

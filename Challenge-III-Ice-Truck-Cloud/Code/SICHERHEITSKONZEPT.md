@@ -8,7 +8,7 @@ Einordnung und Begründung der Cloud-Wahl: [`ENTSCHEIDUNG.md`](ENTSCHEIDUNG.md).
 
 | Schutzziel | Bedeutung für den Ice Truck |
 |---|---|
-| **Vertraulichkeit** | Nur wir sehen die Temperaturdaten und können in den Kanal schreiben |
+| **Vertraulichkeit** | Nur wir können in den Kanal schreiben und besitzen die geheimen Schlüssel. Die Messwerte selbst sind nicht sensibel, daher ist das Lesen bewusst öffentlich |
 | **Integrität** | Eine Messung kommt unverändert und ohne Fälschung in der Cloud an |
 | **Vollständigkeit / Verfügbarkeit** | Auch bei Funkloch oder Pi-Neustart geht keine Messung verloren |
 | **Nachweisbarkeit** | Jede Messung hat eine eindeutige ID und einen Zeitstempel |
@@ -23,7 +23,7 @@ Einordnung und Begründung der Cloud-Wahl: [`ENTSCHEIDUNG.md`](ENTSCHEIDUNG.md).
 │             challenge_i.db     │   ← Original, bleibt lokal (Quelle der Wahrheit)
 │                  │  liest (nur lesend)
 │             cloud-bridge       │ ═══ HTTPS (TLS), POST ═══════════════> ThingSpeak
-│  .env (chmod 600): Write Key   │      Write Key im Body, nicht in der URL   Kanal (privat)
+│  .env (chmod 600): Write Key   │      Write Key im Body, nicht in der URL   Kanal (öffentlich)
 │  bridge_state.json (Cursor)    │
 └────────────────────────────────┘
 ```
@@ -38,7 +38,8 @@ verschlüsselt und authentifiziert.
 | 1 | Mitlesen im WLAN/Mobilfunknetz | Nur HTTPS (TLS). Die Adresse im Code ist fest `https://api.thingspeak.com/…`, ein Klartext-Fallback existiert nicht. Das Zertifikat wird von Python geprüft (Standardverhalten von `urllib`). | `bridge.py`, `ThingSpeakSender.URL` |
 | 2 | Fremde schreiben falsche Werte in den Kanal | Schreiben geht nur mit dem **Write API Key**. Er liegt nur auf dem Pi und nicht im Repository. | `.env`, `.gitignore` |
 | 3 | Key wird gestohlen oder im Log/Git sichtbar | Key im **POST-Body**, nicht in der URL (taucht nicht in Proxy- oder Server-Logs auf). `.env` hat `chmod 600` und steht in `.gitignore`. Die Bridge schreibt den Key nie ins Log. | `bridge.py`, README, `.gitignore` |
-| 4 | Fremde lesen die Daten | Kanal ist **privat**. Auslesen geht nur mit dem getrennten **Read API Key** (anderer Schlüssel als zum Schreiben). Laut MathWorks Privacy Policy sind private Daten durch API-Keys geschützt, die jederzeit zurückgesetzt werden können. Öffentliche Kanäle würden zusätzlich Kontoname und Profil-Link zeigen. | ThingSpeak-Kanaleinstellungen |
+| 4 | Fremde lesen die Daten | **Bewusst akzeptiert:** Der Kanal ist öffentlich, weil er nur nicht-sensible Messdaten enthält (Begründung und Folgen in `DATENSCHUTZ.md`, Abschnitt 5a). Wichtig bleibt der Schutz vor Fälschung: Schreiben geht nur mit dem geheimen Write Key. Im Realbetrieb: Kanal privat und Freigabe per *Sharing* oder Read Key. Laut MathWorks Privacy Policy lassen sich API-Keys jederzeit zurücksetzen. | ThingSpeak-Kanaleinstellungen |
+| 4b | Zugangsdaten des Alarms (Discord-Webhook, Alerts-API-Key) werden bekannt | Sie stehen nur im MATLAB-Skript in ThingSpeak, nicht im Repository und nicht auf dem Pi. Sie wurden einmal versehentlich in einem Chat gezeigt und danach **erneuert** (Webhook neu angelegt, Alerts- und Read Key neu erzeugt). | ThingSpeak *MATLAB Analysis* |
 | 4a | Kontingent erschöpft: der Kanal nimmt keine Daten mehr an (Licensing FAQ, Frage 12) | Verbrauch unter *My Account* beobachten, Ausdünnen per `THINGSPEAK_DOWNSAMPLE`. Die Bridge protokolliert die Ablehnung, lässt den Cursor stehen und puffert lokal weiter. | `send()`, `.env` |
 | 5 | Messungen gehen bei Funkloch/Absturz verloren | **Store and Forward:** Die lokale DB ist der Puffer, der Cursor rückt erst nach bestätigtem Senden weiter, der Stand wird atomar gespeichert. | `send_pending()`, `save_state()` |
 | 6 | Doppelte Messungen nach Absturz zwischen Senden und Speichern | At-least-once mit lokaler `id` je Messung im Statusfeld (`id=4711`), Duplikate sind erkennbar und filterbar. | `build_updates()` |
@@ -63,6 +64,12 @@ verschlüsselt und authentifiziert.
 - **Wichtig:** Schlüssel gehören nicht in Chats, Tickets, Screenshots oder Folien.
 
 ### Key-Rotation (nach jedem Verdacht auf Bekanntwerden, sonst regelmäßig)
+**Bereits durchgeführt (Oktober 2026):** Write Key, Read Key, Alerts-API-Key und Discord-Webhook wurden
+neu erzeugt, nachdem sie in einem Chat sichtbar gewesen waren. Der neue Write Key muss auf dem Pi in der
+`.env` stehen. Prüfen mit `journalctl -u cloud-bridge -n 20`: Kommt „… Messungen gesendet“, stimmt er.
+Eine Meldung wie `HTTP Error 400/401` heißt, dass noch der alte Key eingetragen ist. Die Messungen
+puffert die Bridge in der Zwischenzeit und holt sie danach nach.
+
 1. ThingSpeak → Kanal → *API Keys* → *Generate New Write API Key* (analog für den Read Key).
 2. Auf dem Pi in `cloud-bridge/.env` den Wert `THINGSPEAK_WRITE_API_KEY` ersetzen.
 3. `sudo systemctl restart cloud-bridge`, danach `journalctl -u cloud-bridge -n 20`: Es

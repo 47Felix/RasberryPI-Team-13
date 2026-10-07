@@ -16,7 +16,7 @@ Cloud übertragen, dort gespeichert, visualisiert und ausgewertet. Wir nutzen **
 ```
  Truck (Edge)                                         Cloud
 ┌─────────────────────────────────┐              ┌──────────────────────────────────────┐
-│ Arduinos ─I²C─> app.py          │              │  ThingSpeak-Kanal (privat)           │
+│ Arduinos ─I²C─> app.py          │              │  ThingSpeak-Kanal (öffentlich)       │
 │                   │ schreibt    │  HTTPS (TLS) │   Feld 1–8 + Status                  │
 │            challenge_i.db ──────┼──────────────┼─> Diagramme, Widgets                 │
 │     (Original und Puffer)       │  POST        │   MATLAB: Sensor-Drift, Ausreißer    │
@@ -107,7 +107,9 @@ letzte Zeile jedes Pakets geht immer mit, damit Alarm-Flags nicht verloren gehen
    | Field 4 | Lüfter PWM | Field 8 | KY-028 Digital |
 
    Das Statusfeld enthält `id=<lokale ID>` und ggf. `flags=temp_high,…`.
-3. Der Kanal muss **privat** bleiben (*Sharing → Keep channel view private*).
+3. Der Kanal bleibt für den Prototyp **öffentlich** (nur nicht-sensible Messdaten, Begründung in
+   [`DATENSCHUTZ.md`](DATENSCHUTZ.md), Abschnitt 5a). Im MathWorks-Profil keine Klarnamen oder Fotos öffentlich
+   zeigen. Im Realbetrieb: *Sharing → Keep channel view private*.
 4. Tab *API Keys*: **Channel ID**, **Write API Key** und **Read API Key** notieren (geheim, nie committen).
 
 ### 2. Pi
@@ -132,40 +134,27 @@ Nach einer Änderung der `.env`: `sudo systemctl restart cloud-bridge`. Nach ein
 
 ### 3. Auswertung und Alarme in ThingSpeak
 
-- **Visualisierung:** *Private View* zeigt automatisch ein Diagramm pro Feld. Zusätzlich gibt es
-  Widgets (Gauge, Numeric Display) über *Add Widgets*.
-- **Sensor-Drift (Predictive Maintenance), MATLAB Visualization:** *Apps → MATLAB Visualization*.
-  Wandert ein Sensor vom anderen weg? So erkennt man den Wackelkontakt am KY-028 früh:
-  ```matlab
-  channelID = <channel id>; readKey = '<read api key>';
-  [d, t] = thingSpeakRead(channelID, 'Fields', [1 2], 'NumDays', 7, 'ReadKey', readKey);
-  delta = movmean(abs(d(:,1) - d(:,2)), 40);
-  plot(t, delta); ylabel('|Sensor - Aktor| in °C'); title('Sensor-Drift');
-  ```
-- **Alarm per E-Mail:** Den *Alerts API Key* aus *Account → My Profile* kopieren. Unter
-  *Apps → MATLAB Analysis → New* dieses Skript anlegen. Die Mail geht an die Adresse des
-  ThingSpeak-Kontos:
-  ```matlab
-  alertApiKey = '<alerts api key>';
-  alertUrl = "https://api.thingspeak.com/alerts/send";
-  options = weboptions("HeaderFields", ["ThingSpeak-Alerts-API-Key", alertApiKey]);
-
-  [t, ~] = thingSpeakRead(<channel id>, 'Fields', 3, 'NumMinutes', 5, 'ReadKey', '<read api key>');
-  if ~isempty(t) && max(t) > 28
-      subject = "Ice Truck: Temperatur zu hoch";
-      body = sprintf("Höchste Temperatur der letzten 5 min: %.1f °C", max(t));
-      webwrite(alertUrl, "body", body, "subject", subject, options);
-  end
-  ```
-  Das Skript regelmäßig ausführen: *Apps → TimeControl*, alle 5 Minuten, Aktion *MATLAB Analysis*.
-  Alternativ löst *Apps → React* („Field 3 größer als 28“) das Skript direkt beim Eintreffen eines
-  Werts aus. Zum Testen die Schwelle kurz auf 20 °C setzen.
-- **Alarm per Discord (optional):** über *Apps → ThingHTTP* eine POST-Anfrage an einen
-  Discord-Webhook (Kanaleinstellungen → Integrationen → Webhooks) definieren und mit *React*
-  auslösen. Die Webhook-URL ist geheim wie ein Key.
-- **Export für den Nachweis:** *Data Import/Export → Export* als CSV, oder
-  `https://api.thingspeak.com/channels/<id>/feeds.csv?start=…&end=…&api_key=<read key>`.
-  Den Read Key in dieser URL nicht weitergeben.
+- **Visualisierung:** Die *Public View* des Kanals zeigt automatisch ein Diagramm pro Feld (die
+  *Private View* sieht nur das Team). Zusätzlich gibt es Widgets (Gauge, Numeric Display) über *Add Widgets*.
+- **Alarm per Discord und E-Mail (läuft):** *React* (Field 3 größer als 30 °C, „On Data Insertion“, nur beim
+  ersten Mal) startet eine *MATLAB Analysis*. Sie schickt eine Nachricht an einen Discord-Webhook und eine
+  Mail über die ThingSpeak-Alerts-API an die Adresse des ThingSpeak-Kontos. Code, Einstellungen und
+  Stolperfallen stehen im Vault:
+  [`Challenge III - Alarme (Discord + Mail)`](../../../ObsidianGehirn/03%20Moodle%20Kurs/Challenge%20III%20-%20Alarme%20(Discord%20%2B%20Mail).md).
+  Webhook-URL, Alerts-Key und Read Key stehen **nur** in der Analysis in ThingSpeak, nie im Repository.
+  Laut *My Account* sind im Free-Tarif **800 Alarm-Mails pro Kalenderjahr** erlaubt, deshalb beim Testen
+  `mailAn = false` setzen.
+- **Sensor-Drift (Predictive Maintenance), MATLAB Visualization:** Skript
+  [`thingspeak/sensor_drift_visualization.m`](thingspeak/sensor_drift_visualization.m). Es zeigt, ob die
+  beiden Temperatursensoren auseinanderlaufen (typisch für den KY-028-Wackelkontakt) und wie stark der
+  Trend pro Tag ist. **Einrichten:** ThingSpeak → *Apps → MATLAB Visualizations → New* → Vorlage
+  „Custom (no starting code)“ → Skript einfügen → *Save and Run*. **Testen ohne Pi:** Der Kanal enthält
+  schon Daten in Field 1 und 2, das Diagramm funktioniert also sofort. Zeigt es „Keine Daten“, in
+  Zeile `kanal` die Channel ID prüfen. Danach lässt sich das Diagramm über *Add Visualizations* im Kanal
+  anzeigen.
+- **Export für den Nachweis:** *Data Import/Export → Export* als CSV, oder bei öffentlichem Kanal
+  `https://api.thingspeak.com/channels/<id>/feeds.csv?start=…&end=…`. Bei privatem Kanal zusätzlich
+  `&api_key=<read key>`, den Read Key dann nicht weitergeben.
 
 ## Nachrichtenformat (intern)
 
@@ -233,10 +222,11 @@ Spaltenformat bündelt.
 
 ## Offene Punkte
 
-- [ ] Alarm per E-Mail (und optional Discord) in ThingSpeak einrichten und testen
-- [ ] Sensor-Drift-Diagramm als MATLAB Visualization anlegen
+- [x] Alarm per Discord und E-Mail läuft (React Field 3 > 30 °C, Details im Vault)
+- [ ] Sensor-Drift-Diagramm als MATLAB Visualization anlegen und testen (`thingspeak/sensor_drift_visualization.m`)
 - [ ] Offline-Test vorführen (Dienst stoppen, warten, starten) und Screenshot machen
-- [ ] Write/Read Key neu erzeugen und in `.env` eintragen (beide wurden im Chat geteilt)
+- [x] Write/Read Key neu erzeugt (Alerts-Key und Discord-Webhook ebenfalls)
+- [ ] Neuen Write Key in der `.env` auf dem Pi prüfen (`journalctl -u cloud-bridge -n 20`)
 - [ ] Prüfliste in [`DATENSCHUTZ.md`](DATENSCHUTZ.md), Abschnitt 8, abhaken
 - [ ] Screenshots für die Vorstellung: Kanal mit Diagrammen, TLS-Nachweis, Kontingent im Konto
 - [ ] Optional: Azure-Variante (`azure/setup.sh`), sobald der Zugang wieder geht

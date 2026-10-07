@@ -105,7 +105,7 @@ Routing, Archiv und Auswertung selbst. Die eigene VM wäre IaaS.
 | **Broad Network Access** | HTTPS aus jedem Netz; Diagramme im Browser und in der Handy-Ansicht | Der Pi braucht Internet; Ausfälle überbrückt der lokale Puffer |
 | **Resource Pooling** | Die Plattform bedient viele Kunden gemeinsam; die Daten werden laut Privacy Policy dort gespeichert, „wo immer wir oder unsere Drittserviceanbieter arbeiten“ | Von uns nicht überprüfbar; wir kennen weder Server noch genauen Standort |
 | **Rapid Elasticity** | Weitere „Units“ lassen sich jederzeit zukaufen (Licensing FAQ, Frage 10): 1 Unit = 33 Mio. Nachrichten pro Jahr, Intervall bis 1 s, mehr Kanäle, ohne Codeänderung | Im Free-Tarif feste Limits, **kein automatisches** Skalieren; ein Upgrade ist ein bewusster Schritt, bei leerem Kontingent nimmt der Kanal keine Daten mehr an (Frage 12) |
-| **Measured Service** | Verbrauch und Restkontingent stehen auf der Seite *My Account* (Frage 16); ThingSpeak warnt bei knappem oder erschöpftem Kontingent (Fragen 17 und 18) | Im Free-Tarif keine Rechnung, nur Zählung und Warnung (Screenshot aus *My Account* als Beleg) |
+| **Measured Service** | Verbrauch und Restkontingent stehen auf der Seite *My Account* (Frage 16): am 07.10.2026 noch 2.999.270 von 3.000.000 Nachrichten, 3 von 4 Kanälen frei und 798 von 800 Alarm-Mails übrig, dazu ein Diagramm mit dem Tagesverbrauch. ThingSpeak warnt bei knappem oder erschöpftem Kontingent (Fragen 17 und 18) | Im Free-Tarif keine Rechnung, nur Zählung und Warnung (Screenshot aus *My Account* als Beleg) |
 
 **Nicht Cloud wäre:** ein Mosquitto/InfluxDB auf einem Pi oder Homeserver bei uns zu Hause.
 Dort fehlen Resource Pooling, Elastizität und verbrauchsabhängige Abrechnung.
