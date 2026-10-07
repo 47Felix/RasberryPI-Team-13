@@ -60,3 +60,7 @@ Vollständigkeitsprüfung gegen "Bewertungsbogen SmSy Fachgespräch_2026_ChI+II"
 | **Gesamt** | | **100** | |
 
 ¹ Im Bogen-Wortlaut steht "Der Luftsensor wird ... mit einem Transistor gesteuert" – im Kontext (Transistor-Ansteuerung, Elegoo-Kit) ist damit erkennbar der **Lüfter** gemeint, nicht ein separater Luftsensor (den es im Aufbau nicht gibt). Falls beim Fachgespräch danach gefragt wird: kurz ansprechen und richtigstellen, steht auch in `fragen-antworten.md`.
+
+---
+
+**Challenge III (Cloud):** Die Präsentation dazu liegt in [`challenge-iii/`](challenge-iii/) (Link zur Live-Version, Sprechtext je Folie, Folien-Quellen).

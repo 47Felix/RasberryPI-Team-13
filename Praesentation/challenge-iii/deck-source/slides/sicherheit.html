@@ -1,0 +1,55 @@
+<section id="sicherheit" data-transition="fade" style="background:#0E1B2C;color:#B8C7D9;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;letter-spacing:3px;color:#6CCBF5">KRITERIUM 6 · KONZEPT SICHERE DATENÜBERTRAGUNG</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.1;color:#F4F8FA">Sichere Datenübertragung</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div style="display:flex;align-items:flex-start;gap:24px;background:#16293F;border:1px solid #27415E;border-radius:20px;padding:24px 28px">
+<x-icon name="Lock" style="width:56px;height:56px;color:#6CCBF5"></x-icon>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:34px;font-weight:600;line-height:1.2;color:#F4F8FA">Verschlüsselt</h3>
+<p style="font-size:26px;line-height:1.4">HTTPS/TLS zwischen Pi und Cloud, kein Klartext im Netz</p>
+</div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:24px;background:#16293F;border:1px solid #27415E;border-radius:20px;padding:24px 28px">
+<x-icon name="Key" style="width:56px;height:56px;color:#6CCBF5"></x-icon>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:34px;font-weight:600;line-height:1.2;color:#F4F8FA">Authentifiziert</h3>
+<p style="font-size:26px;line-height:1.4">Write API Key nur auf dem Pi, Keys bereits erneuert</p>
+</div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:24px;background:#16293F;border:1px solid #27415E;border-radius:20px;padding:24px 28px">
+<x-icon name="Trust" style="width:56px;height:56px;color:#6CCBF5"></x-icon>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:34px;font-weight:600;line-height:1.2;color:#F4F8FA">Geheimnisse geschützt</h3>
+<p style="font-size:26px;line-height:1.4">Keys in .env (chmod 600), nie im Git-Repository</p>
+</div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:24px;background:#16293F;border:1px solid #27415E;border-radius:20px;padding:24px 28px">
+<x-icon name="CheckCircle" style="width:56px;height:56px;color:#6CCBF5"></x-icon>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:34px;font-weight:600;line-height:1.2;color:#F4F8FA">Vollständig</h3>
+<p style="font-size:26px;line-height:1.4">Lokale ID je Messung, Cursor erst nach erfolgreichem Upload</p>
+</div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:24px;background:#16293F;border:1px solid #27415E;border-radius:20px;padding:24px 28px">
+<x-icon name="Clock" style="width:56px;height:56px;color:#6CCBF5"></x-icon>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:34px;font-weight:600;line-height:1.2;color:#F4F8FA">Nachweisbar</h3>
+<p style="font-size:26px;line-height:1.4">UTC-Zeitstempel je Messung, Pi-Zeit per NTP synchronisiert</p>
+</div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:24px;background:#16293F;border:1px solid #27415E;border-radius:20px;padding:24px 28px">
+<x-icon name="Verified" style="width:56px;height:56px;color:#6CCBF5"></x-icon>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:34px;font-weight:600;line-height:1.2;color:#F4F8FA">Minimale Rechte</h3>
+<p style="font-size:26px;line-height:1.4">Datenbank nur lesend, Dienst ohne Zusatzrechte</p>
+</div>
+</div>
+</div>
+<p style="font-size:26px;line-height:1.4;color:#F59E42"><b>Grenzen:</b> Pi-Terminal (ttyd) ohne Anmeldung · Uhr ohne Batterie · Free-Tarif ohne Löschschutz</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#8FA3B8">Team 13-1 · Challenge III · Ice Truck in der Cloud</p>
+<p style="position:absolute;right:128px;bottom:64px;width:400px;text-align:right;font-size:24px;color:#8FA3B8">Kriterium 6 von 8</p>
+<p style="position:absolute;left:1532px;top:128px;width:260px;text-align:center;font-size:32px;font-weight:700;background:#6CCBF5;color:#0E1B2C;padding:10px 0;border-radius:50%">10 Punkte</p>
+<aside>Unser Konzept für die sichere Übertragung in sechs Punkten. Verschlüsselung: nur HTTPS. Authentifizierung: Der Write API Key liegt nur auf dem Pi, für Auswertungen gibt es einen getrennten Read Key. Geheimnisse: in einer .env-Datei mit eingeschränkten Rechten, nie im Git-Repository. Vollständigkeit: jede Messung hat eine lokale ID, der Cursor rückt erst nach erfolgreichem Upload weiter, nach einem Funkloch wird nachgeholt. Nachweisbarkeit: UTC-Zeitstempel, Pi-Zeit per NTP. Minimale Rechte: Die Bridge liest die Datenbank nur. Das Konzept steht ausführlich im SICHERHEITSKONZEPT.md, mit Bedrohungstabelle, Key-Rotation und Prüfbefehlen. Nachweise zeigen: curl auf ThingSpeak (TLS), ls -l der .env (nur Besitzer), git check-ignore. Ehrlich benannte Grenzen: Das Web-Terminal des Pi hat noch keine eigene Anmeldung, die Pi-Uhr hat keine Batterie, und der Free-Tarif bietet keinen Löschschutz wie ein Azure-Archiv, deshalb bleibt das Original in der lokalen Datenbank.</aside>
+</section>
