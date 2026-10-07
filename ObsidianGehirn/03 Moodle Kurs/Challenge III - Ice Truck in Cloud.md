@@ -38,6 +38,29 @@ Azure-for-Students war heute nicht erreichbar → zweites Backend `CLOUD_BACKEND
 ## Alternative: IaaS mit eigener VM (Plan B / Vergleich)
 Zusätzlich liegt ein vollständiger Entwurf für eigenen MQTT-Broker + InfluxDB + Grafana auf einer gemieteten VM (Docker Compose, TLS, Mosquitto-Bridge vom Pi) unter `Challenge-III-Ice-Truck-Cloud/Code/alternative-iaas-vm/`. Nicht deployt, nicht die gewählte Lösung – aber gut für die Präsentation als Vergleich IaaS (volle Kontrolle, manuelle Elastizität, Betrieb selbst) vs. PaaS (IoT Hub: verwaltet, Vendor-Bindung). Die Aufgabenstellung nennt diese Variante ausdrücklich als Option.
 
+## Bewertungsbogen Challenge III (Stand 07.10.2026)
+Quelle: Bewertungsbogen (Screenshot vom 07.10.2026, unterer Teil war abgeschnitten – falls dort weitere Zeilen stehen, hier ergänzen). Punkte stehen als „/x“ im Bogen.
+
+| Kriterium | Punkte | Wo abgedeckt | Stand |
+|---|---|---|---|
+| Mindestens zwei Clouddienste werden vorgestellt | /5 | `ENTSCHEIDUNG.md` Abschnitt 1 (Azure IoT Hub, AWS IoT Core, Arduino Cloud, eigene VM) + ThingSpeak (Abschnitt 5) | Text fertig, in Präsentation aufnehmen |
+| Entscheidung technisch begründet | /5 | `ENTSCHEIDUNG.md` Abschnitt 2 (Protokolle, Speicherung, Kosten, Datenschutz) | Text fertig. **Achtung:** gewählt/umgesetzt ist jetzt ThingSpeak, Begründung in Präsentation entsprechend darstellen (Azure war nicht erreichbar) |
+| NIST-Kriterien erfüllt bzw. Abweichungen begründet | /5 | `ENTSCHEIDUNG.md` Abschnitt 3 (Azure) und Abschnitt 5 (ThingSpeak) | Text fertig, für ThingSpeak prüfen, ob Resource Pooling/Elasticity/Measured Service sinnvoll begründet sind |
+| Einordnung IaaS / PaaS / SaaS begründet | /5 | ThingSpeak = **SaaS** (fertige Plattform, nur Konfiguration), Azure IoT Hub = PaaS, eigene VM = IaaS | In Präsentation klar benennen |
+| Einschätzung Datensicherheit und DSGVO | /5 | `ENTSCHEIDUNG.md` Abschnitt 4 und 5 (ThingSpeak: Server USA, Drittlandübermittlung, Temperaturdaten ohne Personenbezug vertretbar) | Text fertig |
+| Konzept sichere Datenübertragung | /10 | HTTPS/TLS zum Cloud-Dienst, Write-API-Key nur in `.env` auf dem Pi, Discord-Webhook-URL nur in ThingSpeak (nicht im Repo), Azure-Variante MQTT über TLS 1.2 mit Device-Schlüssel | Als eigene Folie ausarbeiten (Pi → TLS → Cloud, Schlüssel, nichts im Repo) |
+| Messdaten in Cloud protokolliert und visualisierbar | /10 | ThingSpeak-Channel: jeder Messwert mit Original-Zeitstempel (`created_at`), Diagramme in der Private View, CSV-Export als Nachweis | Screenshots machen, CSV-Export zeigen |
+| Zusätzliche Funktionen realisiert | /5 | Discord-Alarm bei Temperatur über 30 °C (siehe unten), Store & Forward, Health-Flags, Sensor-Drift-Auswertung | Discord-Alarm läuft |
+
+## Discord-Alarm über ThingSpeak (07.10.2026)
+Läuft komplett in der Cloud, der Pi wird nicht gebraucht: **React** (Field 3 > 30, „On Data Insertion“, Option „nur beim ersten Mal ausführen“) → **ThingHTTP** (POST an Discord-Webhook, `application/json`) → Nachricht im Teamkanal.
+
+- Test ohne Pi: `https://api.thingspeak.com/update?api_key=<WRITE_KEY>&field3=35` (Write-Key nie ins Repo/in den Chat). Dazwischen einen Wert unter 30 schicken, sonst löst „nur das erste Mal“ nicht erneut aus. Free-Limit: etwa alle 15 s ein Wert.
+- Webhook-URL ist wie ein Passwort: nur in ThingHTTP, nicht ins Repo.
+- **Stolperfallen:** (1) Emojis im Body werden zu `????` → weglassen. (2) `%%channel_<ID>_field_3%%` muss die echte Channel-ID enthalten und mit `%%` getippt sein, sonst steht `%25%25…` in der Nachricht. (3) Platzhalter-Wert war bei uns leer, wenn ThingHTTP nicht von React ausgelöst wird; Fallback: Text ohne Wert, oder MATLAB Analysis mit `sprintf`/`webwrite`.
+- **Protokollierung:** Discord setzt zu jeder Nachricht selbst Datum und Uhrzeit. Der eigentliche Nachweis ist der ThingSpeak-Channel mit Zeitstempel (CSV-Export des Alarmzeitraums + Discord-Screenshot). Optional: MATLAB Analysis schreibt Alarme in einen zweiten Channel („Alarm-Log“).
+- Bot-Profilbild im Discord-Webhook auf neutrales Icon (Thermometer/Warnschild) stellen statt Foto.
+
 ## Relevante Kursinhalte
 - "Datenbankanbindung und Object-Relational Mapping" (Kurs-ID 564) – **benötigt Einschreibekennwort**, siehe [[Offene Punkte]]
 
