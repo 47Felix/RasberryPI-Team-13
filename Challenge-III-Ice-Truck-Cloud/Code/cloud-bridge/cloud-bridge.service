@@ -1,5 +1,5 @@
 [Unit]
-Description=Challenge III Ice-Truck Cloud-Bridge (SQLite -> Azure IoT Hub)
+Description=Challenge III Ice-Truck Cloud-Bridge (SQLite -> ThingSpeak / Azure IoT Hub)
 After=network-online.target challenge-i-backend.service
 Wants=network-online.target
 
@@ -11,6 +11,9 @@ EnvironmentFile=/home/team13/RasberryPI-Team-13/Challenge-III-Ice-Truck-Cloud/Co
 ExecStart=/home/team13/RasberryPI-Team-13/Challenge-III-Ice-Truck-Cloud/Code/cloud-bridge/venv/bin/python /home/team13/RasberryPI-Team-13/Challenge-III-Ice-Truck-Cloud/Code/cloud-bridge/bridge.py
 Restart=on-failure
 RestartSec=10
+# Haertung: Dienst darf keine zusaetzlichen Rechte erlangen, eigenes /tmp
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target

@@ -1,0 +1,44 @@
+<section id="dsgvo" data-transition="fade" style="background:#F4F8FA;color:#3E4C5E;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;letter-spacing:3px;color:#0B6FA4">KRITERIUM 5 · DATENSICHERHEIT UND DSGVO</p>
+<h2 style="font-size:64px;font-weight:600;line-height:1.1;color:#0E1B2C">Datensicherheit und DSGVO</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border:1px solid #D3DEE6;border-radius:20px;padding:32px">
+<x-icon name="Database" style="width:56px;height:56px;color:#0B6FA4"></x-icon>
+<h3 style="font-size:36px;font-weight:600;line-height:1.2;color:#0E1B2C">Welche Daten?</h3>
+<ul style="font-size:26px;line-height:1.4">
+<li>Truck-ID</li>
+<li>Zwei Temperaturen und Rohwerte</li>
+<li>Lüfter- und Ventilwerte</li>
+<li>Zeitstempel (UTC)</li>
+</ul>
+<p style="font-size:26px;line-height:1.4"><b>Kein Personenbezug</b> in den Messdaten: keine Namen, kein GPS, keine Fahrer-ID. Personenbezogen sind nur die Konto-Daten des Teams.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border:1px solid #D3DEE6;border-radius:20px;padding:32px">
+<x-icon name="Warning" style="width:56px;height:56px;color:#B85C00"></x-icon>
+<h3 style="font-size:36px;font-weight:600;line-height:1.2;color:#0E1B2C">Risiken</h3>
+<ul style="font-size:26px;line-height:1.4">
+<li>Speicherort laut MathWorks weltweit, USA: Drittlandübermittlung (DSGVO Kap. V)</li>
+<li>Truck-ID plus Zeit ließe sich mit Fahrern verknüpfen</li>
+<li>Kanal öffentlich: Verlauf und Betriebszeiten für alle sichtbar</li>
+<li>Kein Löschschutz; Kontingent leer = keine neuen Daten</li>
+</ul>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;border:1px solid #D3DEE6;border-radius:20px;padding:32px">
+<x-icon name="Lock" style="width:56px;height:56px;color:#0B6FA4"></x-icon>
+<h3 style="font-size:36px;font-weight:600;line-height:1.2;color:#0E1B2C">Maßnahmen</h3>
+<ul style="font-size:26px;line-height:1.4">
+<li>Nur nötige Daten, kein GPS; Schreiben nur mit geheimem Key</li>
+<li>Kanal bewusst öffentlich: nur nicht-sensible Daten, Prüfer sehen den Verlauf</li>
+<li>HTTPS, getrennte Keys (erneuert), Original bleibt lokal, Aufbewahrung 12 Monate</li>
+<li>MathWorks ist im Data Privacy Framework aktiv gelistet (geprüft 07.10.2026)</li>
+</ul>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.4;color:#0E1B2C"><b>Einschätzung:</b> Für den Prototyp vertretbar. Im Realbetrieb mit Fahrerdaten wären EU-Hosting, Auftragsverarbeitungsvertrag und ein Schlüssel pro Truck nötig.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5A6878">Team 13-1 · Challenge III · Ice Truck in der Cloud</p>
+<p style="position:absolute;right:128px;bottom:64px;width:400px;text-align:right;font-size:24px;color:#5A6878">Kriterium 5 von 8</p>
+<p style="position:absolute;left:1532px;top:128px;width:260px;text-align:center;font-size:32px;font-weight:700;background:#0B6FA4;color:#FFFFFF;padding:10px 0;border-radius:50%">5 Punkte</p>
+<aside>Datenschutz-Einschätzung. Was wir übertragen: Truck-ID, Temperaturen, Aktorwerte und Zeitstempel. Im Prototyp ist das kein Personenbezug. Risiken: Der Anbieter sitzt in den USA, das ist eine Drittlandübermittlung. Und wenn die Truck-ID später einem Fahrer zugeordnet wird, könnten die Daten personenbezogen werden. Maßnahmen: nur nötige Daten, HTTPS und getrennte Keys (inzwischen erneuert), das Original bleibt lokal in der Datenbank. Der Kanal ist bewusst öffentlich, weil er nur nicht-sensible Messdaten enthält und Prüfer den Verlauf ohne Anmeldung sehen können. Geschrieben werden kann nur mit dem geheimen Write Key. Im Realbetrieb wäre der Kanal privat. Die Aufbewahrung legen wir auf 12 Monate fest (Annahme, passt zur Lizenzlaufzeit), dazu monatlich ein CSV-Export. Aus der MathWorks Privacy Policy (Stand März 2026): Daten werden dort gespeichert, wo MathWorks oder seine Dienstleister arbeiten, also nicht zwingend in der EU. Eintrag im Verzeichnis dataprivacyframework.gov am 07.10.2026 geprüft: The MathWorks, Inc. ist aktiver Teilnehmer im EU-US Framework (zertifiziert seit 2016, nächste Zertifizierung fällig 07/2027), in der UK-Erweiterung und im Swiss-US Framework. Abgedeckt sind Nicht-HR-Daten, also keine Beschäftigtendaten. Kämen später Fahrerdaten dazu, wäre das DPF-Zertifikat dafür keine Grundlage. Einen Auftragsverarbeitungsvertrag für Kunden nennt die Policy nicht, für den Prototyp ohne Personendaten ist das unkritisch. Die vollständige Einschätzung steht in DATENSCHUTZ.md, die technischen Maßnahmen im SICHERHEITSKONZEPT.md. Im Realbetrieb wäre eine EU-Region die bessere Wahl, und ein Unternehmen bräuchte die Standard-Lizenz.</aside>
+</section>

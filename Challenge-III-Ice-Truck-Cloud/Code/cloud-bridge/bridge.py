@@ -1,21 +1,22 @@
-"""Challenge III: Cloud-Bridge Pi -> Azure IoT Hub (Plan B: ThingSpeak).
+"""Challenge III: Cloud-Bridge Pi -> Cloud (ThingSpeak, alternativ Azure IoT Hub).
 
 Liest neue Zeilen aus der `readings`-Tabelle von Challenge I
 (`Challenge-I-Ice-Truck/Code/pi-backend/challenge_i.db`, geschrieben von
-app.py) und schickt sie gebuendelt per MQTT (TLS, Port 8883 - oder MQTT
-ueber WebSockets auf 443, falls das Netz 8883 blockt) an den Azure IoT Hub.
+app.py) und schickt sie gebuendelt an die Cloud, per HTTPS an ThingSpeak
+(CLOUD_BACKEND=thingspeak) oder per MQTT ueber TLS an den Azure IoT Hub
+(CLOUD_BACKEND=azure).
 
 Store & Forward: Die lokale SQLite-DB ist gleichzeitig der Puffer. Der
 Cursor (`last_sent_id` in STATE_PATH) wird erst NACH erfolgreichem Senden
-weitergeschoben - faellt unterwegs das Mobilfunknetz aus, wird der
-Rueckstand beim naechsten erfolgreichen Verbindungsaufbau nachgeliefert.
-Weil zwischen erfolgreichem Senden und Speichern des Cursors theoretisch
-ein Absturz liegen kann (at-least-once), traegt jede Zeile ihre lokale
-`id` mit, damit die Cloud Duplikate herausfiltern kann.
+weitergeschoben - faellt unterwegs das Netz aus, wird der Rueckstand beim
+naechsten erfolgreichen Senden nachgeliefert. Weil zwischen erfolgreichem
+Senden und Speichern des Cursors theoretisch ein Absturz liegen kann
+(at-least-once), traegt jede Zeile ihre lokale `id` mit, damit Duplikate
+erkennbar sind.
 
-Kompaktes Spaltenformat (`cols` + `rows` statt eines Objekts pro Messung),
-weil der kostenlose IoT-Hub-Tarif F1 nur 8.000 Nachrichten a 0,5 KB pro Tag
-erlaubt - siehe README.md, Abschnitt "Kontingent".
+Kompaktes Spaltenformat (`cols` + `rows` statt eines Objekts pro Messung)
+und gebuendelte Uebertragung, weil die kostenlosen Tarife Nachrichten pro
+Zeitraum begrenzen - siehe README.md, Abschnitt "Kontingent".
 """
 
 from __future__ import annotations
