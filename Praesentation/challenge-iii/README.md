@@ -3,6 +3,7 @@
 Aufgebaut entlang des Bewertungsbogens (8 Kriterien, 50 sichtbare Punkte). 13 Folien.
 
 - **Live-Version:** https://claude.ai/artifact/VmjCaHCTtuXDeyr3WgLdfa (private Seite, im Teilen-Menü freigeben, damit andere sie öffnen können; dort lässt sich die Präsentation auch als PowerPoint oder PDF herunterladen)
+- **PowerPoint-Datei:** [`../../Challenge-III-Ice-Truck-Cloud/ice-truck-in-der-cloud.pptx`](../../Challenge-III-Ice-Truck-Cloud/ice-truck-in-der-cloud.pptx) (13 Folien, Sprechtext in den Notizen, öffnet in PowerPoint und Keynote)
 - **`folien-und-sprechtext.md`** – Folientitel und Sprechtext je Folie, direkt auf GitHub lesbar
 - **`deck-source/`** – Quelldateien der Folien (`deck.json` + `slides/*.html`), nötig, falls die Präsentation neu aufgebaut werden soll
 
