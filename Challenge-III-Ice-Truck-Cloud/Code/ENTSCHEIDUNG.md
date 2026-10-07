@@ -36,7 +36,7 @@ Verwandte Dokumente:
 | **Speicherung** | Kanal mit 8 Feldern und Statusfeld, CSV/JSON-Export | Routing ohne Code in Blob Storage, Data Lake, Cosmos DB | Rules Engine nach S3, DynamoDB, Timestream | eingebaut, im Free-Tarif nur sehr kurze Historie | InfluxDB, selbst betrieben |
 | **Visualisierung** | Diagramme, Widgets, MATLAB-Auswertung eingebaut | Azure Data Explorer (Free Cluster), Power BI, Grafana | Managed Grafana (kostenpflichtig), QuickSight | fertige Dashboards | Grafana, frei gestaltbar |
 | **Kosten** | Free-Tarif für nicht-kommerzielle kleine Projekte (unter 3 Mio. Nachrichten pro Jahr, 4 Kanäle, 15 s Intervall), keine Kreditkarte | IoT Hub F1 gratis (8.000 Nachrichten/Tag), Rest aus dem Schülerguthaben | Free Tier zeitlich begrenzt, Kreditkarte nötig | Free-Tarif mit starken Einschränkungen | VM-Miete ab ca. 8–15 € im Monat |
-| **Datenschutz** | Anbieter in den USA, Speicherort weltweit, beruft sich auf das EU-US Data Privacy Framework | EU-Regionen möglich (Germany West Central) | EU-Region Frankfurt möglich | Anbieter in der EU, wenig Kontrolle über Speicherdauer | volle Kontrolle, volle Verantwortung |
+| **Datenschutz** | Anbieter in den USA, Speicherort weltweit, im EU-US Data Privacy Framework aktiv gelistet (nur Nicht-Beschäftigtendaten) | EU-Regionen möglich (Germany West Central) | EU-Region Frankfurt möglich | Anbieter in der EU, wenig Kontrolle über Speicherdauer | volle Kontrolle, volle Verantwortung |
 | **Aufwand für uns** | gering | mittel | mittel | gering | hoch (Betrieb, Updates, Zertifikate) |
 | **Zugang für uns** | Konto in Minuten angelegt, **läuft** | Schülerkonto am 30.09. nicht erreichbar, **nie in Betrieb** | Kreditkarte nötig | nicht geprüft | nur als Entwurf (`alternative-iaas-vm/`), **nie deployt** |
 

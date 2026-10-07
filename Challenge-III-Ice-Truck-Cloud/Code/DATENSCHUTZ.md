@@ -59,14 +59,26 @@ Das sagt MathWorks selbst (Privacy Policy):
   unterliegt der Aufsicht der US-Behörde FTC.
 - **Vertretung in der EU:** The MathWorks GmbH, Weihenstephaner Str. 6, 81673 München.
 - **Kontakt für Datenschutzanfragen:** privacy@mathworks.com.
-- **[PRÜFEN]** Eintrag im offiziellen Verzeichnis: https://www.dataprivacyframework.gov/s/ →
-  „Participant Search“ → nach **„The MathWorks“** suchen (so schreibt es die Privacy Policy).
-  Ergebnis: `[aktiv / nicht gefunden, Datum eintragen]`
+- **Geprüft am 07.10.2026** im offiziellen Verzeichnis ([Data Privacy Framework List](https://dataprivacyframework.gov/list),
+  Suche „The MathWorks“): **The MathWorks, Inc., Natick (MA), aktiver Teilnehmer.**
+
+  | Rahmen | Status | Erstzertifizierung | Nächste Zertifizierung fällig |
+  |---|---|---|---|
+  | EU-U.S. Data Privacy Framework | **Active** | 16.11.2016 | 07.07.2027 |
+  | UK-Erweiterung | **Active** | 07.08.2023 | 07.07.2027 |
+  | Swiss-U.S. Data Privacy Framework | **Active** | 18.05.2017 | 07.07.2027 |
+
+  Abgedeckte Datenart: **Non-HR Data** (keine Beschäftigtendaten). Prüfmethode:
+  Selbstbewertung. Streitbeilegung über BBB National Programs, Aufsicht durch die FTC.
+  Verbindliche Datenschutzerklärung im Verzeichnis: Privacy Policy, gültig ab 25.03.2026.
 
 **Bewertung:** Für unsere Messdaten ohne Personenbezug ist die Übermittlung unkritisch. Für die
-Kontodaten der Teammitglieder stützt sich MathWorks auf das DPF. Im Realbetrieb mit Personendaten
-wäre eine **EU-Region** (z. B. Azure Germany West Central) die sicherere Wahl, weil dort der
-Speicherort zugesagt werden kann.
+Kontodaten der Teammitglieder stützt sich MathWorks auf das DPF, und die Zertifizierung ist aktiv.
+**Wichtig:** Das DPF-Zertifikat deckt nur Nicht-Beschäftigtendaten („Non-HR Data“) ab. Würden wir
+später **Fahrerdaten** übertragen, wären das Beschäftigtendaten, für die die Zertifizierung nicht
+gilt. Dann bräuchte es eine andere Grundlage (z. B. Standardvertragsklauseln). Im Realbetrieb mit
+Personendaten wäre daher eine **EU-Region** (z. B. Azure Germany West Central) die sicherere
+Wahl, weil dort auch der Speicherort zugesagt werden kann.
 
 ## 4. Auftragsverarbeitung und Nutzungsbedingungen
 
@@ -123,7 +135,7 @@ Batterie-Uhr im Pi.
 | Frage | Einschätzung |
 |---|---|
 | Personenbezogene Daten im Prototyp? | **Messdaten: nein.** Personenbezogen sind nur die Kontodaten der Teammitglieder bei MathWorks |
-| DSGVO-Risiko durch USA-Server? | **Gering**, solange kein Personenbezug besteht. MathWorks beruft sich auf das Data Privacy Framework |
+| DSGVO-Risiko durch USA-Server? | **Gering**, solange kein Personenbezug besteht. MathWorks ist im Data Privacy Framework aktiv gelistet, das gilt aber nicht für Beschäftigtendaten |
 | Technische Absicherung ausreichend? | **Für den Prototyp ja**, mit den benannten Restrisiken |
 | Free-Tarif für den Betrieb erlaubt? | **Für das Schulprojekt ja** (nicht-kommerziell). Ein Unternehmen braucht die Standard-Lizenz |
 | Reicht das für den Flottenbetrieb? | **Nein, nicht unverändert.** Vorher: Standard-Lizenz, EU-Region (z. B. Azure IoT Hub), Auftragsverarbeitungsvertrag, unveränderliches Archiv, Schlüssel pro Truck |
@@ -132,7 +144,7 @@ Batterie-Uhr im Pi.
 
 - [x] Privacy Policy gelesen: Speicherort weltweit, DPF-Erklärung, Datenschutzvertreter in München, kein DPA für Kunden erwähnt
 - [x] Licensing FAQ gelesen: Free-Lizenz nicht-kommerziell, 3 Mio. Nachrichten pro Jahr, 4 Kanäle, 15 s, 10 Mio. gespeicherte Nachrichten
-- [ ] Im Verzeichnis dataprivacyframework.gov „The MathWorks“ gesucht, Ergebnis in Abschnitt 3 und auf Folie 9 eingetragen
+- [x] Im Verzeichnis dataprivacyframework.gov „The MathWorks“ gesucht (07.10.2026): aktiv, Ergebnis in Abschnitt 3 und auf Folie 9 eingetragen
 - [ ] Aufbewahrungsfrist aus Aufgabe/Merkblatt in Abschnitt 6 eingetragen
 - [ ] Im ThingSpeak-Kanal: *Sharing* steht auf „Keep channel view private“ (Screenshot)
 - [ ] Unter *My Account* Restkontingent und Verbrauch fotografiert (Beleg für „Measured Service“)
