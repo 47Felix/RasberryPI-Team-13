@@ -2,8 +2,8 @@
 
 Die Temperaturdaten aus Challenge I (`challenge_i.db` auf dem Pi) werden automatisch in die
 Cloud übertragen, dort gespeichert, visualisiert und ausgewertet. Wir nutzen **ThingSpeak**
-(MathWorks, SaaS). Plan A war Azure IoT Hub; der Code dafür ist fertig, lief aber nie (Abschnitt
-„Alternative: Azure IoT Hub“ unten).
+(MathWorks, SaaS). Azure IoT Hub haben wir als Alternative für den Flottenbetrieb vorbereitet
+(Abschnitt „Alternative: Azure IoT Hub“ unten).
 
 | Dokument | Inhalt |
 |---|---|
@@ -183,11 +183,11 @@ bleibt bei Sendefehler und bei abgelehntem Upload stehen, Health-Flags, Ausdünn
 Flags im Statusfeld, Auswahl des Backends und dass die Datenbank nur lesend geöffnet wird.
 Für die Azure-Variante zusätzlich `requirements.txt` installieren.
 
-## Alternative: Azure IoT Hub (Plan A, nicht in Betrieb)
+## Alternative: Azure IoT Hub (vorbereitet, nicht in Betrieb)
 
 Für den Flottenbetrieb die bessere Wahl (EU-Region, unveränderliches Archiv, Schlüssel pro
-Gerät). Der Code ist fertig, wurde aber nie gegen einen echten IoT Hub getestet, weil der
-Zugang zum Schülerkonto am 30.09.2026 nicht ging. Umschalten mit `CLOUD_BACKEND=azure`.
+Gerät). Der Code ist fertig, wurde aber nie gegen einen echten IoT Hub getestet.
+Umschalten mit `CLOUD_BACKEND=azure`.
 
 ### Azure einrichten (ca. 10 min)
 

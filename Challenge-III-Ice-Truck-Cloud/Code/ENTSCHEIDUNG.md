@@ -1,10 +1,10 @@
 # Challenge III – Auswahl der IoT-Cloud-Lösung
 
 **Entscheidung: ThingSpeak (MathWorks), eingeordnet als SaaS.**
-Plan A war Azure IoT Hub (PaaS). Code und Einrichtungsskript dafür sind fertig
-(`azure/`), liefen aber nie, weil der Zugang zum Azure-Schülerkonto am 30.09.2026 nicht
-funktionierte. Seitdem läuft die Übertragung vom Raspberry Pi über denselben Bridge-Code
-nach ThingSpeak.
+Azure IoT Hub (PaaS) haben wir als Alternative ebenfalls vorbereitet (`azure/`, Sender in
+der Bridge), eingesetzt wird aber ThingSpeak: Für unseren Prototyp hat es uns am Ende besser
+gefallen, weil es kostenlos ist, Speicherung und Diagramme mitbringt und ohne eigenen Server
+in Minuten läuft. Für eine ganze Flotte würden wir Azure empfehlen (siehe Abschnitt 7).
 
 Verwandte Dokumente:
 [`SICHERHEITSKONZEPT.md`](SICHERHEITSKONZEPT.md) (sichere Übertragung) ·
@@ -38,7 +38,7 @@ Verwandte Dokumente:
 | **Kosten** | Free-Tarif für nicht-kommerzielle kleine Projekte (unter 3 Mio. Nachrichten pro Jahr, 4 Kanäle, 15 s Intervall), keine Kreditkarte | IoT Hub F1 gratis (8.000 Nachrichten/Tag), Rest aus dem Schülerguthaben | Free Tier zeitlich begrenzt, Kreditkarte nötig | Free-Tarif mit starken Einschränkungen | VM-Miete ab ca. 8–15 € im Monat |
 | **Datenschutz** | Anbieter in den USA, Speicherort weltweit, im EU-US Data Privacy Framework aktiv gelistet (nur Nicht-Beschäftigtendaten) | EU-Regionen möglich (Germany West Central) | EU-Region Frankfurt möglich | Anbieter in der EU, wenig Kontrolle über Speicherdauer | volle Kontrolle, volle Verantwortung |
 | **Aufwand für uns** | gering | mittel | mittel | gering | hoch (Betrieb, Updates, Zertifikate) |
-| **Zugang für uns** | Konto in Minuten angelegt, **läuft** | Schülerkonto am 30.09. nicht erreichbar, **nie in Betrieb** | Kreditkarte nötig | nicht geprüft | nur als Entwurf (`alternative-iaas-vm/`), **nie deployt** |
+| **Stand bei uns** | **gewählt, läuft** | vorbereitet, nicht eingesetzt | nicht umgesetzt | nicht umgesetzt | Entwurf (`alternative-iaas-vm/`), nie deployt |
 
 Vorgestellt und verglichen werden vor allem **ThingSpeak** und **Azure IoT Hub**; AWS,
 Arduino Cloud und die eigene VM sind als weitere Alternativen bewertet.
@@ -62,8 +62,9 @@ Wir setzen **ThingSpeak** ein, weil es die Anforderungen bei geringstem Aufwand 
    („degree-granting institution“) gedacht und „Home“ nur für Privatnutzung.
 4. **Datenschutz vertretbar:** Es werden nur Truck-ID, Temperaturen, Aktorwerte und
    Zeitstempel übertragen, keine Personendaten (siehe `DATENSCHUTZ.md`).
-5. **Verfügbarkeit für uns:** Azure war am Tag der Umsetzung nicht erreichbar. Mit
-   ThingSpeak konnten wir sofort liefern.
+5. **Aufwand und Tempo:** Konto, Kanal und erste Daten waren in Minuten da, ohne
+   eigenen Server und ohne Kreditkarte. Für einen Prototyp, an dem wir Sicherheit,
+   Datenschutz und Auswertung ausarbeiten wollten, war das der bessere Start.
 
 **Nachteile und wie wir damit umgehen:**
 
@@ -117,7 +118,7 @@ Dort fehlen Resource Pooling, Elastizität und verbrauchsabhängige Abrechnung.
 - **Datensicherheit und DSGVO:** [`DATENSCHUTZ.md`](DATENSCHUTZ.md): welche Daten, Personenbezug,
   Drittlandübermittlung, technische und organisatorische Maßnahmen, Prüfliste.
 
-## 7. Plan A: Azure IoT Hub (vorbereitet, nicht eingesetzt)
+## 7. Alternative für die Flotte: Azure IoT Hub (vorbereitet, nicht eingesetzt)
 
 Für die Flotte bleibt Azure die bessere Wahl: EU-Datenhaltung, unveränderliches Archiv
 (Blob Storage mit Immutability-Policy) für den Ein-Jahres-Nachweis, ein eigener Schlüssel

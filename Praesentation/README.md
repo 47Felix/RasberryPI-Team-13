@@ -63,4 +63,4 @@ Vollständigkeitsprüfung gegen "Bewertungsbogen SmSy Fachgespräch_2026_ChI+II"
 
 ---
 
-**Challenge III (Cloud):** Die Präsentation dazu liegt in [`challenge-iii/`](challenge-iii/) (Link zur Live-Version, Sprechtext je Folie, Folien-Quellen).
+**Challenge III (Cloud):** Die Präsentation dazu liegt im Challenge-III-Ordner: [`Challenge-III-Ice-Truck-Cloud/Praesentation/`](../Challenge-III-Ice-Truck-Cloud/Praesentation/) (PowerPoint-Datei, Redemanuskript mit Aufteilung auf vier Sprecher, Sprechtext je Folie, Folien-Quellen).

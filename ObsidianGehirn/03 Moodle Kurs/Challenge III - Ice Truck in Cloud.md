@@ -37,7 +37,7 @@ Technik:
 - **Store & Forward:** DB ist der Puffer, Cursor (`bridge_state.json`) rückt erst nach bestätigtem Senden weiter, verpasste Messungen kommen mit Originalzeit nach
 - **Health-Flags am Edge:** `temp_high`, `sensor_mismatch` (unser KY-028-Wackelkontakt), `sensor_stuck` im Statusfeld
 - 12 Tests grün (`cloud-bridge/tests/`)
-- Präsentation entlang des Bewertungsbogens (13 Folien): https://claude.ai/artifact/VmjCaHCTtuXDeyr3WgLdfa
+- Präsentation entlang des Bewertungsbogens (13 Folien, Sprecher Anton/Dogan/Erik/Felix, Sprechtext in den Notizen): `Challenge-III-Ice-Truck-Cloud/Praesentation/` (`ice-truck-in-der-cloud.pptx`, `redemanuskript.md`), Live-Version https://claude.ai/artifact/VmjCaHCTtuXDeyr3WgLdfa
 
 **Stand 07.10.2026:** Discord- und Mail-Alarm läuft ([[Challenge III - Alarme (Discord + Mail)]]), Keys sind erneuert, Kanal bewusst **öffentlich** (nur nicht-sensible Messdaten, Begründung in `DATENSCHUTZ.md` 5a), Aufbewahrung auf 12 Monate festgelegt (Annahme, dokumentiert), MathWorks im Data Privacy Framework geprüft (aktiv, nur Non-HR-Daten). **Offen:** Pi läuft ab morgen wieder, Sensor-Drift-Skript (`Challenge-III-Ice-Truck-Cloud/Code/thingspeak/sensor_drift_visualization.m`) in ThingSpeak anlegen und testen, Offline-Demo, Screenshots, neuen Write Key auf dem Pi prüfen → [[Offene Punkte]]
 
