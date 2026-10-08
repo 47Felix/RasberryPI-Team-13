@@ -1,4 +1,4 @@
-# Präsentation "The Ice Truck Problem(s)" – Fachgespräch Challenge I + II
+# Präsentation "The Ice Truck Problem(s)" – Fachgespräch Challenge I + II (+ Sensor-Drift aus Challenge III)
 
 - **`ice-truck-praesentation.pptx`** – PowerPoint-Version, 29 Folien, identischer Inhalt wie die HTML-Version. Öffnet in PowerPoint (Windows/Mac/Web) und in Keynote.
 - **`ice-truck-praesentation.key`** – native Keynote-Version für Mac, aus der `.pptx` in Keynote selbst erzeugt (Datei → Sichern) und danach gegengeprüft (29 Folien, Bild-für-Bild identisch zur `.pptx`-Version). Einfach doppelklicken, öffnet direkt in Keynote.
