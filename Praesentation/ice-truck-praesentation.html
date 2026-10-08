@@ -581,12 +581,11 @@ if temp &gt;= 28°C:        fan = 255,       valve = 30..180  # Stufe 2</code></
     <div class="eyebrow">Mobiles Endgerät &amp; Status</div>
     <h2>Stand heute &amp; offene Punkte</h2>
     <div class="body">
-      <p><strong>Läuft:</strong> I2C-Bug behoben, Regellogik pytest-getestet, SQLite-Logging live im Systemd-Service, Node-RED-Flow importiert und mit echten Live-Daten verifiziert (Lese-Richtung)</p>
-      <p><strong>Noch offen, braucht kurz Root-Zugriff auf dem Pi:</strong></p>
+      <p><strong>Läuft:</strong> I2C-Bug behoben, Regellogik pytest-getestet, SQLite-Logging live im Systemd-Service, Node-RED-Flow importiert und mit echten Live-Daten verifiziert (Lese-Richtung), Broker-Auth läuft wieder (die Handy-Verbindungsfehler kamen von der wechselnden Hotspot-IP, nicht von der Authentifizierung)</p>
+      <p><strong>Noch offen:</strong></p>
       <ul>
-        <li>Broker-Auth hängt seit 24.09. in einer Reconnect-Schleife – Passwort/Credentials müssen neu gesetzt werden</li>
-        <li>Backend-Service hält noch alten Code im Speicher (kein <code>control_state</code>-Support) – braucht <code>systemctl restart</code></li>
-        <li>MQTT Dash auf einem echten Handy noch nicht konfiguriert</li>
+        <li>Backend-Service hält noch alten Code im Speicher (kein <code>control_state</code>-Support) – braucht kurz sudo: <code>systemctl restart</code></li>
+        <li>MQTT Dash auf einem echten Handy noch nicht konfiguriert (Broker-IP im Hotspot wechselt, vorher <code>hostname -I</code> prüfen)</li>
       </ul>
       <p><strong>Challenge III (Cloud) – Sensor-Drift realisiert:</strong> ThingSpeak-Kanal mit MATLAB-Visualisierung (1-min-Mittel der Abweichung beider Sensoren, Warnschwelle 3 °C) zeigt, ob die beiden KY-028 auseinanderlaufen – Predictive Maintenance. Azure-IoT-Hub-Anbindung vorbereitet, Ende-zu-Ende-Test steht noch aus</p>
     </div>

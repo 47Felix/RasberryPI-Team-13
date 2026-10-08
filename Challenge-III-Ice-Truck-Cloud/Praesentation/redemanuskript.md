@@ -86,19 +86,19 @@ Unser Konzept in sechs Punkten. Verschlüsselung: nur HTTPS. Authentifizierung: 
 
 **Folie 11: Messdaten in der Cloud (Kriterium 7)** (Richtzeit 1:30 min · 10 Punkte)
 
-Hier zeigen wir die Ergebnisse. LIVE-DEMO oder Screenshot: ThingSpeak-Kanal mit Temperaturverlauf, Lüfter und Ventil. Die Messung läuft alle 5 Sekunden. Der Upload wird wegen der Free-Grenze alle 15 Sekunden gebündelt, jede Messung behält ihre eigene Uhrzeit. Es gibt 8 Felder, und der CSV-Export dient als Nachweis für Kontrollen. Der Kanal ist öffentlich, deshalb kann jeder ohne Anmeldung zuschauen. VOR DEM VORTRAG: Den Platzhalter durch einen echten Screenshot ersetzen und prüfen, dass die Punkte im 5-Sekunden-Abstand ankommen.
+Hier zeigen wir die Ergebnisse. LIVE-DEMO oder Screenshot: ThingSpeak-Kanal mit Temperaturverlauf, Lüfter und Ventil. Die Messung läuft alle 5 Sekunden. Der Upload wird wegen der Free-Grenze alle 15 Sekunden gebündelt, jede Messung behält ihre eigene Uhrzeit. Es gibt 8 Felder, und der CSV-Export dient als Nachweis für Kontrollen. Der Kanal ist öffentlich, deshalb kann jeder ohne Anmeldung zuschauen. VOR DEM VORTRAG: Pi vorher durchlaufen lassen und prüfen, dass die Punkte im 5-Sekunden-Abstand ankommen.
 
 *Übergabe:* Weiter mit den Zusatzfunktionen (Felix bleibt).
 
 **Folie 12: Zusätzliche Funktionen (Kriterium 8)** (Richtzeit 1:00 min · 5 Punkte)
 
-Store and Forward: Bei einem Funkloch werden fehlende Messungen später mit ihrer Originalzeit nachgeliefert. Health-Flags: Die Bridge warnt schon am Truck bei zu hoher Temperatur, abweichenden Sensoren oder einem eingefrorenen Sensor. Alarm: Sobald Field 3 über 30 Grad steigt, startet ThingSpeak React eine MATLAB-Analyse, die eine Nachricht an unseren Discord-Server und eine E-Mail schickt. Die Zugangsdaten liegen nur in ThingSpeak. Laut My Account sind 800 Alarm-Mails im Jahr erlaubt. Als Nächstes das Sensor-Drift-Diagramm als Beispiel für Predictive Maintenance. VOR DEM VORTRAG: Wenn das Diagramm läuft, die Karte auf UMGESETZT setzen, sonst die Karte löschen.
+Store and Forward: Bei einem Funkloch werden fehlende Messungen später mit ihrer Originalzeit nachgeliefert. Health-Flags: Die Bridge warnt schon am Truck bei zu hoher Temperatur, abweichenden Sensoren oder einem eingefrorenen Sensor. Alarm: Sobald Field 3 über 30 Grad steigt, startet ThingSpeak React eine MATLAB-Analyse, die eine Nachricht an unseren Discord-Server und eine E-Mail schickt. Die Zugangsdaten liegen nur in ThingSpeak. Laut My Account sind 800 Alarm-Mails im Jahr erlaubt. Sensor-Drift: Ein MATLAB-Diagramm in ThingSpeak zeigt pro Minute, wie weit die beiden Temperatursensoren auseinanderliegen, mit gleitendem Mittelwert und Warnschwelle bei 3 Grad. Wächst die Abweichung stetig, deutet das auf einen defekten Sensor oder Wackelkontakt hin, und die Wartung lässt sich planen, bevor der Truck ausfällt. VOR DEM VORTRAG: Pi vorher durchlaufen lassen, damit das Diagramm frische Minutenwerte zeigt.
 
 *Übergabe:* Weiter mit dem Fazit (Felix bleibt).
 
 **Folie 13: Fazit und Ausblick** (Richtzeit 1:00 min)
 
-Wir erfüllen die Nachweispflicht deutlich besser: Die Daten kommen automatisch und zeitnah in die Cloud und sind von überall abrufbar. Sie sind doppelt gesichert, lokal im Pi und in der Cloud. Ausblick: Für den echten Flottenbetrieb würden wir Azure IoT Hub mit EU-Region wählen, die Alarme ausbauen und die Sensor-Drift für Predictive Maintenance nutzen. Gelernt: Unsere Bridge trennt Logik und Sender, der Anbieter lässt sich austauschen. ThingSpeak jetzt, Azure für die Flotte. Vielen Dank, wir freuen uns auf eure Fragen.
+Wir erfüllen die Nachweispflicht deutlich besser: Die Daten kommen automatisch und zeitnah in die Cloud und sind von überall abrufbar. Sie sind doppelt gesichert, lokal im Pi und in der Cloud. Ausblick: Für den echten Flottenbetrieb würden wir Azure IoT Hub mit EU-Region wählen, die Alarme ausbauen und die Sensor-Drift-Auswertung zur Wartungsplanung der ganzen Flotte nutzen. Gelernt: Unsere Bridge trennt Logik und Sender, der Anbieter lässt sich austauschen. ThingSpeak jetzt, Azure für die Flotte. Vielen Dank, wir freuen uns auf eure Fragen.
 
 *Übergabe:* Fragen beantwortet, wer fachlich dran ist (siehe Rückfragen im Redemanuskript).
 

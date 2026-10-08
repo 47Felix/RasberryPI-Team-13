@@ -146,8 +146,9 @@ Nach einer Änderung der `.env`: `sudo systemctl restart cloud-bridge`. Nach ein
   `mailAn = false` setzen.
 - **Sensor-Drift (Predictive Maintenance), MATLAB Visualization:** Skript
   [`thingspeak/sensor_drift_visualization.m`](thingspeak/sensor_drift_visualization.m). Es zeigt, ob die
-  beiden Temperatursensoren auseinanderlaufen (typisch für den KY-028-Wackelkontakt) und wie stark der
-  Trend pro Tag ist. **Einrichten:** ThingSpeak → *Apps → MATLAB Visualizations → New* → Vorlage
+  beiden Temperatursensoren auseinanderlaufen (typisch für den KY-028-Wackelkontakt). Pro Minute ein
+  Mittelwert der Abweichung (Berliner Zeit, letzte 20 Minuten, Warnschwelle 3 °C) mit gleitendem Mittel
+  und Trend pro Stunde. Läuft als MATLAB Visualization im Kanal. **Einrichten:** ThingSpeak → *Apps → MATLAB Visualizations → New* → Vorlage
   „Custom (no starting code)“ → Skript einfügen → *Save and Run*. **Testen ohne Pi:** Der Kanal enthält
   schon Daten in Field 1 und 2, das Diagramm funktioniert also sofort. Zeigt es „Keine Daten“, in
   Zeile `kanal` die Channel ID prüfen. Danach lässt sich das Diagramm über *Add Visualizations* im Kanal
@@ -223,7 +224,7 @@ Spaltenformat bündelt.
 ## Offene Punkte
 
 - [x] Alarm per Discord und E-Mail läuft (React Field 3 > 30 °C, Details im Vault)
-- [ ] Sensor-Drift-Diagramm als MATLAB Visualization anlegen und testen (`thingspeak/sensor_drift_visualization.m`)
+- [x] Sensor-Drift-Diagramm als MATLAB Visualization angelegt und getestet (`thingspeak/sensor_drift_visualization.m`)
 - [ ] Offline-Test vorführen (Dienst stoppen, warten, starten) und Screenshot machen
 - [x] Write/Read Key neu erzeugt (Alerts-Key und Discord-Webhook ebenfalls)
 - [ ] Neuen Write Key in der `.env` auf dem Pi prüfen (`journalctl -u cloud-bridge -n 20`)
