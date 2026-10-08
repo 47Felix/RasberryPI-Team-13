@@ -269,7 +269,7 @@ bp.content_slide(nxt(), "felix", "Challenge II", None, "Stand heute & offene Pun
         ("Broker-Auth hängt seit 24.09. in einer Reconnect-Schleife – Passwort/Credentials müssen neu gesetzt werden", 1),
         ("Backend-Service hält noch alten Code im Speicher (kein `control_state`-Support) – braucht `systemctl restart`", 1),
         ("MQTT Dash auf einem echten Handy noch nicht konfiguriert", 1),
-        "**Ausblick:** Challenge III (Cloud-Speicherung/-Auswertung) – noch nicht begonnen",
+        "**Challenge III (Cloud) – Sensor-Drift realisiert:** ThingSpeak-Kanal mit MATLAB-Visualisierung (1-min-Mittel der Abweichung beider Sensoren, Warnschwelle 3 °C) zeigt, ob die beiden KY-028 auseinanderlaufen – Predictive Maintenance. Azure-IoT-Hub-Anbindung vorbereitet, Ende-zu-Ende-Test steht noch aus",
     ])
 
 # ---------- Slide 27: Fazit divider ----------

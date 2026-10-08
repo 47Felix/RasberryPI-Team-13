@@ -91,3 +91,6 @@ Entlang der Pipeline: Hardware/Sensorik, Datenübertragung/Speicherung, Regellog
 
 **Was würdet ihr mit mehr Zeit noch machen?**
 Die beiden offenen Pi-Zugriffs-Punkte fixen und den kompletten Pfad Handy → MQTT → Node-RED → I2C → Aktor einmal live durchtesten, die realen Schwellwerte aus der Aufgabenstellung statt der Tischtest-Werte eintragen, und den Entkopplungskondensator für das rauschende Aktor-Board ergänzen.
+
+**Was ist der Sensor-Drift in Challenge III?**
+Die ThingSpeak-MATLAB-Visualisierung bildet pro Minute den Mittelwert der Abweichung zwischen Sensor-Board und Aktor-Board und glättet ihn über 5 Minuten. Ein stetiges Wachsen der Abweichung wäre echter Drift; springende Werte sprechen eher für Wackelkontakt oder Störungen. Über der Warnschwelle von 3 °C (entspricht `SENSOR_MISMATCH_C` in der Bridge) ist Wartung fällig.
