@@ -81,7 +81,7 @@ Node-RED ist die in der Aufgabenstellung vorgesehene Integrationsschicht, bringt
 ## Zum Vorgehen / Stand / Team
 
 **Was ist aktuell tatsächlich noch kaputt, ganz ehrlich?**
-Zwei Dinge, beide brauchen kurz interaktiven Root-Zugriff auf dem Pi: Die Broker-Authentifizierung hängt in einer Reconnect-Schleife (Passwort/Credentials driften auseinander), und der Backend-Dienst läuft noch mit älterem Code ohne Fernsteuerungs-Unterstützung, weil er seit dem letzten Reboot nicht neu gestartet wurde. Beides ist verstanden und lösbar, nur (noch) nicht ausgeführt.
+Zwei Dinge: Der Backend-Dienst läuft noch mit älterem Code ohne Fernsteuerungs-Unterstützung, weil er seit dem letzten Reboot nicht neu gestartet wurde (braucht kurz sudo). Und MQTT Dash ist auf einem echten Handy noch nicht final konfiguriert. Die Broker-Authentifizierung, die zwischendurch hing, läuft wieder: Die Handy-Verbindungsfehler kamen von der wechselnden IP im Hotspot, nicht von der Authentifizierung. Als Dauerfix kämen eine feste IP oder ein mDNS-Name (`team13-1.local`) infrage.
 
 **Wie habt ihr getestet, ohne ständig an der echten Hardware zu sein?**
 Mit einem Mock-I2C-Bus (`MockI2CBus` in `hardware.py`) für die komplette Pi-Software – Regellogik, Kalibrierung, Logging, Fernsteuerungs-Zustand –, alles per `pytest` automatisiert getestet, bevor überhaupt wieder echte Hardware verfügbar war. Gleiches Prinzip wie beim `socat`-Mock für unser Tresor-Kurzprojekt.
@@ -90,7 +90,7 @@ Mit einem Mock-I2C-Bus (`MockI2CBus` in `hardware.py`) für die komplette Pi-Sof
 Entlang der Pipeline: Hardware/Sensorik, Datenübertragung/Speicherung, Regellogik/Aktorik, und bei Challenge II zusätzlich MQTT/Topics sowie Node-RED/mobile Anbindung – jede:r hat mindestens einen Abschnitt durchgängig verantwortet und kann ihn im Detail erklären.
 
 **Was würdet ihr mit mehr Zeit noch machen?**
-Die beiden offenen Pi-Zugriffs-Punkte fixen und den kompletten Pfad Handy → MQTT → Node-RED → I2C → Aktor einmal live durchtesten, die realen Schwellwerte aus der Aufgabenstellung statt der Tischtest-Werte eintragen, und den Entkopplungskondensator für das rauschende Aktor-Board ergänzen.
+Den Backend-Neustart nachholen, MQTT Dash auf einem echten Handy einrichten und den kompletten Pfad Handy → MQTT → Node-RED → I2C → Aktor einmal live durchtesten, die realen Schwellwerte aus der Aufgabenstellung statt der Tischtest-Werte eintragen, und den Entkopplungskondensator für das rauschende Aktor-Board ergänzen.
 
 **Was ist der Sensor-Drift in Challenge III?**
 Die ThingSpeak-MATLAB-Visualisierung bildet pro Minute den Mittelwert der Abweichung zwischen Sensor-Board und Aktor-Board und glättet ihn über 5 Minuten. Ein stetiges Wachsen der Abweichung wäre echter Drift; springende Werte sprechen eher für Wackelkontakt oder Störungen. Über der Warnschwelle von 3 °C (entspricht `SENSOR_MISMATCH_C` in der Bridge) ist Wartung fällig.

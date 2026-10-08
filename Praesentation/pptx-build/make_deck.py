@@ -264,11 +264,10 @@ bp.content_slide(nxt(), "felix", "Challenge II", "Mobiles Endgerät & Status · 
 # ---------- Slide 26: Stand heute ----------
 bp.content_slide(nxt(), "felix", "Challenge II", None, "Stand heute & offene Punkte",
     bullets=[
-        "**Läuft:** I2C-Bug behoben, Regellogik pytest-getestet, SQLite-Logging live im Systemd-Service, Node-RED-Flow importiert und mit echten Live-Daten verifiziert (Lese-Richtung)",
-        "**Noch offen, braucht kurz Root-Zugriff auf dem Pi:**",
-        ("Broker-Auth hängt seit 24.09. in einer Reconnect-Schleife – Passwort/Credentials müssen neu gesetzt werden", 1),
-        ("Backend-Service hält noch alten Code im Speicher (kein `control_state`-Support) – braucht `systemctl restart`", 1),
-        ("MQTT Dash auf einem echten Handy noch nicht konfiguriert", 1),
+        "**Läuft:** I2C-Bug behoben, Regellogik pytest-getestet, SQLite-Logging live im Systemd-Service, Node-RED-Flow importiert und mit echten Live-Daten verifiziert (Lese-Richtung), Broker-Auth läuft wieder (die Handy-Verbindungsfehler kamen von der wechselnden Hotspot-IP, nicht von der Authentifizierung)",
+        "**Noch offen:**",
+        ("Backend-Service hält noch alten Code im Speicher (kein `control_state`-Support) – braucht kurz sudo: `systemctl restart`", 1),
+        ("MQTT Dash auf einem echten Handy noch nicht konfiguriert (Broker-IP im Hotspot wechselt, vorher `hostname -I` prüfen)", 1),
         "**Challenge III (Cloud) – Sensor-Drift realisiert:** ThingSpeak-Kanal mit MATLAB-Visualisierung (1-min-Mittel der Abweichung beider Sensoren, Warnschwelle 3 °C) zeigt, ob die beiden KY-028 auseinanderlaufen – Predictive Maintenance. Azure-IoT-Hub-Anbindung vorbereitet, Ende-zu-Ende-Test steht noch aus",
     ])
 
