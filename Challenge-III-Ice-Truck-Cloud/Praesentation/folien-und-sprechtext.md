@@ -66,7 +66,7 @@ SPRECHER: Erik · RICHTZEIT: 1:30 min — Unser Konzept in sechs Punkten. Versch
 
 *KRITERIUM 7 · MESSDATEN PROTOKOLLIERT UND VISUALISIERT*
 
-SPRECHER: Felix · RICHTZEIT: 1:30 min — Hier zeigen wir die Ergebnisse. LIVE-DEMO oder Screenshot: ThingSpeak-Kanal mit Temperaturverlauf, Lüfter und Ventil. Die Messung läuft alle 5 Sekunden. Der Upload wird wegen der Free-Grenze alle 15 Sekunden gebündelt, jede Messung behält ihre eigene Uhrzeit. Es gibt 8 Felder, und der CSV-Export dient als Nachweis für Kontrollen. Der Kanal ist öffentlich, deshalb kann jeder ohne Anmeldung zuschauen. VOR DEM VORTRAG: Pi vorher durchlaufen lassen und prüfen, dass die Punkte im 5-Sekunden-Abstand ankommen. ÜBERGABE: Weiter mit den Zusatzfunktionen (Felix bleibt).
+SPRECHER: Felix · RICHTZEIT: 1:30 min — Hier zeigen wir die Ergebnisse. LIVE-DEMO oder Screenshot: ThingSpeak-Kanal mit Temperaturverlauf, Lüfter und Ventil. Die Messung läuft alle 5 Sekunden. Der Upload wird gebündelt und läuft einmal pro Minute, die Free-Grenze von 15 Sekunden unterschreiten wir damit deutlich. Jede Messung behält ihre eigene Uhrzeit, das Diagramm zeigt also trotzdem das 5-Sekunden-Raster. Die Diagramme in ThingSpeak aktualisieren sich im Minutentakt. Es gibt 8 Felder, und der CSV-Export dient als Nachweis für Kontrollen. Der Kanal ist öffentlich, deshalb kann jeder ohne Anmeldung zuschauen. VOR DEM VORTRAG: Pi vorher durchlaufen lassen und prüfen, dass die Punkte im 5-Sekunden-Abstand ankommen. ÜBERGABE: Weiter mit den Zusatzfunktionen (Felix bleibt).
 
 ## Folie 12: Mehr als nur speichern
 

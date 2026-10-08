@@ -86,7 +86,7 @@ Unser Konzept in sechs Punkten. Verschlüsselung: nur HTTPS. Authentifizierung: 
 
 **Folie 11: Messdaten in der Cloud (Kriterium 7)** (Richtzeit 1:30 min · 10 Punkte)
 
-Hier zeigen wir die Ergebnisse. LIVE-DEMO oder Screenshot: ThingSpeak-Kanal mit Temperaturverlauf, Lüfter und Ventil. Die Messung läuft alle 5 Sekunden. Der Upload wird wegen der Free-Grenze alle 15 Sekunden gebündelt, jede Messung behält ihre eigene Uhrzeit. Es gibt 8 Felder, und der CSV-Export dient als Nachweis für Kontrollen. Der Kanal ist öffentlich, deshalb kann jeder ohne Anmeldung zuschauen. VOR DEM VORTRAG: Pi vorher durchlaufen lassen und prüfen, dass die Punkte im 5-Sekunden-Abstand ankommen.
+Hier zeigen wir die Ergebnisse. LIVE-DEMO oder Screenshot: ThingSpeak-Kanal mit Temperaturverlauf, Lüfter und Ventil. Die Messung läuft alle 5 Sekunden. Der Upload wird gebündelt und läuft einmal pro Minute, die Free-Grenze von 15 Sekunden unterschreiten wir damit deutlich. Jede Messung behält ihre eigene Uhrzeit, das Diagramm zeigt also trotzdem das 5-Sekunden-Raster. Die Diagramme in ThingSpeak aktualisieren sich im Minutentakt. Es gibt 8 Felder, und der CSV-Export dient als Nachweis für Kontrollen. Der Kanal ist öffentlich, deshalb kann jeder ohne Anmeldung zuschauen. VOR DEM VORTRAG: Pi vorher durchlaufen lassen und prüfen, dass die Punkte im 5-Sekunden-Abstand ankommen.
 
 *Übergabe:* Weiter mit den Zusatzfunktionen (Felix bleibt).
 
@@ -120,7 +120,7 @@ Wer fachlich dran ist, antwortet. Vorschlag in Klammern.
 
 **Ist das DSGVO-konform?** (Erik) In den Messdaten steckt kein Personenbezug. MathWorks ist im EU-US Data Privacy Framework aktiv gelistet, das gilt für Nicht-Beschäftigtendaten. Bei Fahrerdaten bräuchte es eine andere Grundlage, EU-Hosting und einen Auftragsverarbeitungsvertrag.
 
-**Warum messt ihr alle 5 Sekunden und ladet alle 15 Sekunden hoch?** (Felix) ThingSpeak Free erlaubt höchstens ein Update alle 15 Sekunden pro Kanal. Die Bridge bündelt deshalb drei Messungen, jede mit ihrer eigenen Uhrzeit. So geht keine Messung verloren.
+**Warum messt ihr alle 5 Sekunden und ladet nur einmal pro Minute hoch?** (Felix) ThingSpeak Free erlaubt höchstens ein Update alle 15 Sekunden pro Kanal, und viele kleine Requests wären unnötig. Die Bridge bündelt deshalb zwölf Messungen pro Minute, jede mit ihrer eigenen Uhrzeit. So geht keine Messung verloren, und die Diagramme aktualisieren sich im Minutentakt.
 
 **Wie lange werden die Daten aufbewahrt?** (Felix) Wir haben 12 Monate festgelegt, weil uns keine Frist vorgegeben war. Dazu ein monatlicher CSV-Export, das Original bleibt in der lokalen Datenbank. Im Realbetrieb müsste die gesetzliche Frist geklärt werden.
 
